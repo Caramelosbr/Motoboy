@@ -1,0 +1,3119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Painel do Motoboy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* ============ DESIGN TOKENS ============ */
+  :root{
+    --bg:#14171C;
+    --surface:#1E2229;
+    --surface-2:#262B33;
+    --surface-3:#2E343D;
+    --line:#31373F;
+    --orange:#FF7A1A;
+    --orange-dim:rgba(255,122,26,0.14);
+    --red:#FF6B76;
+    --red-dim:rgba(255,107,118,0.10);
+    --green:#3FB27F;
+    --green-dim:rgba(63,178,127,0.08);
+    --text:#F2F0EB;
+    --muted:#8B92A0;
+    --muted-2:#828B99;
+
+    --radius-sm:10px;
+    --radius-md:14px;
+    --radius-lg:20px;
+
+    --space-2:8px;
+    --space-3:12px;
+    --space-4:16px;
+    --space-5:20px;
+
+    --drawer-w:270px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.02em;}
+  svg.icon{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+  button{ font-family:'Inter',sans-serif; touch-action:manipulation; }
+  .sr-only{
+    position:absolute !important;
+    width:1px !important; height:1px !important;
+    padding:0 !important; margin:-1px !important;
+    overflow:hidden !important; clip:rect(0,0,0,0) !important;
+    white-space:nowrap !important; border:0 !important;
+  }
+
+  /* ============ TOP BAR ============ */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:rgba(20,23,28,0.94);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .menu-btn{
+    width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    flex-shrink:0;
+    color:var(--text);
+  }
+  .menu-btn:active{ background:var(--surface-2); }
+  .menu-btn svg.icon{ width:19px; height:19px; }
+
+  .topbar-titles h1{ font-size:14px; margin:0; font-weight:600; letter-spacing:0.05em; line-height:1.2; }
+  .topbar-titles .sub{ font-size:10px; color:var(--muted); margin-top:1px; }
+
+  .topbar .date{
+    margin-left:auto;
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.4;
+  }
+
+  /* ============ DRAWER + BACKDROP ============ */
+  .backdrop{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.55);
+    opacity:0; pointer-events:none;
+    transition:opacity 0.2s ease;
+    z-index:30;
+  }
+  .backdrop.open{ opacity:1; pointer-events:auto; }
+
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0;
+    width:var(--drawer-w);
+    max-width:82vw;
+    background:var(--surface);
+    border-right:1px solid var(--line);
+    z-index:31;
+    transform:translateX(-100%);
+    transition:transform 0.22s ease;
+    display:flex;
+    flex-direction:column;
+    padding:var(--space-4);
+  }
+  .drawer.open{ transform:translateX(0); }
+
+  .drawer-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding-bottom:var(--space-4);
+    margin-bottom:var(--space-3);
+    border-bottom:1px solid var(--line);
+  }
+  .drawer-head .brand{ display:flex; align-items:center; gap:8px; }
+  .drawer-head .brand .dot{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--orange); box-shadow:0 0 10px var(--orange);
+  }
+  .drawer-head .brand span{ font-size:13px; font-weight:600; letter-spacing:0.05em; }
+  .drawer-close{
+    width:32px; height:32px;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent; border:none; color:var(--muted); cursor:pointer;
+    border-radius:8px;
+  }
+  .drawer-close:active{ background:var(--surface-2); }
+
+  .drawer-nav{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+  .drawer-item{
+    display:flex; align-items:center; gap:14px;
+    width:100%;
+    padding:14px 12px;
+    border-radius:var(--radius-md);
+    background:transparent; border:none; cursor:pointer;
+    color:var(--muted);
+    text-align:left;
+  }
+  .drawer-item svg.icon{ width:22px; height:22px; }
+  .drawer-item .label{ font-size:15px; font-weight:500; }
+  .drawer-item:active{ background:var(--surface-2); }
+  .drawer-item.active{ background:var(--orange-dim); color:var(--orange); }
+
+  .drawer-foot{
+    margin-top:auto;
+    padding-top:var(--space-4);
+    font-size:10px; color:var(--muted-2); letter-spacing:0.03em;
+  }
+
+  /* ============ CONTENT ============ */
+  main.view{
+    max-width:560px;
+    margin:0 auto;
+    padding:18px 16px 40px;
+    display:none;
+  }
+  main.view.active{ display:block; }
+
+  /* ============ GAUGE HERO ============ */
+  .gauge-card{
+    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    padding:22px 20px 18px;
+    position:relative;
+    overflow:hidden;
+  }
+  .gauge-card::before{
+    content:"";
+    position:absolute;
+    top:-60px; right:-60px;
+    width:180px; height:180px;
+    background:radial-gradient(circle, rgba(255,122,26,0.15), transparent 70%);
+  }
+  .gauge-label{ font-size:11px; color:var(--muted); letter-spacing:0.12em; font-weight:600; }
+  .gauge-wrap{ display:flex; justify-content:center; margin-top:6px; }
+  .gauge-svg{ width:230px; height:135px; }
+  .gauge-center{ text-align:center; margin-top:-58px; }
+  .gauge-value{ font-size:34px; font-weight:700; display:block; }
+  .gauge-sub{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .gauge-foot{
+    display:flex; justify-content:space-between;
+    margin-top:14px; padding-top:14px;
+    border-top:1px solid var(--line);
+    font-size:11px; color:var(--muted);
+  }
+  .gauge-foot b{ color:var(--text); font-family:'JetBrains Mono',monospace; font-weight:600; }
+
+  /* ============ STATS GRID ============ */
+  .stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+  .stat-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:14px;
+  }
+  .stat-card svg.icon{ color:var(--muted); width:18px; height:18px; }
+  .stat-card .label{ font-size:10.5px; color:var(--muted); margin-top:10px; letter-spacing:0.03em; }
+  .stat-card .value{ font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:700; margin-top:3px; }
+  .stat-card .value.orange{ color:var(--orange); }
+  .stat-card .value.red{ color:var(--red); }
+  .dashboard-stats{ grid-template-columns:1fr; gap:6px; }
+  .dashboard-stats .stat-card{ padding:14px 16px; min-width:0; display:flex; align-items:center; gap:12px; text-align:left; }
+  .dashboard-stats .stat-card .icon{ margin:0; flex-shrink:0; }
+  .dashboard-stats .stat-card .label{ font-size:11px; line-height:1.25; margin:0; flex:1; }
+  .dashboard-stats .stat-card .value{ font-size:20px; white-space:nowrap; margin:0; }
+
+  .noscript-warning{
+    margin:14px 16px; padding:13px 14px; border:1px solid rgba(255,107,118,.45);
+    border-radius:var(--radius-md); background:var(--red-dim); color:var(--text);
+    font-size:12px; line-height:1.5;
+  }
+
+  /* ============ PAINEL: VALOR TOTAL DO MÊS ============ */
+  .cash-card{
+    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--line); border-radius:var(--radius-lg); padding:20px;
+    position:relative; overflow:hidden;
+  }
+  .cash-card::after{
+    content:""; position:absolute; width:150px; height:150px; right:-60px; top:-70px;
+    border-radius:50%; background:var(--orange-dim); pointer-events:none;
+  }
+  .cash-card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; position:relative; z-index:1; }
+  .cash-label{ font-size:11px; color:var(--muted); letter-spacing:.09em; font-weight:700; }
+  .cash-value{ font-family:'JetBrains Mono',monospace; font-size:34px; font-weight:700; margin-top:6px; letter-spacing:-.04em; }
+  .demo-badge{
+    color:var(--orange); background:var(--orange-dim); border:1px solid rgba(255,122,26,.28);
+    border-radius:999px; padding:6px 9px; font-size:10px; font-weight:700; white-space:nowrap;
+  }
+  .cash-formula{
+    display:flex; align-items:center; gap:7px; margin-top:10px; color:var(--muted); font-size:11.5px; line-height:1.45;
+  }
+  .cash-formula svg.icon{ width:16px; height:16px; color:var(--orange); }
+  .cash-details{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px; padding-top:15px; border-top:1px solid var(--line);
+  }
+  .cash-detail .label{ font-size:10px; color:var(--muted); }
+  .cash-detail .value{ font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; margin-top:4px; }
+  .cash-detail .value.green{ color:var(--green); }
+  .cash-detail .value.red{ color:var(--red); }
+  .cash-note{
+    margin-top:12px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--surface-2);
+    color:var(--muted); font-size:11px; line-height:1.5;
+  }
+  .cash-note b{ color:var(--text); }
+  .quick-actions{ display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
+  .quick-action{
+    min-height:72px; border:1px solid var(--line); border-radius:var(--radius-md); background:var(--surface);
+    color:var(--text); padding:11px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:7px; font-size:11.5px; font-weight:600; cursor:pointer;
+  }
+  .quick-action svg.icon{ width:21px; height:21px; color:var(--orange); }
+  .quick-action:active{ background:var(--surface-2); }
+
+  /* ============ SECTION ============ */
+  section{ margin-top:22px; }
+  .section-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .section-head h2{ font-size:13px; margin:0; font-weight:600; letter-spacing:0.06em; color:var(--muted); }
+  .section-head button.link{
+    font-size:11px; color:var(--orange); background:none; border:none; padding:0; cursor:pointer;
+  }
+
+  .chart-card{
+    background:linear-gradient(180deg, #22272F 0%, var(--surface) 100%);
+    border:1px solid var(--line); border-radius:var(--radius-lg); padding:17px 14px 13px;
+  }
+  .dashboard-chart-summary{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:0 3px; }
+  .dashboard-chart-summary .label{ color:var(--muted); font-size:9.5px; font-weight:700; letter-spacing:.07em; }
+  .dashboard-chart-summary .value{
+    margin-top:4px; color:var(--text); font-family:'JetBrains Mono',monospace;
+    font-size:25px; font-weight:700; letter-spacing:-.03em;
+  }
+  .dashboard-chart-summary .detail{ margin-top:4px; color:var(--muted); font-size:10.5px; line-height:1.4; }
+  .dashboard-chart-status{
+    padding:6px 8px; border-radius:999px; background:var(--green-dim); color:var(--green);
+    border:1px solid rgba(63,178,127,.25); font-size:8.5px; font-weight:800; letter-spacing:.04em;
+    white-space:nowrap;
+  }
+  .dashboard-chart-status.negative{ background:var(--red-dim); color:var(--red); border-color:rgba(255,107,118,.28); }
+  .dashboard-chart-status.balanced{ background:var(--surface-3); color:var(--muted); border-color:var(--line); }
+  .dashboard-chart-canvas{ position:relative; width:100%; height:238px; margin-top:13px; }
+  .dashboard-chart-canvas canvas{ width:100% !important; height:100% !important; max-height:none; }
+  .dashboard-chart-guide{
+    display:flex; align-items:center; gap:6px; margin-top:8px; padding:9px 10px;
+    border-radius:9px; background:var(--surface-2); color:var(--muted); font-size:9.5px; line-height:1.35;
+  }
+  .dashboard-chart-guide svg.icon{ width:14px; height:14px; color:var(--orange); }
+  .weekly-refuel-card{
+    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--line); border-radius:var(--radius-lg); padding:17px 16px 14px;
+  }
+  .weekly-refuel-summary{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .weekly-refuel-summary .value{
+    font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:700; color:var(--text);
+  }
+  .weekly-refuel-summary .label{ margin-top:2px; color:var(--muted); font-size:10.5px; }
+  .weekly-refuel-trend{
+    padding:6px 8px; border-radius:999px; background:var(--orange-dim); color:var(--orange);
+    font-size:9.5px; font-weight:700; text-align:center; white-space:nowrap;
+  }
+  .weekly-refuel-chart{
+    margin-top:15px; padding-top:13px; border-top:1px solid var(--line);
+    display:flex; flex-direction:column; gap:11px;
+  }
+  .weekly-refuel-row{
+    min-width:0; display:grid; grid-template-columns:92px minmax(0,1fr) 28px;
+    align-items:center; gap:9px;
+  }
+  .weekly-refuel-period{
+    color:var(--muted); font-size:10px; line-height:1.2; font-weight:600;
+  }
+  .weekly-refuel-bar-track{
+    position:relative; width:100%; height:11px; overflow:hidden;
+    background:#343A43; border-radius:999px;
+  }
+  .weekly-refuel-bar-fill{
+    height:100%; min-width:0; background:#69717D; border-radius:999px;
+    transition:width .3s ease;
+  }
+  .weekly-refuel-row.current .weekly-refuel-bar-fill{
+    background:linear-gradient(90deg, var(--orange) 0%, #FFAA68 100%);
+    box-shadow:0 0 12px rgba(255,122,26,.28);
+  }
+  .weekly-refuel-row.current .weekly-refuel-period,
+  .weekly-refuel-row.current .weekly-refuel-count{ color:var(--orange); }
+  .weekly-refuel-count{
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    border-radius:8px; background:var(--surface-3); color:var(--text);
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700;
+  }
+  .weekly-refuel-note{ margin-top:9px; color:var(--muted); font-size:10.5px; line-height:1.45; }
+
+  .cheapest-station-card{
+    position:relative; overflow:hidden;
+    background:linear-gradient(145deg, #242A32 0%, var(--surface) 72%);
+    border:1px solid rgba(255,122,26,.28); border-radius:var(--radius-lg); padding:16px;
+  }
+  .cheapest-station-card::after{
+    content:""; position:absolute; width:150px; height:150px; right:-72px; top:-82px;
+    border-radius:50%; background:rgba(255,122,26,.09); pointer-events:none;
+  }
+  .cheapest-station-head{ position:relative; z-index:1; display:flex; align-items:center; gap:9px; }
+  .cheapest-station-icon{
+    width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+    border-radius:10px; background:var(--orange-dim); color:var(--orange); flex-shrink:0;
+  }
+  .cheapest-station-icon svg.icon{ width:18px; height:18px; }
+  .cheapest-station-head .title{ font-size:11px; color:var(--muted); letter-spacing:.06em; font-weight:700; }
+  .cheapest-station-head .period{ margin-top:2px; color:var(--text); font-size:10.5px; }
+  .cheapest-station-badge{
+    margin-left:auto; padding:5px 7px; border-radius:999px; background:var(--green-dim);
+    color:var(--green); border:1px solid rgba(63,178,127,.25); font-size:8.5px; font-weight:700;
+  }
+  .cheapest-station-main{
+    position:relative; z-index:1; margin-top:15px; display:flex; align-items:flex-end;
+    justify-content:space-between; gap:12px;
+  }
+  .cheapest-station-name{ font-size:15px; font-weight:700; line-height:1.3; }
+  .cheapest-station-date{ margin-top:4px; color:var(--muted); font-size:10.5px; }
+  .cheapest-station-price{
+    color:var(--orange); font-family:'JetBrains Mono',monospace; font-size:22px;
+    font-weight:700; white-space:nowrap;
+  }
+  .cheapest-station-price small{ color:var(--muted); font-size:10px; font-family:'Inter',sans-serif; }
+  .cheapest-station-saving{
+    position:relative; z-index:1; margin-top:12px; padding:9px 10px; border-radius:10px;
+    background:var(--orange-dim); color:var(--text); font-size:10.5px; line-height:1.4;
+  }
+  .station-ranking{ position:relative; z-index:1; margin-top:13px; border-top:1px solid var(--line); }
+  .station-ranking-row{
+    display:grid; grid-template-columns:27px minmax(0,1fr) auto; align-items:center; gap:8px;
+    padding:9px 0; border-bottom:1px solid var(--line);
+  }
+  .station-ranking-row:last-child{ border-bottom:0; padding-bottom:1px; }
+  .station-rank{
+    width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+    border-radius:7px; background:var(--surface-3); color:var(--muted);
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700;
+  }
+  .station-ranking-row:first-child .station-rank{ background:var(--orange-dim); color:var(--orange); }
+  .station-ranking-name{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11.5px; }
+  .station-ranking-date{ display:block; margin-top:2px; color:var(--muted); font-size:9px; }
+  .station-ranking-price{ font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; }
+  .cheapest-station-note{ position:relative; z-index:1; margin-top:11px; color:var(--muted); font-size:9.5px; line-height:1.45; }
+  .period-select{
+    min-height:44px; background:var(--surface-2); color:var(--text); border:1px solid var(--line);
+    border-radius:var(--radius-sm); padding:8px 34px 8px 10px; font-size:12px; font-weight:600;
+  }
+
+  /* ============ LIST ============ */
+  .list-card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; }
+  .list-item{ display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); }
+  .list-item:last-child{ border-bottom:none; }
+  .list-item .badge{
+    width:36px;height:36px; border-radius:10px; background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center; flex-shrink:0;
+  }
+  .list-item .badge svg.icon{ width:17px;height:17px; color:var(--orange); }
+  .list-item .badge.green svg.icon{ color:var(--green); }
+  .list-item .info{ flex:1; min-width:0; }
+  .list-item .info .title{ font-size:13.5px; font-weight:500; }
+  .list-item .info .sub{ font-size:11px; color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px; }
+  .list-item .amount{ font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; color:var(--orange); white-space:nowrap; }
+  .list-item .amount.green{ color:var(--green); }
+
+  .cat-tag{
+    font-size:9px; letter-spacing:0.04em; font-weight:600; padding:2px 6px; border-radius:5px; text-transform:uppercase;
+    flex-shrink:0;
+  }
+  .cat-tag.fuel{ background:var(--orange-dim); color:var(--orange); }
+  .cat-tag.maint{ background:var(--surface-3); color:var(--muted); }
+
+  /* ============ INFO STATE ============ */
+  .info-banner{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:16px; display:flex; gap:12px; align-items:flex-start;
+  }
+  .info-banner svg.icon{ width:20px;height:20px; color:var(--orange); flex-shrink:0; margin-top:1px; }
+  .info-banner .title{ font-size:13px; font-weight:600; }
+  .info-banner .desc{ font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.55; }
+
+  .example-tag{
+    font-size:9px; letter-spacing:0.05em; font-weight:600; color:var(--muted-2);
+    background:var(--surface-2); padding:2px 7px; border-radius:5px; text-transform:uppercase;
+  }
+
+  /* ============ FORM FIELDS ============ */
+  .field-group{ display:flex; flex-direction:column; gap:6px; }
+  .field-label{ font-size:11px; color:var(--muted); letter-spacing:0.03em; }
+  .field-input{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:11px 12px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:15px;
+    width:100%;
+  }
+  .field-input:focus{ outline:none; border-color:var(--orange); box-shadow:0 0 0 3px var(--orange-dim); }
+  .field-input::placeholder{ color:var(--muted-2); font-family:'Inter',sans-serif; font-size:13px; }
+  .field-input.text{ font-family:'Inter',sans-serif; font-size:14px; }
+
+  .form-card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px; }
+  .form-row{ display:flex; gap:10px; }
+  .form-row .field-group{ flex:1; }
+
+  .assumptions{
+    display:flex; gap:10px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
+  }
+  .assumptions .field-group{ flex:1; }
+  .assumptions .field-label{ font-size:10px; }
+  .assumptions .field-input{ padding:8px 10px; font-size:13px; }
+
+  .btn-primary{
+    background:var(--orange); color:#1a1006; border:none; border-radius:var(--radius-sm);
+    padding:13px 16px; font-weight:700; font-size:14px; cursor:pointer; width:100%; margin-top:14px;
+    letter-spacing:0.01em;
+  }
+  .btn-primary:active{ opacity:0.85; }
+
+  .btn-secondary{
+    background:var(--surface-2); color:var(--text); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:12px; font-weight:600; font-size:13.5px; cursor:pointer;
+  }
+  .btn-secondary:active{ background:var(--surface-3); }
+
+  /* ============ RESULT CARD ============ */
+  .result-card{
+    border-radius:var(--radius-md); border:1px solid var(--line); padding:16px; margin-top:14px;
+    display:none;
+  }
+  .result-card.profit{ background:var(--green-dim); border-color:rgba(63,178,127,0.4); }
+  .result-card.loss{ background:var(--red-dim); border-color:rgba(255,107,118,0.4); }
+  .result-row{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); padding:4px 0; }
+  .result-row b{ color:var(--text); font-family:'JetBrains Mono',monospace; }
+  .result-verdict{ font-size:15px; font-weight:700; margin-top:10px; }
+  .result-verdict.profit-text{ color:var(--green); }
+  .result-verdict.loss-text{ color:var(--red); }
+
+  /* ============ TRIP LIST ============ */
+  .trip-list-item{ display:flex; justify-content:space-between; align-items:center; padding:11px 14px; border-bottom:1px solid var(--line); }
+  .trip-list-item:last-child{ border-bottom:none; }
+  .trip-list-item .trip-meta{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .trip-amt{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13.5px; white-space:nowrap; }
+  .trip-amt.profit{ color:var(--green); }
+  .trip-amt.loss{ color:var(--red); }
+  .trip-dot{ width:7px;height:7px;border-radius:50%; display:inline-block; margin-right:7px; }
+  .trip-dot.profit{ background:var(--green); }
+  .trip-dot.loss{ background:var(--red); }
+  .trip-empty{ padding:22px 16px; font-size:12px; color:var(--muted); text-align:center; }
+
+  /* ============ MOTO CARD ============ */
+  .moto-card{
+    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--line); border-radius:var(--radius-lg); padding:20px;
+  }
+  .moto-card-head{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .moto-icon-wrap{
+    width:52px;height:52px; border-radius:14px; background:var(--orange-dim);
+    display:flex;align-items:center;justify-content:center; flex-shrink:0;
+  }
+  .moto-icon-wrap svg.icon{ width:26px;height:26px; color:var(--orange); }
+  .moto-card-head .name{ font-size:16px; font-weight:600; }
+  .moto-card-head .year{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .moto-specs{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding-top:16px; border-top:1px solid var(--line); }
+  .moto-spec .label{ font-size:10px; color:var(--muted); letter-spacing:0.03em; }
+  .moto-spec .value{ font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; margin-top:3px; }
+
+  /* ===== consumo real da moto + gráfico ===== */
+  .consumo-real-card{
+    background:linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
+    border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px;
+  }
+  .consumo-real-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .consumo-real-label{ font-size:11px; color:var(--muted); letter-spacing:0.06em; font-weight:600; }
+  .consumo-real-value{ font-family:'JetBrains Mono',monospace; font-size:30px; font-weight:700; color:var(--green); margin-top:4px; }
+  .consumo-real-badge{
+    font-size:11px; color:var(--muted); background:var(--surface-3); border-radius:999px;
+    padding:5px 10px; white-space:nowrap; flex-shrink:0;
+  }
+  .consumo-real-note{ font-size:12px; color:var(--muted); line-height:1.5; margin-top:8px; }
+  .consumo-chart-wrap{ margin-top:14px; }
+
+  /* touch target >= 44px CSS pixels (WCAG 2.5.5) */
+  .btn-add{
+    width:44px;height:44px; border-radius:50%; background:var(--orange); border:none;
+    color:#1a1006; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+  }
+  .btn-add svg.icon{ width:18px;height:18px; stroke-width:2.6; }
+  .btn-add:active{ opacity:0.85; }
+
+  .maint-item .badge svg.icon{ color:var(--muted); }
+
+  /* ============ BALANCE CARD (faturamento) ============ */
+  .balance-card{
+    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--line); border-radius:var(--radius-lg); padding:18px 20px;
+  }
+  .balance-row{ display:flex; justify-content:space-between; align-items:center; padding:11px 0; }
+  .balance-row:not(:last-child){ border-bottom:1px solid var(--line); }
+  .balance-row .label{ font-size:12.5px; color:var(--muted); }
+  .balance-row .amt{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:17px; }
+  .balance-row .amt.green{ color:var(--green); }
+  .balance-row .amt.red{ color:var(--red); }
+  .balance-row.result .label{ font-weight:600; color:var(--text); font-size:13px; }
+  .balance-row.result .amt{ font-size:21px; }
+
+  /* ============ MODAL ============ */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    opacity:0; pointer-events:none; transition:opacity 0.18s ease; z-index:40;
+  }
+  .modal-backdrop.open{ opacity:1; pointer-events:auto; }
+  .modal{
+    position:fixed; left:50%; top:50%;
+    transform:translate(-50%,-44%);
+    width:min(92vw, 380px);
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg);
+    padding:20px; z-index:41;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.18s ease, transform 0.18s ease;
+    max-height:85vh;
+    overflow-y:auto;
+  }
+  .modal.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%); }
+  .modal-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+  .modal-head h3{ font-size:15px; margin:0; font-weight:600; }
+  .modal-head .desc{ font-size:11.5px; color:var(--muted); margin-top:3px; }
+  .modal-close{
+    width:28px;height:28px; display:flex; align-items:center; justify-content:center;
+    background:transparent; border:none; color:var(--muted); cursor:pointer; border-radius:8px; flex-shrink:0;
+  }
+  .modal-body{ margin-top:14px; display:flex; flex-direction:column; gap:12px; }
+  .modal-foot{ display:flex; gap:10px; margin-top:18px; }
+  .modal-foot .btn-secondary, .modal-foot .btn-primary{ flex:1; margin-top:0; }
+
+  /* ============ ROTAS: PONTO DE PARTIDA ============ */
+  .start-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:13px 15px; display:flex; align-items:center; gap:12px;
+  }
+  .start-card .pin{
+    width:34px;height:34px; border-radius:50%; background:var(--green-dim);
+    display:flex; align-items:center; justify-content:center; color:var(--green); flex-shrink:0;
+  }
+  .start-card .info{ flex:1; }
+  .start-card .label{ font-size:9.5px; color:var(--muted); letter-spacing:0.05em; }
+  .start-card .value{ font-size:13.5px; font-weight:600; margin-top:2px; }
+  .start-card .check{
+    width:24px;height:24px; border-radius:50%; background:var(--green);
+    display:flex; align-items:center; justify-content:center; color:#0d1f16; flex-shrink:0;
+  }
+  .start-card .check svg.icon{ width:14px; height:14px; stroke-width:3; }
+
+  .order-head{ display:flex; justify-content:space-between; align-items:center; margin:18px 0 10px; }
+  .order-head h2{ font-size:12px; color:var(--muted); letter-spacing:0.06em; font-weight:600; margin:0; }
+  .drag-hint{ font-size:10px; color:var(--muted-2); display:flex; align-items:center; gap:4px; }
+  .drag-hint svg.icon{ width:13px; height:13px; }
+
+  /* ============ ROTAS: SERVIÇO CARD ============ */
+  .service-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:14px; margin-bottom:10px; cursor:grab;
+  }
+  .service-card.dragging{ opacity:0.35; }
+  .service-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .service-head-left{ display:flex; align-items:center; gap:8px; }
+  .service-head .badge-num{
+    width:22px;height:22px; border-radius:50%; background:var(--surface-3); color:var(--text);
+    font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; flex-shrink:0;
+  }
+  .service-head .title{ font-size:11.5px; letter-spacing:0.05em; font-weight:600; color:var(--muted); }
+  .service-remove{
+    background:transparent; border:none; color:var(--muted-2); cursor:pointer;
+    width:30px;height:30px; border-radius:8px; display:flex;align-items:center;justify-content:center;
+  }
+  .service-remove:active{ background:var(--surface-2); color:var(--red); }
+
+  .stop-row{ display:flex; gap:10px; margin-bottom:2px; }
+  .stop-dot-col{ display:flex; flex-direction:column; align-items:center; padding-top:5px; width:16px; flex-shrink:0; }
+  .stop-dot{ width:15px;height:15px; border-radius:50%; border:2.5px solid var(--green); flex-shrink:0; background:var(--surface); }
+  .stop-dot.entrega{ border-color:var(--orange); background:var(--orange); }
+  .stop-line{ width:2px; flex:1; background:var(--line); margin:3px 0; min-height:14px; }
+  .stop-body{ flex:1; padding-bottom:10px; position:relative; }
+  .stop-label{ font-size:9px; color:var(--muted); letter-spacing:0.05em; margin-bottom:4px; }
+
+  .suggest-list{
+    position:absolute; left:0; right:0; top:100%; margin-top:4px;
+    background:var(--surface-3); border:1px solid var(--line); border-radius:var(--radius-sm);
+    max-height:190px; overflow-y:auto; z-index:6; display:none;
+    box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  }
+  .suggest-list.open{ display:block; }
+  .suggest-item{ width:100%; padding:10px 12px; font-size:12.5px; font-family:'Inter',sans-serif; color:var(--text); cursor:pointer; border:0; border-bottom:1px solid var(--line); background:transparent; text-align:left; }
+  .suggest-item:last-child{ border-bottom:none; }
+  .suggest-item:active{ background:var(--surface-2); }
+  .suggest-empty{ padding:10px 12px; font-size:11.5px; color:var(--muted); }
+
+  .service-meta-row{ display:flex; gap:8px; padding-top:10px; border-top:1px solid var(--line); align-items:flex-end; }
+  .service-meta-row .field-group{ flex:1; gap:4px; }
+  .service-meta-row .field-label{ font-size:8.5px; }
+  .service-meta-row .field-input{ padding:8px 9px; font-size:12.5px; }
+  .valor-group{ max-width:110px; }
+
+  .route-calc{
+    flex:1.4; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:9px 10px; font-size:11.5px; color:var(--muted-2); display:flex; align-items:center; gap:7px;
+    min-height:38px;
+  }
+  .route-calc.ok{ color:var(--text); }
+  .route-calc.ok b{ font-family:'JetBrains Mono',monospace; font-weight:600; }
+  .route-calc.error{ color:var(--red); font-size:12px; line-height:1.4; }
+  .route-calc.warn{
+    flex-direction:column; align-items:stretch; gap:8px;
+    background:rgba(255,122,26,0.12); border-color:rgba(255,122,26,0.45);
+  }
+  .route-calc-warn-text{ font-size:12px; color:var(--orange); line-height:1.5; }
+  .route-calc-warn-actions{ display:flex; gap:8px; align-items:center; }
+  .btn-tiny{
+    background:var(--orange); color:#1a1006; border:none; border-radius:8px;
+    padding:9px 12px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; flex-shrink:0; min-height:38px;
+  }
+  .manual-km-input{ flex:1; min-width:0; padding:9px 10px; font-size:12px; min-height:38px; }
+  .route-calc .retry-link{ color:var(--orange); font-weight:600; cursor:pointer; text-decoration:underline; flex-shrink:0; }
+  .spinner{
+    width:12px;height:12px; border:2px solid var(--surface-3); border-top-color:var(--orange);
+    border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .service-verdict{
+    margin-top:10px; font-size:12px; font-weight:700; text-align:center;
+    padding:9px; border-radius:var(--radius-sm);
+  }
+  .service-verdict.hidden{ display:none; }
+  .service-verdict.profit{ background:var(--green-dim); color:var(--green); }
+  .service-verdict.equilibrio{ background:var(--surface-3); color:var(--muted); }
+  .service-verdict.loss{ background:var(--red-dim); color:var(--red); }
+
+  .add-service-btn{
+    width:100%; border:2px dashed var(--line); background:transparent; color:var(--orange);
+    border-radius:var(--radius-md); padding:14px; font-weight:600; font-size:13px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px; margin-top:2px;
+  }
+  .add-service-btn:active{ background:var(--orange-dim); }
+
+  /* ============ ROTAS: CLIENTE DA COLETA / ENTREGAS MÚLTIPLAS ============ */
+  .cliente-row{ display:flex; gap:10px; align-items:flex-end; margin-bottom:14px; }
+  .cliente-row .field-group{ flex:1; }
+  .pago-toggle{
+    display:flex; border:1px solid var(--line); border-radius:var(--radius-sm); overflow:hidden; height:40px; margin-top:6px;
+  }
+  .pago-toggle-btn{
+    flex:1; background:var(--surface-2); border:none; color:var(--muted);
+    font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; min-height:40px;
+  }
+  .pago-toggle-btn[data-value="received"].active{ background:var(--green); color:#0d1f16; }
+  .pago-toggle-btn[data-value="pending"].active{ background:var(--orange); color:#1a1006; }
+  .pending-client-field{ margin-top:10px; }
+  .calculated-price{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; padding:11px 12px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm);
+  }
+  .calculated-price .label{ color:var(--muted); font-size:12px; }
+  .calculated-price .value{ font-family:'JetBrains Mono',monospace; color:var(--orange); font-size:18px; font-weight:700; }
+  .config-note{ margin-top:8px; color:var(--muted); font-size:12px; line-height:1.5; }
+
+  .entrega-block{ padding-top:10px; margin-top:6px; border-top:1px dashed var(--line); }
+  .entrega-block:first-child{ border-top:none; margin-top:0; padding-top:0; }
+  .entrega-remove{
+    background:transparent; border:none; color:var(--muted-2); cursor:pointer;
+    width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; align-self:flex-start; margin-top:18px;
+  }
+  .entrega-remove:active{ background:var(--surface-2); color:var(--red); }
+
+  .add-entrega-btn{
+    width:100%; border:1.5px dashed var(--line); background:transparent; color:var(--muted);
+    border-radius:var(--radius-sm); padding:10px; font-weight:600; font-size:12px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:6px; margin-top:10px;
+  }
+  .add-entrega-btn:active{ background:var(--surface-2); color:var(--orange); }
+
+  /* ============ CLIENTES ============ */
+  .cliente-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:14px 16px; display:flex; align-items:center; gap:12px;
+  }
+  .cliente-card .avatar{
+    width:38px;height:38px; border-radius:50%; background:var(--surface-2);
+    display:flex; align-items:center; justify-content:center; color:var(--muted); flex-shrink:0;
+  }
+  .cliente-card .info{ flex:1; min-width:0; }
+  .cliente-card .info .name{ font-size:13.5px; font-weight:600; }
+  .cliente-card .info .sub{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .cliente-card .info .sub.owed{ color:var(--red); }
+  .cliente-card .info .sub.clear{ color:var(--green); }
+  .cliente-card .btn-charge{
+    background:var(--orange); color:#1a1006; border:none; border-radius:var(--radius-sm);
+    padding:9px 14px; font-weight:700; font-size:12px; cursor:pointer; flex-shrink:0; white-space:nowrap;
+  }
+  .cliente-card .btn-charge:active{ opacity:.85; }
+  .cliente-card .account-count{ display:block; margin-top:3px; color:var(--muted); font-size:10px; }
+  .cliente-empty{ padding:22px 16px; font-size:12px; color:var(--muted); text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); }
+  .receipt-balance{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px;
+  }
+  .receipt-balance .label{ color:var(--muted); font-size:11px; }
+  .receipt-balance .value{ font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:700; color:var(--orange); }
+
+  /* ============ ROTAS: RESUMO E AÇÃO SEMPRE VISÍVEIS ============ */
+  #view-rotas{ padding-bottom:calc(138px + env(safe-area-inset-bottom, 0px)); }
+  .route-action-dock{
+    position:fixed; left:0; right:0; bottom:0; z-index:19;
+    background:rgba(20,23,28,.97); border-top:1px solid var(--line);
+    box-shadow:0 -12px 32px rgba(0,0,0,.34);
+    transform:translateY(calc(100% + 6px)); opacity:0; pointer-events:none;
+    transition:transform .2s ease, opacity .2s ease;
+  }
+  #view-rotas.active .route-action-dock{
+    transform:translateY(0); opacity:1; pointer-events:auto;
+  }
+  .route-action-inner{
+    width:100%; max-width:560px; margin:0 auto;
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    display:grid; grid-template-columns:minmax(0,1fr) 158px; align-items:center; gap:12px;
+  }
+  .route-dock-stats{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; min-width:0; }
+  .route-dock-stat{ min-width:0; padding-right:5px; border-right:1px solid var(--line); }
+  .route-dock-stat:last-child{ border-right:0; padding-right:0; }
+  .route-dock-stat .label{
+    color:var(--muted); font-size:8.5px; line-height:1.2; letter-spacing:.03em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .route-dock-stat .value{
+    margin-top:3px; color:var(--text); font-family:'JetBrains Mono',monospace;
+    font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .confirm-route-btn{
+    width:100%; background:var(--orange); color:#1a1006; border:none; border-radius:var(--radius-sm);
+    min-height:46px; padding:12px; font-weight:700; font-size:13px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .confirm-route-btn:active{ opacity:0.85; }
+  .confirm-route-btn:disabled{
+    background:var(--surface-3); color:var(--muted); cursor:not-allowed; opacity:1;
+  }
+  .route-confirmation{
+    display:none; padding:13px; background:#16271f; border:1px solid rgba(63,178,127,.5);
+    border-radius:var(--radius-md); color:var(--text);
+  }
+  .route-confirmation.open{
+    position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%); width:min(calc(100% - 32px), 528px); z-index:22;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    box-shadow:0 12px 30px rgba(0,0,0,.42);
+  }
+  .route-confirmation .message{ font-size:11.5px; line-height:1.5; }
+  .route-confirmation .message b{ display:block; margin-bottom:2px; color:var(--green); font-size:12.5px; }
+  .route-confirmation .view-clients{
+    min-height:44px; border:1px solid var(--green); border-radius:var(--radius-sm); background:transparent;
+    color:var(--green); padding:9px 12px; font-weight:700; font-size:11.5px; cursor:pointer; white-space:nowrap;
+  }
+  .route-keyboard-open .route-action-dock{
+    transform:translateY(calc(100% + 6px)) !important; opacity:0 !important; pointer-events:none !important;
+  }
+
+  footer.appfoot{ text-align:center; font-size:10.5px; color:var(--muted-2); padding:10px 16px 4px; letter-spacing:0.04em; }
+
+  @media(max-width:380px){
+    .cash-card{ padding:17px; }
+    .cash-card-head{ flex-direction:column; }
+    .cash-value{ font-size:29px; }
+    .cash-details{ grid-template-columns:1fr; }
+    .quick-actions{ grid-template-columns:1fr; }
+    .quick-action{ min-height:52px; flex-direction:row; }
+    .cliente-row{ align-items:stretch; flex-direction:column; }
+    .pending-client-field{ padding-left:0; }
+    .section-head{ flex-wrap:wrap; gap:8px; }
+    .period-select{ width:100%; }
+    .cliente-card{ align-items:flex-start; flex-wrap:wrap; }
+    .cliente-card .btn-charge{ width:calc(100% - 50px); min-height:44px; margin-left:50px; }
+    .route-confirmation.open{ align-items:stretch; flex-direction:column; }
+    .route-confirmation .view-clients{ width:100%; }
+  }
+
+  @media(max-width:480px){
+    .route-action-inner{ grid-template-columns:1fr; gap:8px; padding-top:8px; }
+    .route-dock-stat .value{ font-size:12.5px; }
+    .route-confirmation.open{ bottom:calc(118px + env(safe-area-inset-bottom, 0px)); }
+  }
+</style>
+</head>
+<body>
+
+  <noscript><div class="noscript-warning"><b>O aplicativo precisa de JavaScript.</b> Abra pelo navegador ou pelo link publicado do app. O visualizador de arquivos do celular pode mostrar a tela, mas não executa as abas nem os cálculos.</div></noscript>
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="topbar">
+    <button type="button" class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-controls="drawer" aria-expanded="false">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+    </button>
+    <div class="topbar-titles">
+      <h1 class="display" id="viewTitle">Painel</h1>
+      <div class="sub" id="viewSub">visão geral do mês</div>
+    </div>
+    <div class="date mono">AGO 2026<br>semana 3</div>
+  </div>
+
+  <!-- ============ DRAWER ============ -->
+  <div class="backdrop" id="backdrop"></div>
+  <nav class="drawer" id="drawer" aria-label="Menu principal" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="brand">
+        <div class="dot"></div>
+        <span class="display">Painel Motoboy</span>
+      </div>
+      <button type="button" class="drawer-close" id="drawerClose" aria-label="Fechar menu">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <ul class="drawer-nav">
+      <li>
+        <button type="button" class="drawer-item active" data-view="dashboard">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 12 17 7"/><circle cx="12" cy="12" r="1"/></svg>
+          <span class="label">Painel</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="drawer-item" data-view="faturamento">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3"/><path d="M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-4"/><rect x="15" y="11" width="6" height="5" rx="1.5"/></svg>
+          <span class="label">Faturamento</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="drawer-item" data-view="abastecimentos">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M4 11h8"/><path d="M14 8h2.5L19 11v6a1.5 1.5 0 0 1-3 0v-2a1 1 0 0 0-1-1h-1"/><path d="M2 21h14"/></svg>
+          <span class="label">Abastecimentos</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="drawer-item" data-view="moto">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="2.7"/><circle cx="18.5" cy="17.5" r="2.7"/><path d="M5.5 17.5 9 10h5l3 4.5h1"/><path d="M9 10 8 6H5.5"/><path d="M13 14.5h3.5"/></svg>
+          <span class="label">Minha Moto</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="drawer-item" data-view="rotas">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="5" r="2.2"/><path d="M6 16.8V13a4 4 0 0 1 4-4h4a4 4 0 0 0 4-4"/></svg>
+          <span class="label">Rotas</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="drawer-item" data-view="clientes">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 8.5a2.8 2.8 0 1 1 0 5.6"/><path d="M16.5 14.3c2.2.3 3.9 1.7 4 3.9"/></svg>
+          <span class="label">Clientes</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="drawer-foot mono">v0.7</div>
+  </nav>
+
+  <!-- ============ CONTENT ============ -->
+
+  <!-- ===== VIEW: DASHBOARD ===== -->
+  <main class="view active" id="view-dashboard">
+
+    <div class="cash-card" aria-labelledby="cashResultLabel">
+      <div class="cash-card-head">
+        <div>
+          <div class="cash-label" id="cashResultLabel">VALOR TOTAL DO MÊS</div>
+          <div class="cash-value" id="dashboardResult">R$ 325,50</div>
+        </div>
+        <span class="demo-badge">DADOS LOCAIS · SEM BACKEND</span>
+      </div>
+      <div class="cash-formula">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/><path d="m14 6 6 6-6 6"/></svg>
+        Recebido menos abastecimentos e manutenções realmente pagas.
+      </div>
+      <div class="cash-details">
+        <div class="cash-detail"><div class="label">RECEBIDO NO MÊS</div><div class="value green" id="dashboardReceived">R$ 445,50</div></div>
+        <div class="cash-detail"><div class="label">A RECEBER (TOTAL)</div><div class="value" id="dashboardPending">R$ 0,00</div></div>
+        <div class="cash-detail"><div class="label">DESPESAS REAIS</div><div class="value red" id="dashboardExpenses">R$ 120,00</div></div>
+      </div>
+      <div class="cash-note"><b>Importante:</b> o novo mês começa visualmente em zero, mas o histórico anterior não é apagado. Este valor representa o trabalho do mês, não o dinheiro disponível na carteira.</div>
+    </div>
+
+    <div class="stats-grid dashboard-stats">
+      <div class="stat-card">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+        <div class="label">ENTREGAS HOJE</div>
+        <div class="value red" id="dashboardDeliveriesToday">0</div>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-head"><h2>ACESSOS RÁPIDOS</h2></div>
+      <div class="quick-actions" aria-label="Ações principais">
+        <button type="button" class="quick-action" id="dashboardRouteShortcut">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="5" r="2.2"/><path d="M6 16.8V13a4 4 0 0 1 4-4h4a4 4 0 0 0 4-4"/></svg>
+          Nova rota
+        </button>
+        <button type="button" class="quick-action" id="dashboardFuelShortcut">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M4 11h8"/><path d="M14 8h2.5L19 11v6a1.5 1.5 0 0 1-3 0v-2a1 1 0 0 0-1-1h-1"/></svg>
+          Abastecimentos
+        </button>
+        <button type="button" class="quick-action" id="dashboardMaintShortcut">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.7 2.7-2-2Z"/></svg>
+          Manutenção
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>EVOLUÇÃO DO RESULTADO NO MÊS</h2>
+        <label class="sr-only" for="dashboardMonth">Selecionar mês</label>
+        <select class="period-select" id="dashboardMonth" aria-label="Selecionar mês do gráfico"></select>
+      </div>
+      <div class="chart-card dashboard-chart-card">
+        <div class="dashboard-chart-summary">
+          <div>
+            <div class="label">RESULTADO ACUMULADO</div>
+            <div class="value" id="dashboardChartValue">R$ 325,50</div>
+            <div class="detail" id="dashboardChartDetail">R$ 445,50 recebido · R$ 120,00 em despesas</div>
+          </div>
+          <span class="dashboard-chart-status" id="dashboardChartStatus">POSITIVO</span>
+        </div>
+        <div class="dashboard-chart-canvas">
+          <canvas id="monthlyResultChart" aria-label="Gráfico ampliado do resultado acumulado no mês" role="img"></canvas>
+        </div>
+        <div class="dashboard-chart-guide">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+          Toque ou arraste sobre a linha para conferir o resultado de cada dia.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>ÚLTIMOS ABASTECIMENTOS</h2>
+        <button type="button" class="link" onclick="setView('abastecimentos')">ver todos</button>
+      </div>
+      <div class="list-card" id="dashRefuelList"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== VIEW: FATURAMENTO ===== -->
+  <main class="view" id="view-faturamento">
+
+    <div class="balance-card">
+      <div class="balance-row">
+        <span class="label">Total de entradas</span>
+        <span class="amt green" id="balEntradas">R$ 445,50</span>
+      </div>
+      <div class="balance-row">
+        <span class="label">Total de despesas</span>
+        <span class="amt red" id="balDespesas">R$ 120,00</span>
+      </div>
+      <div class="balance-row result">
+        <span class="label">Resultado</span>
+        <span class="amt" id="balResultado">+ R$ 325,50</span>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-head">
+        <h2>ENTRADAS</h2>
+        <button type="button" class="btn-add" id="btnOpenEntrada" aria-label="Registrar entrada" aria-haspopup="dialog" aria-controls="entradaModal">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </button>
+      </div>
+      <div class="list-card" id="entradaList"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>DESPESAS</h2>
+        <span class="example-tag">de abastecim. e manutenção</span>
+      </div>
+      <div class="list-card" id="despesaList"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== VIEW: ABASTECIMENTOS ===== -->
+  <main class="view" id="view-abastecimentos">
+
+    <div class="stats-grid" style="margin-top:0;">
+      <div class="stat-card">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 22c4-4 7-7.5 7-12A7 7 0 0 0 5 10c0 4.5 3 8 7 12Z"/><circle cx="12" cy="10" r="2.4"/></svg>
+        <div class="label">TOTAL NO MÊS</div>
+        <div class="value orange" id="refuelTotalValue">R$ 120,00</div>
+      </div>
+      <div class="stat-card">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M4 11h8"/></svg>
+        <div class="label">PREÇO DO LITRO</div>
+        <div class="value" id="refuelLatestPriceValue">R$ 6,11</div>
+      </div>
+    </div>
+
+    <section style="margin-top:18px;">
+      <div class="section-head"><h2>COMPARADOR DE POSTOS</h2></div>
+      <div class="cheapest-station-card" id="cheapestStationCard">
+        <div class="cheapest-station-head">
+          <div class="cheapest-station-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M4 11h8"/><path d="M14 8h2.5L19 11v6a1.5 1.5 0 0 1-3 0v-2a1 1 0 0 0-1-1h-1"/></svg>
+          </div>
+          <div>
+            <div class="title">MELHOR PREÇO REGISTRADO</div>
+            <div class="period">Preços mais recentes dos últimos 14 dias</div>
+          </div>
+          <span class="cheapest-station-badge">DADOS DO MOTOBOY</span>
+        </div>
+        <div class="cheapest-station-main">
+          <div>
+            <div class="cheapest-station-name" id="cheapestStationName">Posto Ipiranga - Centro</div>
+            <div class="cheapest-station-date" id="cheapestStationDate">Atualizado hoje</div>
+          </div>
+          <div class="cheapest-station-price" id="cheapestStationPrice">R$ 6,11 <small>/L</small></div>
+        </div>
+        <div class="cheapest-station-saving" id="cheapestStationSaving">R$ 0,04 por litro abaixo do segundo posto mais barato registrado.</div>
+        <div class="station-ranking" id="stationRanking" aria-label="Ranking dos postos mais baratos">
+          <div class="station-ranking-row"><span class="station-rank">1</span><span class="station-ranking-name">Posto Ipiranga - Centro<span class="station-ranking-date">hoje</span></span><span class="station-ranking-price">R$ 6,11</span></div>
+          <div class="station-ranking-row"><span class="station-rank">2</span><span class="station-ranking-name">Posto Raízen - Vila Nova<span class="station-ranking-date">há 9 dias</span></span><span class="station-ranking-price">R$ 6,15</span></div>
+          <div class="station-ranking-row"><span class="station-rank">3</span><span class="station-ranking-name">Posto Shell - Av. Brasil<span class="station-ranking-date">ontem</span></span><span class="station-ranking-price">R$ 6,22</span></div>
+        </div>
+        <div class="cheapest-station-note">Comparação feita somente com abastecimentos informados neste aplicativo. Não representa preço ao vivo da internet.</div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px;">
+      <div class="section-head"><h2>VISITAS AO POSTO — ÚLTIMAS 4 SEMANAS</h2></div>
+      <div class="weekly-refuel-card">
+        <div class="weekly-refuel-summary">
+          <div>
+            <div class="value" id="weeklyRefuelTotal">5 visitas</div>
+            <div class="label">abastecimentos registrados no período</div>
+          </div>
+          <div class="weekly-refuel-trend" id="weeklyRefuelTrend">+1 vs semana passada</div>
+        </div>
+        <div class="weekly-refuel-chart" id="weeklyRefuelChart" role="img" aria-label="Visitas ao posto nas últimas quatro semanas: zero, zero, duas e três visitas.">
+          <div class="weekly-refuel-row"><div class="weekly-refuel-period">3 sem. atrás</div><div class="weekly-refuel-bar-track"><div class="weekly-refuel-bar-fill" style="width:0%"></div></div><div class="weekly-refuel-count">0</div></div>
+          <div class="weekly-refuel-row"><div class="weekly-refuel-period">2 sem. atrás</div><div class="weekly-refuel-bar-track"><div class="weekly-refuel-bar-fill" style="width:0%"></div></div><div class="weekly-refuel-count">0</div></div>
+          <div class="weekly-refuel-row"><div class="weekly-refuel-period">Semana passada</div><div class="weekly-refuel-bar-track"><div class="weekly-refuel-bar-fill" style="width:67%"></div></div><div class="weekly-refuel-count">2</div></div>
+          <div class="weekly-refuel-row current"><div class="weekly-refuel-period">Esta semana</div><div class="weekly-refuel-bar-track"><div class="weekly-refuel-bar-fill" style="width:100%"></div></div><div class="weekly-refuel-count">3</div></div>
+        </div>
+        <div class="weekly-refuel-note">Uma visita corresponde a um abastecimento salvo no aplicativo.</div>
+      </div>
+    </section>
+
+    <section style="margin-top:18px;">
+      <div class="section-head"><h2>NOVO ABASTECIMENTO</h2></div>
+      <div class="form-card">
+        <div class="field-group">
+          <label class="field-label" for="refuelLocation">POSTO</label>
+          <input type="text" class="field-input text" id="refuelLocation" list="refuelStationOptions" placeholder="Ex: Posto Ipiranga - Centro">
+          <datalist id="refuelStationOptions"></datalist>
+        </div>
+        <div class="form-row" style="margin-top:10px">
+          <div class="field-group">
+            <label class="field-label" for="refuelLiterPriceInput">PREÇO DO LITRO (R$)</label>
+            <input type="number" inputmode="decimal" class="field-input" id="refuelLiterPriceInput" placeholder="Ex: 6,10">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="refuelPaidValue">VALOR PAGO (R$)</label>
+            <input type="number" inputmode="decimal" class="field-input" id="refuelPaidValue" placeholder="Ex: 31,70">
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:10px">
+          <label class="field-label" for="refuelOdometer">KM DO PAINEL (OPCIONAL, MAS AJUDA)</label>
+          <input type="number" inputmode="decimal" class="field-input" id="refuelOdometer" placeholder="Ex: 42500">
+          <div class="config-note">Olha o número do hodômetro da moto e digita aqui. Com ele, o app calcula sozinho quantos km por litro sua moto faz de verdade.</div>
+        </div>
+        <div class="calculated-price" aria-live="polite">
+          <div><div class="label">LITROS ABASTECIDOS</div><div class="config-note" style="margin-top:3px">Calculado pelo valor pago e preço do litro</div></div>
+          <div class="value" id="refuelCalculatedLiters">0,0 L</div>
+        </div>
+        <button type="button" class="btn-primary" id="btnSaveRefuel">Salvar abastecimento</button>
+      </div>
+    </section>
+
+    <section style="margin-top:18px;">
+      <div class="section-head"><h2>HISTÓRICO COMPLETO</h2></div>
+      <div class="list-card" id="fullRefuelList"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== VIEW: MINHA MOTO ===== -->
+  <main class="view" id="view-moto">
+
+    <div class="moto-card">
+      <div class="moto-card-head">
+        <div class="moto-icon-wrap">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="2.7"/><circle cx="18.5" cy="17.5" r="2.7"/><path d="M5.5 17.5 9 10h5l3 4.5h1"/><path d="M9 10 8 6H5.5"/><path d="M13 14.5h3.5"/></svg>
+        </div>
+        <div>
+          <div class="name">Honda CG 160 Start</div>
+          <div class="year">Ano 2022</div>
+        </div>
+      </div>
+      <div class="moto-specs">
+        <div class="moto-spec">
+          <div class="label">QUILOMETRAGEM ATUAL</div>
+          <div class="value" id="motoKmValue">42.680 km</div>
+        </div>
+        <div class="moto-spec">
+          <div class="label">CAPACIDADE DO TANQUE</div>
+          <div class="value">16 L</div>
+        </div>
+      </div>
+    </div>
+
+    <section style="margin-top:14px;">
+      <div class="section-head"><h2>CONSUMO DA MOTO</h2></div>
+
+      <div class="consumo-real-card" id="consumoRealCard">
+        <div class="consumo-real-head">
+          <div>
+            <div class="consumo-real-label">CONSUMO REAL DA SUA MOTO</div>
+            <div class="consumo-real-value" id="consumoRealValue">—</div>
+          </div>
+          <div class="consumo-real-badge" id="consumoRealBadge">calculado pelos abastecimentos</div>
+        </div>
+        <div class="consumo-real-note" id="consumoRealNote">Anote o km do painel ao abastecer pra ver aqui quantos km por litro sua moto faz de verdade.</div>
+        <div class="consumo-chart-wrap">
+          <canvas id="consumoChart" height="150"></canvas>
+        </div>
+      </div>
+
+      <div class="form-card" style="margin-top:12px;">
+        <div class="field-group">
+          <label class="field-label" for="motoConsumptionInput">AJUSTAR CONSUMO À MÃO (KM/L)</label>
+          <input type="number" inputmode="decimal" class="field-input" id="motoConsumptionInput" value="35" placeholder="Ex: 35">
+        </div>
+        <div class="config-note" id="motoConsumptionStatus">Se quiser, digite um consumo fixo. Senão, o app usa o consumo real calculado acima.</div>
+        <button type="button" class="btn-primary" id="btnSaveConsumption">Salvar consumo à mão</button>
+      </div>
+    </section>
+
+    <div class="stats-grid" style="margin-top:14px;">
+      <div class="stat-card">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 22c4-4 7-7.5 7-12A7 7 0 0 0 5 10c0 4.5 3 8 7 12Z"/><circle cx="12" cy="10" r="2.4"/></svg>
+        <div class="label">GASTO EM MANUTENÇÃO</div>
+        <div class="value orange" id="maintTotalValue">R$ 0,00</div>
+      </div>
+      <div class="stat-card">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg>
+        <div class="label">REGISTROS</div>
+        <div class="value" id="maintCountValue">0</div>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-head">
+        <h2>MANUTENÇÕES REGISTRADAS</h2>
+        <button type="button" class="btn-add" id="btnOpenMaint" aria-label="Registrar manutenção" aria-haspopup="dialog" aria-controls="maintModal">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </button>
+      </div>
+      <div class="list-card" id="maintList"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== VIEW: ROTAS ===== -->
+  <main class="view" id="view-rotas">
+
+    <div class="info-banner">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <div>
+        <div class="title">Endereço com sugestão automática</div>
+        <div class="desc">
+          Comece a digitar (rua, bairro ou cidade) que os endereços aparecem pra você escolher, igual num
+          app de corrida. A distância e o tempo são calculados sozinhos assim que você escolhe os dois pontos.
+        </div>
+      </div>
+    </div>
+
+    <div class="start-card" style="margin-top:14px;">
+      <div class="pin">
+        <svg class="icon" viewBox="0 0 24 24" style="width:17px;height:17px;"><path d="M12 21s-6.5-5.9-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.1-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg>
+      </div>
+      <div class="info">
+        <div class="label">PONTO DE PARTIDA</div>
+        <div class="value" id="startValue">Toca no botão pra usar sua localização atual</div>
+      </div>
+      <button type="button" class="check" id="btnUseLocation" aria-label="Usar minha localização atual">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
+    </div>
+
+    <div class="order-head">
+      <h2>ORDEM DO TRAJETO</h2>
+      <span class="drag-hint">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg>
+        arraste pra reordenar
+      </span>
+    </div>
+
+    <div id="serviceList"></div>
+
+    <button type="button" class="add-service-btn" id="btnAddService">
+      <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      Adicionar outra coleta + entrega
+    </button>
+
+    <div class="route-action-dock" id="routeActionDock" aria-label="Resumo e confirmação da rota">
+      <div class="route-action-inner">
+        <div class="route-dock-stats" aria-live="polite">
+          <div class="route-dock-stat">
+            <div class="label">DISTÂNCIA</div>
+            <div class="value" id="routeTotalKm">0,0 km</div>
+          </div>
+          <div class="route-dock-stat">
+            <div class="label">TEMPO</div>
+            <div class="value" id="routeTotalMin">0 min</div>
+          </div>
+          <div class="route-dock-stat">
+            <div class="label">COMBUSTÍVEL</div>
+            <div class="value" id="routeTotalCusto">R$ 0,00</div>
+          </div>
+          <div class="route-dock-stat">
+            <div class="label">RESULTADO</div>
+            <div class="value" id="routeResultado">R$ 0,00</div>
+          </div>
+        </div>
+        <button type="button" class="confirm-route-btn" id="btnConfirmRoute" aria-describedby="routeDockStatus" disabled>
+          <span id="confirmRouteLabel">Complete os dados</span>
+          <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </button>
+        <div class="sr-only" id="routeDockStatus" aria-live="polite">Preencha os endereços e valores da rota.</div>
+      </div>
+    </div>
+    <div class="route-confirmation" id="routeConfirmation" role="status" aria-live="polite">
+      <div class="message" id="routeConfirmationMessage"></div>
+      <button type="button" class="view-clients" id="btnViewPendingClients">Ver em Clientes</button>
+    </div>
+
+    <section id="confirmedRoutesSection" style="display:none;">
+      <div class="section-head"><h2>ROTAS CONFIRMADAS HOJE</h2></div>
+      <div class="list-card" id="confirmedRoutesList"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== VIEW: CLIENTES ===== -->
+  <main class="view" id="view-clientes">
+
+    <div class="info-banner">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <div>
+        <div class="title">Valores vinculados aos clientes</div>
+        <div class="desc">
+          Quando um serviço for marcado como "Fica pra depois", o valor entra na conta do cliente pagador.
+          Depois, registre o recebimento total ou parcial para lançar somente o dinheiro que realmente entrou.
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid" style="margin-top:14px;">
+      <div class="stat-card">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 22c4-4 7-7.5 7-12A7 7 0 0 0 5 10c0 4.5 3 8 7 12Z"/><circle cx="12" cy="10" r="2.4"/></svg>
+        <div class="label">TOTAL A RECEBER</div>
+        <div class="value red" id="clientesTotalValue">R$ 0,00</div>
+      </div>
+      <div class="stat-card">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/></svg>
+        <div class="label">CLIENTES</div>
+        <div class="value" id="clientesCountValue">0</div>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-head">
+        <h2>CLIENTES DE COLETA</h2>
+        <button type="button" class="btn-add" id="btnOpenCliente" aria-label="Adicionar cliente" aria-haspopup="dialog" aria-controls="clienteModal">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </button>
+      </div>
+      <div id="clienteList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </section>
+
+  </main>
+
+  <footer class="appfoot">PAINEL DO MOTOBOY · VERSÃO DE TESTE</footer>
+
+  <!-- ============ MODAL: NOVA MANUTENÇÃO ============ -->
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true"></div>
+  <div class="modal" id="maintModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="maintModalTitle" aria-describedby="maintModalDesc" tabindex="-1">
+    <div class="modal-head">
+      <div>
+        <h3 id="maintModalTitle">Registrar manutenção</h3>
+        <div class="desc" id="maintModalDesc">Conta rápido o que foi feito na moto</div>
+      </div>
+      <button type="button" class="modal-close" id="modalClose" aria-label="Fechar janela de manutenção">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label class="field-label" for="maintDesc">O QUE VOCÊ CONSERTOU OU TROCOU?</label>
+        <input type="text" class="field-input text" id="maintDesc" placeholder="Ex: Troca de óleo">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="maintValor">QUANTO FOI GASTO? (R$)</label>
+        <input type="number" inputmode="decimal" class="field-input" id="maintValor" placeholder="Ex: 45,00">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="maintKm">KM DO PAINEL AGORA (OPCIONAL)</label>
+        <input type="number" inputmode="decimal" class="field-input" id="maintKm" placeholder="Ex: 42700">
+        <div class="config-note">Anotar aqui mantém a quilometragem da moto sempre em dia.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-secondary" id="maintCancel">Cancelar</button>
+      <button type="button" class="btn-primary" id="maintSave" style="margin-top:0;">Salvar manutenção</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: NOVA ENTRADA ============ -->
+  <div class="modal-backdrop" id="entradaBackdrop" aria-hidden="true"></div>
+  <div class="modal" id="entradaModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="entradaModalTitle" aria-describedby="entradaModalDesc" tabindex="-1">
+    <div class="modal-head">
+      <div>
+        <h3 id="entradaModalTitle">Registrar entrada</h3>
+        <div class="desc" id="entradaModalDesc">Quanto você recebeu e de onde</div>
+      </div>
+      <button type="button" class="modal-close" id="entradaClose" aria-label="Fechar janela de entrada">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label class="field-label" for="entradaDesc">DE ONDE VEIO ESSE VALOR?</label>
+        <input type="text" class="field-input text" id="entradaDesc" placeholder="Ex: Corridas de terça-feira">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="entradaValor">QUANTO VOCÊ RECEBEU? (R$)</label>
+        <input type="number" inputmode="decimal" class="field-input" id="entradaValor" placeholder="Ex: 150,00">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-secondary" id="entradaCancel">Cancelar</button>
+      <button type="button" class="btn-primary" id="entradaSave" style="margin-top:0;">Salvar entrada</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: NOVO CLIENTE ============ -->
+  <div class="modal-backdrop" id="clienteBackdrop" aria-hidden="true"></div>
+  <div class="modal" id="clienteModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="clienteModalTitle" aria-describedby="clienteModalDesc" tabindex="-1">
+    <div class="modal-head">
+      <div>
+        <h3 id="clienteModalTitle">Adicionar cliente</h3>
+        <div class="desc" id="clienteModalDesc">Cadastra um local de coleta fixo</div>
+      </div>
+      <button type="button" class="modal-close" id="clienteClose" aria-label="Fechar janela de cliente">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label class="field-label" for="clienteNome">NOME DO CLIENTE</label>
+        <input type="text" class="field-input text" id="clienteNome" placeholder="Ex: Restaurante do Zé">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-secondary" id="clienteCancel">Cancelar</button>
+      <button type="button" class="btn-primary" id="clienteSave" style="margin-top:0;">Salvar cliente</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: REGISTRAR RECEBIMENTO ============ -->
+  <div class="modal-backdrop" id="recebimentoBackdrop" aria-hidden="true"></div>
+  <div class="modal" id="recebimentoModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="recebimentoModalTitle" aria-describedby="recebimentoModalDesc" tabindex="-1">
+    <div class="modal-head">
+      <div>
+        <h3 id="recebimentoModalTitle">Registrar recebimento</h3>
+        <div class="desc" id="recebimentoModalDesc">Informe quanto o cliente pagou agora</div>
+      </div>
+      <button type="button" class="modal-close" id="recebimentoClose" aria-label="Fechar janela de recebimento">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="receipt-balance">
+        <div><div class="label">CLIENTE</div><strong id="recebimentoClienteNome">—</strong></div>
+        <div style="text-align:right"><div class="label">SALDO PENDENTE</div><div class="value" id="recebimentoSaldo">R$ 0,00</div></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="recebimentoValor">VALOR RECEBIDO AGORA (R$)</label>
+        <input type="number" inputmode="decimal" class="field-input" id="recebimentoValor" placeholder="Ex: 50,00">
+      </div>
+      <div class="info-banner" style="padding:11px 12px">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+        <div class="desc" style="margin-top:0">Você pode registrar o valor total ou apenas uma parte. O restante continuará em aberto.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-secondary" id="recebimentoCancel">Cancelar</button>
+      <button type="button" class="btn-primary" id="recebimentoSave" style="margin-top:0">Registrar valor</button>
+    </div>
+  </div>
+
+<script>
+  // ---------- dados de teste (mock) ----------
+  const APP_NOW = new Date();
+  function pad2(value){ return value < 10 ? '0' + value : String(value); }
+  function toISODateLocal(date){
+    const y = date.getFullYear();
+    const m = pad2(date.getMonth() + 1);
+    const d = pad2(date.getDate());
+    return `${y}-${m}-${d}`;
+  }
+  function daysAgoISO(days){
+    const date = new Date(APP_NOW);
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() - days);
+    return toISODateLocal(date);
+  }
+  function safeText(value){
+    const text = value === null || value === undefined ? '' : String(value);
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+  const refuels = [
+    { local:"Posto Ipiranga - Centro", quando:"Hoje, 07:40", litros:"3,6 L", litrosValue:3.6, valor:22.00, odometer:42680, dateISO:daysAgoISO(0) },
+    { local:"Posto Shell - Av. Brasil", quando:"Ontem, 18:15", litros:"4,1 L", litrosValue:4.1, valor:25.50, odometer:42553, dateISO:daysAgoISO(1) },
+    { local:"Posto BR - Setor Sul", quando:"Segunda, 08:02", litros:"3,8 L", litrosValue:3.8, valor:23.80, odometer:42417, dateISO:daysAgoISO(3) },
+    { local:"Posto Ipiranga - Centro", quando:"Sexta, 07:35", litros:"3,9 L", litrosValue:3.9, valor:24.10, odometer:42280, dateISO:daysAgoISO(7) },
+    { local:"Posto Raízen - Vila Nova", quando:"Quarta, 17:50", litros:"4,0 L", litrosValue:4.0, valor:24.60, odometer:42140, dateISO:daysAgoISO(9) },
+  ];
+
+  const fuelIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M4 11h8"/><path d="M14 8h2.5L19 11v6a1.5 1.5 0 0 1-3 0v-2a1 1 0 0 0-1-1h-1"/><path d="M2 21h14"/></svg>`;
+  const wrenchIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.7 2.7-2-2Z"/></svg>`;
+  const cashIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M12 3v18"/></svg>`;
+  const routeIcon = `<svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="5" r="2.2"/><path d="M6 16.8V13a4 4 0 0 1 4-4h4a4 4 0 0 0 4-4"/></svg>`;
+  const clientIcon = `<svg class="icon" viewBox="0 0 24 24" style="width:18px;height:18px;"><circle cx="12" cy="8" r="3.2"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>`;
+
+  function round2(v){ return Math.round((v || 0) * 100) / 100; }
+  function fmtBRL(v){ return 'R$ ' + round2(v).toFixed(2).replace('.', ','); }
+  function parseNum(v){
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isNaN(n) ? null : n;
+  }
+
+  function renderRefuelList(el, items){
+    el.innerHTML = items.map(r => `
+      <div class="list-item">
+        <div class="badge">${fuelIcon}</div>
+        <div class="info">
+          <div class="title">${safeText(r.local)}</div>
+          <div class="sub">${safeText(r.quando)} · ${safeText(r.litros)}</div>
+        </div>
+        <div class="amount">${fmtBRL(r.valor)}</div>
+      </div>
+    `).join('');
+  }
+  function refuelTotal(){ return refuels.reduce((s, r) => s + r.valor, 0); }
+  function latestRefuelPrice(){
+    const latest = refuels.find(item => item.litrosValue > 0 && item.valor > 0);
+    return latest ? (latest.pricePerLiter || latest.valor / latest.litrosValue) : null;
+  }
+  function localDateFromISO(iso){
+    const parts = String(iso || '').split('-').map(Number);
+    if(parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) return null;
+    return new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0, 0);
+  }
+  function startOfWeek(date){
+    const result = new Date(date);
+    result.setHours(12, 0, 0, 0);
+    const daysSinceMonday = (result.getDay() + 6) % 7;
+    result.setDate(result.getDate() - daysSinceMonday);
+    return result;
+  }
+  function weeklyRefuelCounts(){
+    const currentWeekStart = startOfWeek(APP_NOW);
+    const firstWeekStart = new Date(currentWeekStart);
+    firstWeekStart.setDate(firstWeekStart.getDate() - 21);
+    const periodEnd = new Date(currentWeekStart);
+    periodEnd.setDate(periodEnd.getDate() + 7);
+    const counts = [0, 0, 0, 0];
+
+    refuels.forEach(item => {
+      const date = localDateFromISO(item.dateISO);
+      if(!date || date < firstWeekStart || date >= periodEnd) return;
+      const elapsedDays = Math.floor((date - firstWeekStart) / 86400000);
+      const bucket = Math.min(3, Math.floor(elapsedDays / 7));
+      counts[bucket] += 1;
+    });
+    return counts;
+  }
+  function renderWeeklyRefuelChart(){
+    const chart = document.getElementById('weeklyRefuelChart');
+    if(!chart) return;
+    const counts = weeklyRefuelCounts();
+    const labels = ['3 sem. atrás', '2 sem. atrás', 'Semana passada', 'Esta semana'];
+    const spokenLabels = ['três semanas atrás', 'duas semanas atrás', 'semana passada', 'esta semana'];
+    const maxCount = Math.max.apply(null, counts.concat([1]));
+    const total = counts.reduce((sum, value) => sum + value, 0);
+
+    chart.innerHTML = counts.map((count, index) => {
+      const width = count === 0 ? 0 : Math.max(12, Math.round((count / maxCount) * 100));
+      return `<div class="weekly-refuel-row${index === 3 ? ' current' : ''}">
+        <div class="weekly-refuel-period">${labels[index]}</div>
+        <div class="weekly-refuel-bar-track"><div class="weekly-refuel-bar-fill" style="width:${width}%"></div></div>
+        <div class="weekly-refuel-count">${count}</div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('weeklyRefuelTotal').textContent = total + (total === 1 ? ' visita' : ' visitas');
+    const weeklyDifference = counts[3] - counts[2];
+    document.getElementById('weeklyRefuelTrend').textContent = weeklyDifference === 0
+      ? 'Mesma frequência'
+      : (weeklyDifference > 0 ? '+' : '') + weeklyDifference + ' vs semana passada';
+    chart.setAttribute('aria-label', 'Visitas ao posto: ' + counts.map((count, index) =>
+      spokenLabels[index] + ', ' + count + (count === 1 ? ' visita' : ' visitas')
+    ).join('; ') + '.');
+  }
+  function normalizedStationName(name){
+    let normalized = String(name || '').toLowerCase().trim();
+    if(typeof normalized.normalize === 'function'){
+      normalized = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+    return normalized
+      .replace(/\bposto\b/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  function refuelPricePerLiter(item){
+    if(item.pricePerLiter && item.pricePerLiter > 0) return item.pricePerLiter;
+    return item.litrosValue > 0 && item.valor > 0 ? item.valor / item.litrosValue : null;
+  }
+  function stationUpdateLabel(date){
+    const today = new Date(APP_NOW);
+    today.setHours(12, 0, 0, 0);
+    const diff = Math.max(0, Math.round((today - date) / 86400000));
+    if(diff === 0) return 'hoje';
+    if(diff === 1) return 'ontem';
+    return 'há ' + diff + ' dias';
+  }
+  function recentStationPrices(){
+    const cutoff = new Date(APP_NOW);
+    cutoff.setHours(12, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - 13);
+    const latestByStation = {};
+
+    refuels.forEach(item => {
+      const name = String(item.local || '').trim();
+      const key = normalizedStationName(name);
+      const date = localDateFromISO(item.dateISO);
+      const price = refuelPricePerLiter(item);
+      if(!key || /nao informado/.test(key) || !date || date < cutoff || !price || price <= 0) return;
+      if(!latestByStation[key] || date > latestByStation[key].date){
+        latestByStation[key] = { name, date, price };
+      }
+    });
+
+    return Object.keys(latestByStation)
+      .map(key => latestByStation[key])
+      .sort((a, b) => a.price - b.price || b.date - a.date);
+  }
+  function renderStationOptions(){
+    const datalist = document.getElementById('refuelStationOptions');
+    if(!datalist) return;
+    const seen = {};
+    const names = [];
+    refuels.forEach(item => {
+      const key = normalizedStationName(item.local);
+      if(!key || seen[key] || /nao informado/.test(key)) return;
+      seen[key] = true;
+      names.push(item.local);
+    });
+    datalist.innerHTML = names.map(name => `<option value="${safeText(name)}"></option>`).join('');
+  }
+  function renderCheapestStation(){
+    const stations = recentStationPrices();
+    const card = document.getElementById('cheapestStationCard');
+    const nameEl = document.getElementById('cheapestStationName');
+    const dateEl = document.getElementById('cheapestStationDate');
+    const priceEl = document.getElementById('cheapestStationPrice');
+    const savingEl = document.getElementById('cheapestStationSaving');
+    const rankingEl = document.getElementById('stationRanking');
+    if(!card || !nameEl || !dateEl || !priceEl || !savingEl || !rankingEl) return;
+
+    if(stations.length === 0){
+      nameEl.textContent = 'Ainda não há comparação';
+      dateEl.textContent = 'Registre abastecimentos em postos diferentes';
+      priceEl.innerHTML = '— <small>/L</small>';
+      savingEl.textContent = 'Precisamos de preços recentes de pelo menos dois postos para indicar o mais barato.';
+      rankingEl.innerHTML = '';
+      card.setAttribute('aria-label', 'Nenhum posto disponível para comparação.');
+      return;
+    }
+
+    const cheapest = stations[0];
+    nameEl.textContent = cheapest.name;
+    dateEl.textContent = 'Atualizado ' + stationUpdateLabel(cheapest.date);
+    priceEl.innerHTML = fmtBRL(cheapest.price) + ' <small>/L</small>';
+    if(stations.length === 1){
+      savingEl.textContent = 'Registre outro posto para comparar e descobrir a diferença de preço.';
+    }else{
+      const difference = stations[1].price - cheapest.price;
+      savingEl.textContent = difference > 0
+        ? fmtBRL(difference) + ' por litro abaixo do segundo posto mais barato registrado.'
+        : 'Mesmo preço do segundo posto mais barato registrado.';
+    }
+
+    rankingEl.innerHTML = stations.slice(0, 3).map((station, index) => `
+      <div class="station-ranking-row">
+        <span class="station-rank">${index + 1}</span>
+        <span class="station-ranking-name">${safeText(station.name)}<span class="station-ranking-date">${safeText(stationUpdateLabel(station.date))}</span></span>
+        <span class="station-ranking-price">${fmtBRL(station.price)}</span>
+      </div>
+    `).join('');
+    card.setAttribute('aria-label', 'Posto mais barato registrado: ' + cheapest.name + ', ' + fmtBRL(cheapest.price) + ' por litro.');
+  }
+  function renderRefuelViews(){
+    renderRefuelList(document.getElementById('dashRefuelList'), refuels.slice(0,3));
+    renderRefuelList(document.getElementById('fullRefuelList'), refuels);
+    document.getElementById('refuelTotalValue').textContent = fmtBRL(refuelTotal());
+    const latestPrice = latestRefuelPrice();
+    document.getElementById('refuelLatestPriceValue').textContent = latestPrice ? fmtBRL(latestPrice) : 'Não informado';
+    renderStationOptions();
+    renderCheapestStation();
+    renderWeeklyRefuelChart();
+  }
+  renderRefuelViews();
+
+  function updateCalculatedRefuelLiters(){
+    const paid = parseNum(document.getElementById('refuelPaidValue').value);
+    const price = parseNum(document.getElementById('refuelLiterPriceInput').value);
+    const liters = paid && paid > 0 && price && price > 0 ? paid / price : 0;
+    document.getElementById('refuelCalculatedLiters').textContent = liters > 0
+      ? liters.toFixed(2).replace('.', ',') + ' L'
+      : '0,0 L';
+    return { liters, paid, price };
+  }
+  document.getElementById('refuelLiterPriceInput').addEventListener('input', updateCalculatedRefuelLiters);
+  document.getElementById('refuelPaidValue').addEventListener('input', updateCalculatedRefuelLiters);
+  document.getElementById('btnSaveRefuel').addEventListener('click', () => {
+    const local = document.getElementById('refuelLocation').value.trim() || 'Posto não informado';
+    const { liters, paid, price } = updateCalculatedRefuelLiters();
+    if(!price || price <= 0 || !paid || paid <= 0){
+      alert('Informe o preço do litro e o valor total pago.');
+      return;
+    }
+    const odometer = parseNum(document.getElementById('refuelOdometer').value);
+    const lastOdometer = refuels.find(r => r.odometer && r.odometer > 0)?.odometer;
+    if(odometer && lastOdometer && odometer < lastOdometer){
+      alert(`O km do painel (${fmtKm(odometer)}) está menor que o do último abastecimento (${fmtKm(lastOdometer)}). Confere o número — o hodômetro só aumenta.`);
+      return;
+    }
+    refuels.unshift({ local, quando:'Hoje', litros:`${liters.toFixed(1).replace('.', ',')} L`, litrosValue:liters, valor:paid, pricePerLiter:price, odometer: odometer || null, dateISO:daysAgoISO(0) });
+    PRECO_ATUAL = price;
+    registrarKm(odometer);
+    recalcConsumoReal();
+    renderRefuelViews();
+    renderMotoConsumo();
+    renderFaturamento();
+    renderDashboard();
+    renderRouteSummary();
+    document.getElementById('refuelLocation').value = '';
+    document.getElementById('refuelLiterPriceInput').value = '';
+    document.getElementById('refuelPaidValue').value = '';
+    document.getElementById('refuelOdometer').value = '';
+    updateCalculatedRefuelLiters();
+    alert(`Abastecimento salvo. O preço usado nas rotas agora é ${fmtBRL(price)} por litro.`);
+  });
+
+  // ---------- menu / drawer ----------
+  const drawer = document.getElementById('drawer');
+  const backdrop = document.getElementById('backdrop');
+  const menuBtn = document.getElementById('menuBtn');
+  const drawerClose = document.getElementById('drawerClose');
+
+  function openDrawer(){
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    menuBtn.setAttribute('aria-expanded', 'true');
+    const activeItem = drawer.querySelector('.drawer-item.active');
+    if(activeItem) activeItem.focus();
+  }
+  function closeDrawer(){
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  menuBtn.addEventListener('click', openDrawer);
+  drawerClose.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && drawer.classList.contains('open')){
+      closeDrawer();
+      menuBtn.focus();
+    }
+  });
+
+  // ---------- navegação entre telas ----------
+  const titles = {
+    dashboard: { title:"Painel", sub:"visão geral do mês" },
+    faturamento: { title:"Faturamento", sub:"entradas e despesas do mês" },
+    abastecimentos: { title:"Abastecimentos", sub:"histórico completo" },
+    moto: { title:"Minha Moto", sub:"dados e manutenções" },
+    rotas: { title:"Rotas", sub:"organize as coletas e entregas" },
+    clientes: { title:"Clientes", sub:"quem já pagou e quem ficou devendo" },
+  };
+  function setView(view){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const targetView = document.getElementById('view-' + view);
+    if(!targetView || !titles[view]) return;
+    targetView.classList.add('active');
+    document.querySelectorAll('.drawer-item').forEach(b => {
+      if(b.dataset.view === view) b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    document.getElementById('viewTitle').textContent = titles[view].title;
+    document.getElementById('viewSub').textContent = titles[view].sub;
+    closeDrawer();
+    if(view === 'dashboard'){ renderDashboard(); }
+    if(view === 'faturamento'){ renderFaturamento(); }
+    if(view === 'clientes'){ renderClientes(); }
+    if(view === 'moto'){ renderMotoConsumo(); }
+  }
+  document.querySelectorAll('.drawer-item').forEach(btn => {
+    btn.addEventListener('click', () => setView(btn.dataset.view));
+  });
+  document.getElementById('dashboardRouteShortcut').addEventListener('click', () => setView('rotas'));
+  document.getElementById('dashboardFuelShortcut').addEventListener('click', () => setView('abastecimentos'));
+
+  // No celular, recolhe o painel de confirmação enquanto o teclado ocupa a tela.
+  function syncRouteDockWithKeyboard(){
+    if(!window.visualViewport) return;
+    const keyboardOpen = window.innerHeight - window.visualViewport.height > 150;
+    if(keyboardOpen) document.body.classList.add('route-keyboard-open');
+    else document.body.classList.remove('route-keyboard-open');
+  }
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', syncRouteDockWithKeyboard);
+    window.visualViewport.addEventListener('scroll', syncRouteDockWithKeyboard);
+    syncRouteDockWithKeyboard();
+  }
+
+  // O gráfico mensal é criado depois que entradas, despesas, rotas e clientes já existem.
+  let monthlyResultChart = null;
+
+  // ---------- minha moto / manutenções ----------
+  let motoKm = 42680;
+  let maintenances = [];
+
+  function fmtKm(km){ return km.toLocaleString('pt-BR') + ' km'; }
+
+  // A quilometragem atual da moto é sempre o maior km já visto — venha ele de um
+  // abastecimento ou de uma manutenção. O hodômetro só anda pra frente, então nunca
+  // deixamos um número novo menor sobrescrever um maior.
+  function registrarKm(km){
+    if(km && km > motoKm){
+      motoKm = km;
+      const el = document.getElementById('motoKmValue');
+      if(el) el.textContent = fmtKm(motoKm);
+    }
+  }
+  function maintTotal(){ return maintenances.reduce((s, m) => s + m.valor, 0); }
+
+  function renderMaint(){
+    const list = document.getElementById('maintList');
+    document.getElementById('maintTotalValue').textContent = fmtBRL(maintTotal());
+    document.getElementById('maintCountValue').textContent = maintenances.length;
+    document.getElementById('motoKmValue').textContent = fmtKm(motoKm);
+
+    if(maintenances.length === 0){
+      list.innerHTML = '<div class="trip-empty">Nenhuma manutenção registrada ainda. Toca no + acima pra adicionar.</div>';
+      return;
+    }
+    list.innerHTML = maintenances.map(m => `
+      <div class="list-item maint-item">
+        <div class="badge">${wrenchIcon}</div>
+        <div class="info">
+          <div class="title">${safeText(m.desc)}</div>
+          <div class="sub">${safeText(m.data)}${m.km ? ' · ' + fmtKm(m.km) : ''}</div>
+        </div>
+        <div class="amount">${fmtBRL(m.valor)}</div>
+      </div>
+    `).join('');
+  }
+  renderMaint();
+
+  // ---------- modal genérico (abrir/fechar) ----------
+  function wireModal(openBtnId, modalId, backdropId, closeBtnId, cancelBtnId){
+    const modal = document.getElementById(modalId);
+    const bd = document.getElementById(backdropId);
+    let returnFocusEl = null;
+    function open(){
+      returnFocusEl = document.activeElement;
+      modal.classList.add('open');
+      bd.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      modal.focus();
+    }
+    function close(){
+      modal.classList.remove('open');
+      bd.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      if(returnFocusEl && typeof returnFocusEl.focus === 'function') returnFocusEl.focus();
+    }
+    const openButton = openBtnId ? document.getElementById(openBtnId) : null;
+    if(openButton) openButton.addEventListener('click', open);
+    document.getElementById(closeBtnId).addEventListener('click', close);
+    document.getElementById(cancelBtnId).addEventListener('click', close);
+    bd.addEventListener('click', close);
+    modal.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape') close();
+    });
+    return { open, close };
+  }
+
+  const maintModalCtl = wireModal('btnOpenMaint','maintModal','modalBackdrop','modalClose','maintCancel');
+  const entradaModalCtl = wireModal('btnOpenEntrada','entradaModal','entradaBackdrop','entradaClose','entradaCancel');
+  document.getElementById('dashboardMaintShortcut').addEventListener('click', () => {
+    setView('moto');
+    maintModalCtl.open();
+  });
+
+  document.getElementById('maintSave').addEventListener('click', () => {
+    const desc = document.getElementById('maintDesc').value.trim();
+    const valor = parseNum(document.getElementById('maintValor').value);
+    const km = parseNum(document.getElementById('maintKm').value);
+
+    if(!desc || valor === null || valor <= 0){
+      alert('Preenche pelo menos o que foi feito e o valor gasto.');
+      return;
+    }
+    if(km && km < motoKm){
+      alert(`O km informado (${fmtKm(km)}) é menor que a quilometragem atual da moto (${fmtKm(motoKm)}). Confere o número — o hodômetro só aumenta.`);
+      return;
+    }
+    registrarKm(km);
+
+    maintenances.unshift({ desc, valor, km: km || null, data: 'Hoje', dateISO:daysAgoISO(0) });
+    renderMaint();
+    renderDashboard();
+    maintModalCtl.close();
+    document.getElementById('maintDesc').value = '';
+    document.getElementById('maintValor').value = '';
+    document.getElementById('maintKm').value = '';
+  });
+
+  // ---------- faturamento: entradas + despesas ----------
+  let entradas = [
+    { desc:"Corridas do dia - segunda", valor:145.00, data:"Segunda", dateISO:daysAgoISO(5) },
+    { desc:"Corridas do dia - terça", valor:162.50, data:"Terça", dateISO:daysAgoISO(4) },
+    { desc:"Corridas do dia - quarta", valor:138.00, data:"Quarta", dateISO:daysAgoISO(3) },
+  ];
+
+  function entradaTotal(){ return entradas.reduce((s, e) => s + e.valor, 0); }
+
+  function getDespesas(){
+    const combustivel = refuels.map(r => ({ tipo:'Combustível', tag:'fuel', desc:r.local, data:r.quando, valor:r.valor, icon:fuelIcon }));
+    const manutencao = maintenances.map(m => ({ tipo:'Manutenção', tag:'maint', desc:m.desc, data:m.data, valor:m.valor, icon:wrenchIcon }));
+    return [...combustivel, ...manutencao];
+  }
+
+  function renderFaturamento(){
+    const totalEntradas = entradaTotal();
+    const despesas = getDespesas();
+    const totalDespesas = despesas.reduce((s, d) => s + d.valor, 0);
+    const resultado = totalEntradas - totalDespesas;
+
+    document.getElementById('balEntradas').textContent = fmtBRL(totalEntradas);
+    document.getElementById('balDespesas').textContent = fmtBRL(totalDespesas);
+    const resEl = document.getElementById('balResultado');
+    resEl.textContent = (resultado >= 0 ? '+ ' : '- ') + fmtBRL(Math.abs(resultado));
+    resEl.style.color = resultado >= 0 ? 'var(--green)' : 'var(--red)';
+
+    const entradaListEl = document.getElementById('entradaList');
+    entradaListEl.innerHTML = entradas.length === 0
+      ? '<div class="trip-empty">Nenhuma entrada registrada ainda. Toca no + acima pra adicionar.</div>'
+      : entradas.map(e => `
+        <div class="list-item">
+          <div class="badge green">${cashIcon}</div>
+          <div class="info">
+            <div class="title">${safeText(e.desc)}</div>
+            <div class="sub">${safeText(e.data)}</div>
+          </div>
+          <div class="amount green">+ ${fmtBRL(e.valor)}</div>
+        </div>
+      `).join('');
+
+    const despesaListEl = document.getElementById('despesaList');
+    despesaListEl.innerHTML = despesas.length === 0
+      ? '<div class="trip-empty">Nenhuma despesa registrada ainda.</div>'
+      : despesas.map(d => `
+        <div class="list-item">
+          <div class="badge">${d.icon}</div>
+          <div class="info">
+            <div class="title">${safeText(d.desc)}</div>
+            <div class="sub"><span class="cat-tag ${d.tag}">${safeText(d.tipo)}</span> ${safeText(d.data)}</div>
+          </div>
+          <div class="amount">- ${fmtBRL(d.valor)}</div>
+        </div>
+      `).join('');
+  }
+
+  document.getElementById('entradaSave').addEventListener('click', () => {
+    const desc = document.getElementById('entradaDesc').value.trim();
+    const valor = parseNum(document.getElementById('entradaValor').value);
+
+    if(!desc || valor === null || valor <= 0){
+      alert('Preenche de onde veio o valor e quanto foi recebido.');
+      return;
+    }
+
+    entradas.unshift({ desc, valor, data: 'Hoje', dateISO:daysAgoISO(0) });
+    renderFaturamento();
+    renderDashboard();
+    entradaModalCtl.close();
+    document.getElementById('entradaDesc').value = '';
+    document.getElementById('entradaValor').value = '';
+  });
+
+  // ---------- rotas: montador de serviços (1 coleta + N entregas) ----------
+  // O consumo vem de Minha Moto e o preço por litro vem do último abastecimento.
+  // Um serviço = 1 coleta que pode gerar várias entregas (motoboy pega vários pacotes
+  // no mesmo lugar e entrega em endereços diferentes).
+  let CONSUMO_ATUAL = 35;                // pode ser informado em Minha Moto ou calculado pelos abastecimentos
+  let PRECO_ATUAL = latestRefuelPrice(); // calculado em Abastecimentos
+  let consumoReal = null;                // km/L calculado a partir dos abastecimentos com km do painel
+  let consumoManualDefinido = false;     // se o motoboy digitou um consumo à mão, respeitamos a escolha dele
+
+  // Calcula o consumo real (km/L) usando os abastecimentos que têm km do painel anotado.
+  // Entre dois abastecimentos consecutivos, o motoboy rodou (km maior - km menor) e, pra
+  // andar isso, gastou os litros do abastecimento mais recente. Consumo = distância ÷ litros.
+  // Fazemos a média de todos os trechos disponíveis pra suavizar variação de trânsito/mão pesada.
+  function calcularConsumoReal(){
+    const comKm = refuels
+      .filter(r => r.odometer && r.odometer > 0 && r.litrosValue > 0)
+      .sort((a, b) => a.odometer - b.odometer);
+    if(comKm.length < 2) return null;
+
+    const trechos = [];
+    for(let i = 1; i < comKm.length; i++){
+      const distancia = comKm[i].odometer - comKm[i - 1].odometer;
+      const litros = comKm[i].litrosValue;
+      if(distancia > 0 && litros > 0){
+        trechos.push({ kmpl: distancia / litros, dateISO: comKm[i].dateISO });
+      }
+    }
+    if(trechos.length === 0) return null;
+    const media = trechos.reduce((s, t) => s + t.kmpl, 0) / trechos.length;
+    return { media, trechos };
+  }
+
+  function recalcConsumoReal(){
+    const resultado = calcularConsumoReal();
+    consumoReal = resultado ? resultado.media : null;
+    // Só assume o consumo real automaticamente se o motoboy ainda não fixou um valor à mão.
+    if(consumoReal && !consumoManualDefinido){
+      CONSUMO_ATUAL = consumoReal;
+    }
+    return resultado;
+  }
+
+  let consumoChart = null;
+  function renderMotoConsumo(){
+    const resultado = calcularConsumoReal();
+    consumoReal = resultado ? resultado.media : null;
+    if(consumoReal && !consumoManualDefinido){ CONSUMO_ATUAL = consumoReal; }
+
+    const valueEl = document.getElementById('consumoRealValue');
+    const noteEl = document.getElementById('consumoRealNote');
+    const badgeEl = document.getElementById('consumoRealBadge');
+    if(!valueEl) return;
+
+    if(!consumoReal){
+      valueEl.textContent = '—';
+      badgeEl.textContent = 'faltam dados';
+      const comKm = refuels.filter(r => r.odometer && r.odometer > 0).length;
+      noteEl.textContent = comKm === 0
+        ? 'Anote o km do painel ao abastecer pra ver aqui quantos km por litro sua moto faz de verdade. Precisa de pelo menos dois abastecimentos com km.'
+        : 'Já tem 1 abastecimento com km do painel. No próximo que você anotar o km, o consumo real aparece aqui.';
+    }else{
+      valueEl.textContent = consumoReal.toFixed(1).replace('.', ',') + ' km/L';
+      badgeEl.textContent = consumoManualDefinido ? 'calculado (usando o manual nas rotas)' : 'usado nas rotas';
+      const litroPreco = latestRefuelPrice();
+      const custoPorKm = (litroPreco && consumoReal) ? litroPreco / consumoReal : null;
+      noteEl.textContent = custoPorKm
+        ? `Na média dos seus abastecimentos, cada km custa cerca de ${fmtBRL(custoPorKm)} só de gasolina.`
+        : 'Consumo calculado pela distância rodada entre abastecimentos.';
+    }
+
+    // gráfico da evolução do consumo por abastecimento
+    const canvas = document.getElementById('consumoChart');
+    if(!canvas) return;
+    if(consumoChart){ consumoChart.destroy(); consumoChart = null; }
+    if(!resultado || resultado.trechos.length === 0){
+      canvas.style.display = 'none';
+      return;
+    }
+    canvas.style.display = 'block';
+
+    const trechos = resultado.trechos;
+    const labels = trechos.map((t, i) => 'Ab. ' + (i + 2)); // trecho i usa o abastecimento i+1 (base 1 = 2)
+    const dados = trechos.map(t => round2(t.kmpl));
+
+    consumoChart = new Chart(canvas.getContext('2d'), {
+      type:'line',
+      data:{
+        labels,
+        datasets:[{
+          label:'km/L',
+          data:dados,
+          borderColor:'#3FB27F',
+          backgroundColor:'rgba(63,178,127,.14)',
+          borderWidth:3,
+          pointRadius:4,
+          pointHoverRadius:6,
+          pointBackgroundColor:'#3FB27F',
+          pointBorderColor:'#14171C',
+          pointBorderWidth:1.5,
+          tension:0.3,
+          fill:true
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:{ duration:380 },
+        plugins:{
+          legend:{ display:false },
+          tooltip:{
+            displayColors:false,
+            backgroundColor:'#111419',
+            borderColor:'#3A414B',
+            borderWidth:1,
+            titleColor:'#8B92A0',
+            bodyColor:'#F2F0EB',
+            padding:11,
+            callbacks:{
+              title:items => items[0].label,
+              label:context => context.parsed.y.toFixed(1).replace('.', ',') + ' km/L nesse trecho'
+            }
+          }
+        },
+        scales:{
+          x:{ grid:{ display:false }, ticks:{ color:'#8B92A0', font:{ size:11 } } },
+          y:{ grid:{ color:'#262B33' }, ticks:{ color:'#8B92A0', font:{ size:11 }, callback:v => v + ' km/L' } }
+        }
+      }
+    });
+  }
+
+  document.getElementById('btnSaveConsumption').addEventListener('click', () => {
+    const consumption = parseNum(document.getElementById('motoConsumptionInput').value);
+    if(!consumption || consumption <= 0){
+      alert('Informe um consumo médio maior que zero.');
+      return;
+    }
+    CONSUMO_ATUAL = consumption;
+    consumoManualDefinido = true;
+    document.getElementById('motoConsumptionStatus').textContent = `${consumption.toFixed(1).replace('.', ',')} km/L salvos à mão e usados nas rotas.`;
+    renderMotoConsumo();
+    renderRouteSummary();
+    routeServices.forEach((s, i) => s.entregas.forEach((_, j) => updateServiceVerdict(i, j)));
+  });
+
+  function newEntrega(){ return { entrega:'', entregaCoords:null, distancia:null, tempo:null, valor:null, status:'idle', errorMsg:'', approx:false, approxConfirmed:false }; }
+  function newService(){ return { coleta:'', coletaCoords:null, cliente:'', paymentStatus:'received', entregas:[ newEntrega() ] }; }
+  let routeServices = [ newService() ];
+  let confirmedRoutes = [];
+  let dragSrcIndex = null;
+  let startCoords = null;
+
+  // ---------- geocodificação, sugestões e rota via OpenStreetMap ----------
+  // Sugestões de endereço (autocomplete): usamos o Photon (komoot.io), que é feito
+  // exatamente pra isso — "search-as-you-type". O Nominatim (que eu tinha usado antes)
+  // proíbe explicitamente esse uso na política dele, por isso troquei.
+  // Cálculo de rota: continua no OSRM público. Como ele às vezes cai ou demora
+  // (é um servidor de demonstração, sem garantia), se ele falhar calculamos uma
+  // distância aproximada em linha reta só pra não travar o app.
+  function debounce(fn, wait){
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+  }
+
+  function formatPhotonLabel(p){
+    const parts = [p.name, p.street, p.district, p.city, p.state].filter(Boolean);
+    return [...new Set(parts)].slice(0, 4).join(', ');
+  }
+
+  async function photonSearch(query, limit, signal){
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=${limit}&lang=pt`;
+    const res = await fetch(url, signal ? { signal } : undefined);
+    if(!res.ok) throw new Error('photon-fail');
+    const data = await res.json();
+    return (data.features || []).map(f => ({
+      label: formatPhotonLabel(f.properties),
+      lat: f.geometry.coordinates[1],
+      lon: f.geometry.coordinates[0]
+    }));
+  }
+
+  function haversineKm(a, b){
+    const R = 6371;
+    const dLat = (b.lat - a.lat) * Math.PI / 180;
+    const dLon = (b.lon - a.lon) * Math.PI / 180;
+    const lat1 = a.lat * Math.PI / 180;
+    const lat2 = b.lat * Math.PI / 180;
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+  }
+
+  async function routeBetween(origem, destino){
+    try{
+      const url = `https://router.project-osrm.org/route/v1/driving/${origem.lon},${origem.lat};${destino.lon},${destino.lat}?overview=false`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('osrm-fail');
+      const data = await res.json();
+      if(!data.routes || data.routes.length === 0) throw new Error('osrm-empty');
+      return { km: data.routes[0].distance / 1000, min: Math.round(data.routes[0].duration / 60), approx: false };
+    }catch(e){
+      // plano B: linha reta com um fator de correção pra viário real + velocidade média urbana
+      const km = haversineKm(origem, destino) * 1.3;
+      const min = Math.round((km / 28) * 60);
+      return { km, min, approx: true };
+    }
+  }
+
+  // Calcula a rota como uma cadeia sequencial de verdade: ponto de partida (se o motoboy
+  // usou a localização) -> coleta do serviço 1 -> cada entrega do serviço 1 na ordem ->
+  // coleta do serviço 2 -> entregas do serviço 2 -> ... Antes, a distância era só a soma de
+  // trechos isolados coleta->entrega, o que ignorava o caminho até a primeira coleta e o
+  // deslocamento entre um serviço e o próximo — subestimando a distância e o custo real.
+  let chainToken = 0;
+
+  async function computeRouteChain(){
+    const pontos = [];
+    if(startCoords) pontos.push(startCoords);
+    let completo = true;
+    routeServices.forEach(s => {
+      if(s.coletaCoords){ pontos.push(s.coletaCoords); } else { completo = false; }
+      s.entregas.forEach(e => {
+        if(e.entregaCoords){ pontos.push(e.entregaCoords); } else { completo = false; }
+      });
+    });
+
+    if(pontos.length < 2){
+      return { totalKm: 0, totalMin: 0, approx: false, completo, pontos: pontos.length };
+    }
+
+    const myToken = ++chainToken;
+    let totalKm = 0, totalMin = 0, anyApprox = false;
+    for(let i = 0; i < pontos.length - 1; i++){
+      const r = await routeBetween(pontos[i], pontos[i + 1]);
+      totalKm += r.km;
+      totalMin += r.min;
+      if(r.approx) anyApprox = true;
+    }
+    if(myToken !== chainToken) return null; // uma cadeia mais nova começou; descarta esta
+
+    return { totalKm, totalMin, approx: anyApprox, completo, pontos: pontos.length };
+  }
+
+  async function resolveColetaCoords(i){
+    const s = routeServices[i];
+    if(s.coletaCoords) return s.coletaCoords;
+    const results = await photonSearch(s.coleta, 1);
+    if(results.length === 0) return null;
+    s.coletaCoords = { lat: results[0].lat, lon: results[0].lon };
+    return s.coletaCoords;
+  }
+
+  async function resolveEntregaCoords(i, j){
+    const e = routeServices[i].entregas[j];
+    if(e.entregaCoords) return e.entregaCoords;
+    const results = await photonSearch(e.entrega, 1);
+    if(results.length === 0) return null;
+    e.entregaCoords = { lat: results[0].lat, lon: results[0].lon };
+    return e.entregaCoords;
+  }
+
+  async function calcularEntrega(i, j){
+    const s = routeServices[i];
+    const e = s.entregas[j];
+    if(!s.coleta || !e.entrega) return;
+
+    e.status = 'loading';
+    updateRouteCalc(i, j);
+
+    try{
+      const [origem, destino] = await Promise.all([resolveColetaCoords(i), resolveEntregaCoords(i, j)]);
+      if(!origem || !destino){
+        e.status = 'error';
+        e.errorMsg = 'Não encontramos um desses endereços.';
+        updateRouteCalc(i, j);
+        return;
+      }
+      const rota = await routeBetween(origem, destino);
+      e.distancia = rota.km;
+      e.tempo = rota.min;
+      e.approx = rota.approx;
+      e.approxConfirmed = false;
+      e.status = 'ok';
+      updateRouteCalc(i, j);
+      renderRouteSummary();
+    }catch(err){
+      e.status = 'error';
+      e.errorMsg = 'Deu um erro ao calcular. Tenta de novo.';
+      updateRouteCalc(i, j);
+    }
+  }
+
+  async function fetchSuggestions(query, boxEl, onPick, signal, isCurrent){
+    try{
+      const results = await photonSearch(query, 5, signal);
+      if((signal && signal.aborted) || !isCurrent()) return;
+      if(results.length === 0){
+        boxEl.innerHTML = '<div class="suggest-empty">Nenhum endereço encontrado</div>';
+        boxEl.classList.add('open');
+        return;
+      }
+      boxEl.innerHTML = results.map((r, i) => `<button type="button" class="suggest-item" data-i="${i}">${safeText(r.label)}</button>`).join('');
+      boxEl.classList.add('open');
+      boxEl.querySelectorAll('.suggest-item').forEach((el, i) => {
+        el.addEventListener('mousedown', e => e.preventDefault());
+        el.addEventListener('click', () => onPick(results[i]));
+      });
+    }catch(e){
+      if(e.name === 'AbortError' || (signal && signal.aborted) || !isCurrent()) return;
+      boxEl.innerHTML = '<div class="suggest-empty">Erro ao buscar endereços</div>';
+      boxEl.classList.add('open');
+    }
+  }
+
+  function updateRouteCalc(i, j){
+    const el = document.getElementById(`routeCalc-${i}-${j}`);
+    if(!el){ renderRouteSummary(); return; }
+    const e = routeServices[i].entregas[j];
+    const needsConfirm = e.status === 'ok' && e.approx && !e.approxConfirmed;
+    el.className = 'route-calc' + (needsConfirm ? ' warn' : e.status === 'ok' ? ' ok' : e.status === 'error' ? ' error' : '');
+    el.innerHTML = routeCalcHTML(e);
+
+    const retry = el.querySelector('[data-action="retry"]');
+    if(retry) retry.addEventListener('click', () => calcularEntrega(i, j));
+
+    const confirmApprox = el.querySelector('[data-action="confirm-approx"]');
+    if(confirmApprox) confirmApprox.addEventListener('click', () => {
+      e.approxConfirmed = true;
+      updateRouteCalc(i, j);
+    });
+
+    const manualKm = el.querySelector('[data-action="manual-km"]');
+    if(manualKm) manualKm.addEventListener('change', () => {
+      const km = parseNum(manualKm.value);
+      if(km && km > 0){
+        e.distancia = km;
+        e.tempo = Math.round((km / 28) * 60);
+        e.approx = false;
+        e.approxConfirmed = true;
+        updateRouteCalc(i, j);
+      }
+    });
+
+    updateServiceVerdict(i, j);
+    renderRouteSummary();
+  }
+
+  function updateServiceVerdict(i, j){
+    const el = document.getElementById(`verdict-${i}-${j}`);
+    if(!el) return;
+    const e = routeServices[i].entregas[j];
+    if(e.status !== 'ok' || (e.approx && !e.approxConfirmed) || !e.valor || e.valor <= 0){
+      el.className = 'service-verdict hidden';
+      el.textContent = '';
+      return;
+    }
+    const custo = round2((e.distancia / CONSUMO_ATUAL) * PRECO_ATUAL);
+    const resultado = round2(e.valor - custo);
+    if(resultado > 0){
+      el.className = 'service-verdict profit';
+      el.textContent = 'Vale a pena — lucro de ' + fmtBRL(resultado);
+    }else if(resultado === 0){
+      el.className = 'service-verdict equilibrio';
+      el.textContent = 'Ponto de equilíbrio — não dá lucro nem prejuízo';
+    }else{
+      el.className = 'service-verdict loss';
+      el.textContent = 'Não compensa — prejuízo de ' + fmtBRL(Math.abs(resultado));
+    }
+  }
+
+  function entregaBlockHTML(e, i, j, canRemove){
+    const entregaId = `entrega-endereco-${i}-${j}`;
+    const valorId = `entrega-valor-${i}-${j}`;
+    return `
+      <div class="entrega-block">
+        <div class="stop-row">
+          <div class="stop-dot-col"><div class="stop-dot entrega"></div></div>
+          <div class="stop-body">
+            <label class="stop-label" for="${entregaId}">ENTREGA ${j + 1}</label>
+            <input id="${entregaId}" type="text" class="field-input text" data-entrega-field="entrega" placeholder="Onde entregar? (rua, bairro, cidade)" value="${safeText(e.entrega)}" autocomplete="off" aria-controls="suggest-${i}-${j}-entrega">
+            <div class="suggest-list" id="suggest-${i}-${j}-entrega" aria-live="polite"></div>
+          </div>
+          ${canRemove ? `<button type="button" class="entrega-remove" data-action="remove-entrega" aria-label="Remover entrega ${j + 1}">
+            <svg class="icon" viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
+          </button>` : ''}
+        </div>
+        <div class="service-meta-row">
+          <div class="route-calc" id="routeCalc-${i}-${j}" aria-live="polite">${routeCalcHTML(e)}</div>
+          <div class="field-group valor-group">
+            <label class="field-label" for="${valorId}">VALOR R$</label>
+            <input id="${valorId}" type="number" inputmode="decimal" class="field-input" data-entrega-field="valor" placeholder="0" value="${e.valor === null || e.valor === undefined ? '' : e.valor}">
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function serviceCardHTML(s, i){
+    const entregasHTML = s.entregas.map((e, j) => entregaBlockHTML(e, i, j, s.entregas.length > 1)).join('');
+    const clienteId = `servico-cliente-${i}`;
+    const coletaId = `servico-coleta-${i}`;
+    const titleId = `servico-titulo-${i}`;
+    return `
+      <div class="service-card" draggable="true" data-index="${i}" role="group" aria-labelledby="${titleId}">
+        <div class="service-head">
+          <div class="service-head-left">
+            <span class="badge-num">${i + 1}</span>
+            <span class="title" id="${titleId}">SERVIÇO ${i + 1}</span>
+          </div>
+          <button type="button" class="service-remove" data-action="remove" aria-label="Remover serviço ${i + 1}">
+            <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
+          </button>
+        </div>
+
+        <div class="stop-row">
+          <div class="stop-dot-col"><div class="stop-dot"></div><div class="stop-line"></div></div>
+          <div class="stop-body">
+            <label class="stop-label" for="${coletaId}">COLETA</label>
+            <input id="${coletaId}" type="text" class="field-input text" data-field="coleta" placeholder="Onde buscar? (rua, bairro, cidade)" value="${safeText(s.coleta)}" autocomplete="off" aria-controls="suggest-${i}-coleta">
+            <div class="suggest-list" id="suggest-${i}-coleta" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="entregas-wrap">${entregasHTML}</div>
+
+        <button type="button" class="add-entrega-btn" data-action="add-entrega">
+          <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Adicionar outro destino desta coleta
+        </button>
+
+        <div class="field-group" style="margin-top:4px;">
+          <span class="field-label">SITUAÇÃO DO PAGAMENTO</span>
+          <div class="pago-toggle" role="group" aria-label="Situação do pagamento do serviço ${i + 1}">
+            <button type="button" class="pago-toggle-btn ${s.paymentStatus === 'received' ? 'active' : ''}" data-action="set-payment" data-value="received">Recebe na hora</button>
+            <button type="button" class="pago-toggle-btn ${s.paymentStatus === 'pending' ? 'active' : ''}" data-action="set-payment" data-value="pending">Fica pra depois</button>
+          </div>
+        </div>
+        ${s.paymentStatus === 'pending' ? `
+          <div class="field-group pending-client-field">
+            <label class="field-label" for="${clienteId}">QUEM VAI PAGAR? (OBRIGATÓRIO)</label>
+            <input id="${clienteId}" type="text" class="field-input text" data-field="cliente" placeholder="Ex: Restaurante do Zé" value="${safeText(s.cliente)}" aria-required="true">
+            <div class="config-note">Quando você confirmar a rota, esse valor vai pra conta desse cliente na aba Clientes, esperando o pagamento.</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  function routeCalcHTML(e){
+    if(e.status === 'loading'){
+      return `<div class="spinner"></div><span>Calculando distância...</span>`;
+    }
+    if(e.status === 'error'){
+      return `<span>${e.errorMsg}</span> <span class="retry-link" data-action="retry">tentar de novo</span>`;
+    }
+    if(e.status === 'ok' && e.approx && !e.approxConfirmed){
+      return `
+        <div class="route-calc-warn-text">O serviço de rota falhou. Usamos uma distância aproximada em linha reta (${e.distancia.toFixed(1).replace('.', ',')} km) — pode estar errada perto de rios, rodovias ou retornos.</div>
+        <div class="route-calc-warn-actions">
+          <button type="button" class="btn-tiny" data-action="confirm-approx">Usar estimativa mesmo assim</button>
+          <input type="number" inputmode="decimal" class="field-input manual-km-input" data-action="manual-km" placeholder="ou km real" aria-label="Informar km real">
+        </div>
+      `;
+    }
+    if(e.status === 'ok'){
+      return '<span>Trajeto calculado</span>';
+    }
+    return `<span>Preenche a coleta e a entrega pra calcular</span>`;
+  }
+
+  function wireEnderecoInput(inp, suggestBox, onResolved){
+    let activeController = null;
+    let searchVersion = 0;
+
+    const scheduleSearch = debounce(() => {
+      const query = inp.value.trim();
+      const version = searchVersion;
+      if(query.length < 3) return;
+
+      const controller = typeof AbortController !== 'undefined'
+        ? new AbortController()
+        : { signal:null, abort:function(){} };
+      activeController = controller;
+      let timedOut = false;
+      const timeoutId = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 6000);
+      const isCurrent = () => version === searchVersion && inp.value.trim() === query;
+
+      suggestBox.innerHTML = '<div class="suggest-empty">Buscando endereços...</div>';
+      suggestBox.classList.add('open');
+      const suggestionRequest = fetchSuggestions(query, suggestBox, (picked) => {
+        if(!isCurrent()) return;
+        inp.value = picked.label;
+        onResolved.setText(picked.label);
+        onResolved.setCoords(picked.lat, picked.lon);
+        suggestBox.classList.remove('open');
+        onResolved.tryCalc();
+      }, controller.signal, isCurrent);
+      const finishSearch = () => {
+        clearTimeout(timeoutId);
+        if(activeController === controller) activeController = null;
+        if(timedOut && isCurrent()){
+          suggestBox.innerHTML = '<div class="suggest-empty">A busca demorou demais. Continue digitando ou tente novamente.</div>';
+          suggestBox.classList.add('open');
+        }
+      };
+      suggestionRequest.then(finishSearch, finishSearch);
+    }, 350);
+
+    inp.addEventListener('input', () => {
+      searchVersion += 1;
+      if(activeController){ activeController.abort(); activeController = null; }
+      onResolved.setText(inp.value);
+      onResolved.clearCoords();
+      onResolved.setStatus('idle');
+      onResolved.refresh();
+      if(inp.value.trim().length >= 3){
+        scheduleSearch();
+      }else{
+        suggestBox.classList.remove('open');
+      }
+    });
+
+    inp.addEventListener('blur', () => {
+      setTimeout(() => {
+        searchVersion += 1;
+        if(activeController){ activeController.abort(); activeController = null; }
+        suggestBox.classList.remove('open');
+        onResolved.tryCalc();
+      }, 150);
+    });
+  }
+
+  function renderServices(){
+    const container = document.getElementById('serviceList');
+    container.innerHTML = routeServices.map((s, i) => serviceCardHTML(s, i)).join('');
+
+    container.querySelectorAll('.service-card').forEach(card => {
+      const idx = parseInt(card.dataset.index);
+      const s = routeServices[idx];
+
+      card.addEventListener('dragstart', () => { dragSrcIndex = idx; card.classList.add('dragging'); });
+      card.addEventListener('dragend', () => { card.classList.remove('dragging'); });
+      card.addEventListener('dragover', e => e.preventDefault());
+      card.addEventListener('drop', e => {
+        e.preventDefault();
+        if(dragSrcIndex === null || dragSrcIndex === idx) return;
+        const [moved] = routeServices.splice(dragSrcIndex, 1);
+        routeServices.splice(idx, 0, moved);
+        dragSrcIndex = null;
+        renderServices();
+        renderRouteSummary();
+      });
+
+      card.querySelector('[data-action="remove"]').addEventListener('click', () => {
+        if(routeServices.length <= 1){ alert('A rota precisa ter pelo menos um serviço.'); return; }
+        routeServices.splice(idx, 1);
+        renderServices();
+        renderRouteSummary();
+      });
+
+      // cliente pagador / recebimento posterior
+      const clienteInp = card.querySelector('[data-field="cliente"]');
+      if(clienteInp) clienteInp.addEventListener('input', () => {
+        s.cliente = clienteInp.value;
+        renderRouteSummary();
+      });
+      card.querySelectorAll('[data-action="set-payment"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          s.paymentStatus = btn.dataset.value;
+          renderServices();
+          renderRouteSummary();
+        });
+      });
+
+      // coleta (única por serviço) — recalcula todas as entregas se o endereço mudar
+      const coletaInp = card.querySelector('[data-field="coleta"]');
+      const coletaSuggest = card.querySelector(`#suggest-${idx}-coleta`);
+      wireEnderecoInput(coletaInp, coletaSuggest, {
+        setText: (v) => { s.coleta = v; },
+        clearCoords: () => { s.coletaCoords = null; s.entregas.forEach(e => e.status = 'idle'); },
+        setStatus: () => {},
+        setCoords: (lat, lon) => { s.coletaCoords = { lat, lon }; },
+        refresh: () => { s.entregas.forEach((e, j) => updateRouteCalc(idx, j)); },
+        tryCalc: () => { s.entregas.forEach((e, j) => { if(s.coleta && e.entrega){ calcularEntrega(idx, j); } }); }
+      });
+
+      // cada bloco de entrega
+      card.querySelectorAll('.entrega-block').forEach((block, j) => {
+        const e = s.entregas[j];
+
+        const removeEntregaBtn = block.querySelector('[data-action="remove-entrega"]');
+        if(removeEntregaBtn){
+          removeEntregaBtn.addEventListener('click', () => {
+            if(s.entregas.length <= 1) return;
+            s.entregas.splice(j, 1);
+            renderServices();
+            renderRouteSummary();
+          });
+        }
+
+        const entregaInp = block.querySelector('[data-entrega-field="entrega"]');
+        const entregaSuggest = block.querySelector(`#suggest-${idx}-${j}-entrega`);
+        wireEnderecoInput(entregaInp, entregaSuggest, {
+          setText: (v) => { e.entrega = v; },
+          clearCoords: () => { e.entregaCoords = null; e.status = 'idle'; },
+          setStatus: () => {},
+          setCoords: (lat, lon) => { e.entregaCoords = { lat, lon }; },
+          refresh: () => { updateRouteCalc(idx, j); },
+          tryCalc: () => { if(s.coleta && e.entrega){ calcularEntrega(idx, j); } }
+        });
+
+        const valorInp = block.querySelector('[data-entrega-field="valor"]');
+        valorInp.addEventListener('input', () => {
+          e.valor = parseNum(valorInp.value);
+          updateServiceVerdict(idx, j);
+          renderRouteSummary();
+        });
+      });
+
+      card.querySelector('[data-action="add-entrega"]').addEventListener('click', () => {
+        s.entregas.push(newEntrega());
+        renderServices();
+        renderRouteSummary();
+      });
+    });
+  }
+
+  function shortenAddress(full){
+    return full.split(',').slice(0, 3).join(',').trim();
+  }
+
+  function locateMe(){
+    const valueEl = document.getElementById('startValue');
+    if(!navigator.geolocation){
+      valueEl.textContent = 'Seu navegador não suporta localização automática.';
+      return;
+    }
+    valueEl.textContent = 'Localizando...';
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      startCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      try{
+        const url = `https://photon.komoot.io/reverse/?lon=${startCoords.lon}&lat=${startCoords.lat}&lang=pt`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const f = data.features && data.features[0];
+        valueEl.textContent = f ? formatPhotonLabel(f.properties) : 'Localização encontrada';
+      }catch(e){
+        valueEl.textContent = 'Localização encontrada (endereço indisponível agora)';
+      }
+    }, () => {
+      valueEl.textContent = 'Não conseguimos acessar sua localização — verifica a permissão do navegador.';
+    });
+  }
+  document.getElementById('btnUseLocation').addEventListener('click', locateMe);
+
+  function allEntregas(){
+    return routeServices.reduce((items, s) => {
+      s.entregas.forEach(e => items.push(Object.assign({}, e, { cliente:s.cliente, paymentStatus:s.paymentStatus })));
+      return items;
+    }, []);
+  }
+
+  function renderRouteSummary(){
+    const all = allEntregas();
+    const totalValue = all.reduce((s, x) => s + (x.valor || 0), 0);
+    const hasFuelConfig = CONSUMO_ATUAL > 0 && PRECO_ATUAL > 0;
+    const hasMissingFields = routeServices.some(service =>
+      !service.coleta.trim() || service.entregas.some(entrega =>
+        !entrega.entrega.trim() || !entrega.valor || entrega.valor <= 0
+      )
+    );
+    const isCalculating = all.some(item => item.status === 'loading');
+    const hasCalculationError = all.some(item => item.status === 'error');
+    const allCalculated = all.length > 0 && all.every(item => item.status === 'ok');
+    const missingClient = routeServices.some(service =>
+      service.paymentStatus === 'pending' && !service.cliente.trim()
+    );
+    const needsApproxConfirm = all.some(item => item.status === 'ok' && item.approx && !item.approxConfirmed);
+
+    // dispara o cálculo em cadeia (partida -> coleta -> entregas na ordem) de forma assíncrona;
+    // enquanto não volta, mostramos o último total conhecido
+    if(allCalculated){
+      computeRouteChain().then(chain => {
+        if(!chain) return; // token velho, ignora
+        lastChain = chain;
+        paintRouteTotals(chain, totalValue, hasFuelConfig, allCalculated && !needsApproxConfirm);
+      });
+    }
+    paintRouteTotals(lastChain, totalValue, hasFuelConfig, allCalculated && !needsApproxConfirm);
+
+    const confirmButton = document.getElementById('btnConfirmRoute');
+    const confirmLabel = document.getElementById('confirmRouteLabel');
+    const dockStatus = document.getElementById('routeDockStatus');
+    let ready = false;
+    let buttonText = 'Complete os dados';
+    let statusText = 'Preencha os endereços e os valores da rota.';
+
+    if(isCalculating){
+      buttonText = 'Calculando rota...';
+      statusText = 'Aguarde o cálculo da distância e do tempo.';
+    }else if(hasMissingFields){
+      buttonText = 'Complete os dados';
+      statusText = 'Preencha os endereços e os valores da rota.';
+    }else if(hasCalculationError){
+      buttonText = 'Revise os endereços';
+      statusText = 'Existe um endereço que não pôde ser calculado.';
+    }else if(!allCalculated){
+      buttonText = 'Aguarde o cálculo';
+      statusText = 'A rota ainda precisa concluir o cálculo.';
+    }else if(needsApproxConfirm){
+      buttonText = 'Confirme a distância estimada';
+      statusText = 'A rota usou distância aproximada. Confirme ou informe o km real antes de seguir.';
+    }else if(!hasFuelConfig){
+      buttonText = 'Configure moto e combustível';
+      statusText = 'Informe o consumo da moto e registre um abastecimento.';
+    }else if(missingClient){
+      buttonText = 'Informe o cliente';
+      statusText = 'Uma entrega a receber precisa estar vinculada a um cliente.';
+    }else{
+      ready = true;
+      buttonText = 'Confirmar rota';
+      statusText = 'Rota completa e pronta para confirmação.';
+    }
+
+    confirmButton.disabled = !ready;
+    confirmLabel.textContent = buttonText;
+    dockStatus.textContent = statusText;
+
+    const confirmation = document.getElementById('routeConfirmation');
+    if(confirmation) confirmation.classList.remove('open');
+  }
+
+  let lastChain = { totalKm: 0, totalMin: 0, approx: false, completo: true, pontos: 0 };
+
+  function paintRouteTotals(chain, totalValue, hasFuelConfig, custoValido){
+    const totalKm = chain ? chain.totalKm : 0;
+    const totalMin = chain ? chain.totalMin : 0;
+    const prefix = chain && chain.approx ? '≈ ' : '';
+    const parcial = chain && !chain.completo ? ' · parcial' : '';
+
+    document.getElementById('routeTotalKm').textContent = prefix + totalKm.toFixed(1).replace('.', ',') + ' km' + parcial;
+    document.getElementById('routeTotalMin').textContent = prefix + totalMin + ' min';
+
+    const custo = (hasFuelConfig && custoValido) ? round2((totalKm / CONSUMO_ATUAL) * PRECO_ATUAL) : null;
+    const resultado = custo === null ? null : round2(totalValue - custo);
+
+    document.getElementById('routeTotalCusto').textContent = custo === null ? '—' : fmtBRL(custo);
+    const resEl = document.getElementById('routeResultado');
+    resEl.textContent = resultado === null ? '—' : fmtBRL(resultado);
+    resEl.style.color = resultado === null ? 'var(--muted)' : resultado > 0 ? 'var(--green)' : resultado < 0 ? 'var(--red)' : 'var(--text)';
+  }
+
+  document.getElementById('btnAddService').addEventListener('click', () => {
+    routeServices.push(newService());
+    renderServices();
+    renderRouteSummary();
+  });
+
+  function renderConfirmedRoutes(){
+    const section = document.getElementById('confirmedRoutesSection');
+    const list = document.getElementById('confirmedRoutesList');
+    if(confirmedRoutes.length === 0){ section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    list.innerHTML = confirmedRoutes.map(r => `
+      <div class="list-item">
+        <div class="badge">${routeIcon}</div>
+        <div class="info">
+          <div class="title">${r.count} entrega${r.count > 1 ? 's' : ''} · ${r.distancia.toFixed(1).replace('.', ',')} km</div>
+          <div class="sub">${r.data}${r.pendente > 0 ? ` · ${fmtBRL(r.pendente)} ficou pendente` : ''}</div>
+        </div>
+        <div class="amount green">+ ${fmtBRL(r.recebidoNaHora)}</div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('btnConfirmRoute').addEventListener('click', async () => {
+    const confirmation = document.getElementById('routeConfirmation');
+    confirmation.classList.remove('open');
+    const all = allEntregas();
+    const invalido = all.some(e => e.status !== 'ok' || !e.valor || e.valor <= 0);
+    if(invalido || all.length === 0){
+      alert('Preenche a coleta e todas as entregas (esperando o cálculo terminar) e o valor de cada uma antes de confirmar.');
+      return;
+    }
+    const needsApproxConfirm = all.some(e => e.approx && !e.approxConfirmed);
+    if(needsApproxConfirm){
+      alert('Tem uma distância que foi só estimada (o serviço de rota falhou). Confirma a estimativa ou informa o km real em cada entrega marcada antes de fechar a rota.');
+      return;
+    }
+    const pendingWithoutClient = routeServices.findIndex(s => s.paymentStatus === 'pending' && !s.cliente.trim());
+    if(pendingWithoutClient >= 0){
+      alert(`Informe o cliente pagador do serviço ${pendingWithoutClient + 1} antes de confirmar. Esse nome é necessário para criar a conta a receber.`);
+      return;
+    }
+
+    // distância real da rota inteira (cadeia sequencial), não a soma de trechos soltos
+    const chain = await computeRouteChain();
+    const totalKm = chain ? chain.totalKm : all.reduce((s, x) => s + (x.distancia || 0), 0);
+    let recebidoNaHora = 0;
+    let pendenteTotal = 0;
+    const routeId = `rota-${Date.now()}`;
+
+    routeServices.forEach(s => {
+      const totalServico = s.entregas.reduce((sum, e) => sum + (e.valor || 0), 0);
+      if(s.paymentStatus === 'received'){
+        recebidoNaHora += totalServico;
+      }else{
+        pendenteTotal += totalServico;
+        const nomeCliente = s.cliente.trim();
+        addPendingToClient(nomeCliente, totalServico, `Rota · ${s.entregas.length} entrega(s)`, routeId);
+      }
+    });
+
+    confirmedRoutes.unshift({ id:routeId, count: all.length, distancia: totalKm, recebidoNaHora, pendente: pendenteTotal, data: 'Hoje', dateISO:daysAgoISO(0) });
+    if(recebidoNaHora > 0){
+      entradas.unshift({ desc: `Rota confirmada · ${all.length} entrega(s)`, valor: recebidoNaHora, data: 'Hoje', dateISO:daysAgoISO(0), routeId });
+    }
+
+    renderConfirmedRoutes();
+    renderClientes();
+    renderFaturamento();
+    renderDashboard();
+    routeServices = [ newService() ];
+    renderServices();
+    renderRouteSummary();
+
+    const confirmationMessage = document.getElementById('routeConfirmationMessage');
+    const viewClientsButton = document.getElementById('btnViewPendingClients');
+    confirmationMessage.innerHTML = pendenteTotal > 0
+      ? `<b>Rota confirmada</b>${fmtBRL(recebidoNaHora)} recebido e ${fmtBRL(pendenteTotal)} enviado para Clientes.`
+      : '<b>Rota confirmada</b>O valor recebido já entrou no resultado do mês.';
+    viewClientsButton.style.display = pendenteTotal > 0 ? 'block' : 'none';
+    confirmation.classList.add('open');
+  });
+
+  document.getElementById('btnViewPendingClients').addEventListener('click', () => setView('clientes'));
+
+  renderServices();
+  renderRouteSummary();
+  renderConfirmedRoutes();
+
+  // ---------- clientes de coleta (saldo a receber / fiado) ----------
+  let clientes = [];
+
+  function newClient(nome){
+    return { nome, pendente:0, contas:[], recebimentos:[] };
+  }
+
+  function syncClientBalance(cliente){
+    cliente.contas = cliente.contas || [];
+    cliente.recebimentos = cliente.recebimentos || [];
+    cliente.pendente = cliente.contas.reduce((total, conta) => total + Math.max(0, conta.saldo || 0), 0);
+  }
+
+  function addPendingToClient(nome, valor, desc, routeId){
+    let c = clientes.find(c => c.nome.toLowerCase() === nome.toLowerCase());
+    if(!c){ c = newClient(nome); clientes.push(c); }
+    c.contas = c.contas || [];
+    c.contas.unshift({
+      id:`conta-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      routeId,
+      desc,
+      valorOriginal:valor,
+      recebido:0,
+      saldo:valor,
+      status:'open',
+      data:'Hoje',
+      dateISO:daysAgoISO(0)
+    });
+    syncClientBalance(c);
+  }
+
+  function clientesTotal(){ return clientes.reduce((s, c) => s + c.pendente, 0); }
+
+  function renderClientes(){
+    clientes.forEach(syncClientBalance);
+    document.getElementById('clientesTotalValue').textContent = fmtBRL(clientesTotal());
+    document.getElementById('clientesCountValue').textContent = clientes.length;
+
+    const list = document.getElementById('clienteList');
+    if(clientes.length === 0){
+      list.innerHTML = '<div class="cliente-empty">Nenhum cliente cadastrado ainda. Toca no + acima ou marque "Fica pra depois" em um serviço da rota.</div>';
+      return;
+    }
+    list.innerHTML = clientes.map((c, i) => `
+      <div class="cliente-card">
+        <div class="avatar">${clientIcon}</div>
+        <div class="info">
+          <div class="name">${safeText(c.nome)}</div>
+          <div class="sub ${c.pendente > 0 ? 'owed' : 'clear'}">${c.pendente > 0 ? 'A receber: ' + fmtBRL(c.pendente) : 'Em dia'}</div>
+          <span class="account-count">${(c.contas || []).filter(conta => conta.saldo > 0).length} conta(s) em aberto</span>
+        </div>
+        ${c.pendente > 0 ? `<button type="button" class="btn-charge" data-action="receive" data-i="${i}">Registrar recebimento</button>` : ''}
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-action="receive"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        openReceiptForClient(parseInt(btn.dataset.i));
+      });
+    });
+  }
+
+  let receiptClientIndex = null;
+  const receiptModalCtl = wireModal(null, 'recebimentoModal', 'recebimentoBackdrop', 'recebimentoClose', 'recebimentoCancel');
+
+  function openReceiptForClient(clientIndex){
+    const cliente = clientes[clientIndex];
+    if(!cliente || cliente.pendente <= 0) return;
+    receiptClientIndex = clientIndex;
+    document.getElementById('recebimentoClienteNome').textContent = cliente.nome;
+    document.getElementById('recebimentoSaldo').textContent = fmtBRL(cliente.pendente);
+    document.getElementById('recebimentoValor').value = cliente.pendente.toFixed(2);
+    receiptModalCtl.open();
+    setTimeout(() => document.getElementById('recebimentoValor').focus(), 0);
+  }
+
+  function applyReceipt(cliente, valor){
+    let restante = valor;
+    const contasMaisAntigasPrimeiro = [...cliente.contas].reverse();
+    contasMaisAntigasPrimeiro.forEach(conta => {
+      if(restante <= 0 || conta.saldo <= 0) return;
+      const aplicado = Math.min(restante, conta.saldo);
+      conta.recebido += aplicado;
+      conta.saldo -= aplicado;
+      conta.status = conta.saldo <= 0.001 ? 'paid' : 'partial';
+      restante -= aplicado;
+    });
+    cliente.recebimentos.unshift({ valor, data:'Hoje', dateISO:daysAgoISO(0) });
+    syncClientBalance(cliente);
+  }
+
+  document.getElementById('recebimentoSave').addEventListener('click', () => {
+    const cliente = clientes[receiptClientIndex];
+    const valor = parseNum(document.getElementById('recebimentoValor').value);
+    if(!cliente){ receiptModalCtl.close(); return; }
+    if(valor === null || valor <= 0){
+      alert('Informe um valor recebido maior que zero.');
+      return;
+    }
+    if(valor > cliente.pendente + 0.001){
+      alert(`O valor informado é maior que o saldo pendente de ${fmtBRL(cliente.pendente)}.`);
+      return;
+    }
+
+    applyReceipt(cliente, valor);
+    entradas.unshift({ desc:`Recebimento de ${cliente.nome}`, valor, data:'Hoje', dateISO:daysAgoISO(0), clientName:cliente.nome });
+    receiptModalCtl.close();
+    receiptClientIndex = null;
+    renderClientes();
+    renderFaturamento();
+    renderDashboard();
+    alert(`${fmtBRL(valor)} recebido de ${cliente.nome}. O saldo restante é ${fmtBRL(cliente.pendente)}.`);
+  });
+
+  const clienteModalCtl = wireModal('btnOpenCliente', 'clienteModal', 'clienteBackdrop', 'clienteClose', 'clienteCancel');
+  document.getElementById('clienteSave').addEventListener('click', () => {
+    const nome = document.getElementById('clienteNome').value.trim();
+    if(!nome){ alert('Digita o nome do cliente.'); return; }
+    if(clientes.find(c => c.nome.toLowerCase() === nome.toLowerCase())){
+      alert('Esse cliente já está cadastrado.');
+      return;
+    }
+    clientes.push(newClient(nome));
+    renderClientes();
+    clienteModalCtl.close();
+    document.getElementById('clienteNome').value = '';
+  });
+
+  // ---------- painel mensal (dados locais, sem backend) ----------
+  function selectedMonthKey(){
+    return document.getElementById('dashboardMonth').value || toISODateLocal(APP_NOW).slice(0, 7);
+  }
+
+  function initMonthSelector(){
+    const select = document.getElementById('dashboardMonth');
+    const formatter = new Intl.DateTimeFormat('pt-BR', { month:'long', year:'numeric' });
+    select.innerHTML = '';
+    for(let offset = 0; offset < 6; offset += 1){
+      const date = new Date(APP_NOW.getFullYear(), APP_NOW.getMonth() - offset, 1);
+      const key = `${date.getFullYear()}-${pad2(date.getMonth() + 1)}`;
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = formatter.format(date).replace(/^./, letter => letter.toUpperCase());
+      select.appendChild(option);
+    }
+    select.value = toISODateLocal(APP_NOW).slice(0, 7);
+    select.addEventListener('change', renderDashboard);
+  }
+
+  function monthItems(items, monthKey){
+    return items.filter(item => String(item.dateISO || '').startsWith(monthKey));
+  }
+
+  function signedBRL(value){
+    return value < 0 ? '- ' + fmtBRL(Math.abs(value)) : fmtBRL(value);
+  }
+
+  function renderDashboard(){
+    const monthKey = selectedMonthKey();
+    const monthEntries = monthItems(entradas, monthKey);
+    const monthRefuels = monthItems(refuels, monthKey);
+    const monthMaintenances = monthItems(maintenances, monthKey);
+    const received = monthEntries.reduce((total, item) => total + item.valor, 0);
+    const expenses = [...monthRefuels, ...monthMaintenances].reduce((total, item) => total + item.valor, 0);
+    const result = received - expenses;
+
+    const resultEl = document.getElementById('dashboardResult');
+    resultEl.textContent = signedBRL(result);
+    resultEl.style.color = result < 0 ? 'var(--red)' : 'var(--text)';
+    document.getElementById('dashboardReceived').textContent = fmtBRL(received);
+    document.getElementById('dashboardPending').textContent = fmtBRL(clientesTotal());
+    document.getElementById('dashboardExpenses').textContent = fmtBRL(expenses);
+    const chartValueEl = document.getElementById('dashboardChartValue');
+    const chartStatusEl = document.getElementById('dashboardChartStatus');
+    chartValueEl.textContent = signedBRL(result);
+    chartValueEl.style.color = result < 0 ? 'var(--red)' : 'var(--text)';
+    document.getElementById('dashboardChartDetail').textContent = fmtBRL(received) + ' recebido · ' + fmtBRL(expenses) + ' em despesas';
+    chartStatusEl.textContent = result < 0 ? 'NEGATIVO' : result > 0 ? 'POSITIVO' : 'EQUILÍBRIO';
+    chartStatusEl.className = 'dashboard-chart-status' + (result < 0 ? ' negative' : result === 0 ? ' balanced' : '');
+
+    const todayKey = toISODateLocal(APP_NOW);
+    const routesToday = confirmedRoutes.filter(item => item.dateISO === todayKey);
+    document.getElementById('dashboardDeliveriesToday').textContent = routesToday.reduce((total, item) => total + item.count, 0);
+
+    const [year, month] = monthKey.split('-').map(Number);
+    const dayCount = new Date(year, month, 0).getDate();
+    const currentMonthKey = toISODateLocal(APP_NOW).slice(0, 7);
+    const visibleDayCount = monthKey === currentMonthKey ? Math.min(APP_NOW.getDate(), dayCount) : dayCount;
+    const dailyMovement = Array.from({ length:visibleDayCount }, () => 0);
+    monthEntries.forEach(item => {
+      const day = Number(item.dateISO.slice(8, 10));
+      if(day >= 1 && day <= dayCount) dailyMovement[day - 1] += item.valor;
+    });
+    [...monthRefuels, ...monthMaintenances].forEach(item => {
+      const day = Number(item.dateISO.slice(8, 10));
+      if(day >= 1 && day <= dayCount) dailyMovement[day - 1] -= item.valor;
+    });
+    let accumulated = 0;
+    const accumulatedResult = dailyMovement.map(value => {
+      accumulated += value;
+      return Number(accumulated.toFixed(2));
+    });
+    const labels = dailyMovement.map((_, index) => String(index + 1));
+
+    if(typeof Chart === 'undefined') return;
+    if(monthlyResultChart) monthlyResultChart.destroy();
+    const chartCanvas = document.getElementById('monthlyResultChart');
+    const chartContext = chartCanvas.getContext('2d');
+    const chartGradient = chartContext.createLinearGradient(0, 0, 0, 238);
+    chartGradient.addColorStop(0, 'rgba(255,122,26,.34)');
+    chartGradient.addColorStop(.55, 'rgba(255,122,26,.11)');
+    chartGradient.addColorStop(1, 'rgba(255,122,26,0)');
+    chartCanvas.setAttribute('aria-label', 'Resultado acumulado do dia 1 ao dia ' + visibleDayCount + ': ' + signedBRL(result) + '.');
+    const lastDataIndex = accumulatedResult.length - 1;
+    monthlyResultChart = new Chart(chartContext, {
+      type:'line',
+      data:{
+        labels,
+        datasets:[{
+          label:'Resultado acumulado',
+          data:accumulatedResult,
+          borderColor:'#FF7A1A',
+          backgroundColor:chartGradient,
+          borderWidth:3,
+          pointRadius:context => context.dataIndex === lastDataIndex ? 4 : 1.5,
+          pointHoverRadius:5,
+          pointHitRadius:14,
+          pointBackgroundColor:context => context.raw < 0 ? '#E63946' : '#FF7A1A',
+          pointBorderColor:'#14171C',
+          pointBorderWidth:1.5,
+          segment:{ borderColor:context => context.p0.parsed.y < 0 && context.p1.parsed.y < 0 ? '#E63946' : '#FF7A1A' },
+          tension:0.32,
+          fill:true
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:{ duration:380 },
+        interaction:{ mode:'index', intersect:false },
+        layout:{ padding:{ top:8, right:9, left:2, bottom:0 } },
+        plugins:{
+          legend:{ display:false },
+          tooltip:{
+            displayColors:false,
+            backgroundColor:'#111419',
+            borderColor:'#3A414B',
+            borderWidth:1,
+            titleColor:'#8B92A0',
+            bodyColor:'#F2F0EB',
+            padding:11,
+            callbacks:{
+              title:items => 'Dia ' + items[0].label,
+              label:context => 'Resultado: ' + signedBRL(context.parsed.y)
+            }
+          }
+        },
+        scales:{
+          x:{
+            grid:{ display:false },
+            ticks:{ color:'#9AA1AD', font:{ size:11, weight:'600' }, maxTicksLimit:7, maxRotation:0 }
+          },
+          y:{
+            beginAtZero:true,
+            grace:'12%',
+            grid:{
+              color:context => context.tick.value === 0 ? 'rgba(242,240,235,.28)' : 'rgba(49,55,63,.7)',
+              lineWidth:context => context.tick.value === 0 ? 1.5 : 1
+            },
+            ticks:{
+              color:'#9AA1AD', font:{ size:10.5, weight:'600' }, maxTicksLimit:5,
+              callback:value => {
+                const absValue = Math.abs(value);
+                const formatted = absValue >= 1000
+                  ? (absValue / 1000).toFixed(absValue >= 10000 ? 0 : 1).replace('.', ',') + ' mil'
+                  : String(absValue).replace('.', ',');
+                return (value < 0 ? '- ' : '') + 'R$ ' + formatted;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  initMonthSelector();
+  recalcConsumoReal();
+  renderMotoConsumo();
+  renderClientes();
+  renderFaturamento();
+  renderDashboard();
+</script>
+
+</body>
+</html>
