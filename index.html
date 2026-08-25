@@ -1102,7 +1102,7 @@
       <div class="cash-card-head">
         <div>
           <div class="cash-label" id="cashResultLabel">VALOR TOTAL DO MÊS</div>
-          <div class="cash-value" id="dashboardResult">R$ 325,50</div>
+          <div class="cash-value" id="dashboardResult">R$ 0,00</div>
         </div>
         <span class="demo-badge">DADOS LOCAIS · SEM BACKEND</span>
       </div>
@@ -1111,9 +1111,9 @@
         Recebido menos abastecimentos e manutenções realmente pagas.
       </div>
       <div class="cash-details">
-        <div class="cash-detail"><div class="label">RECEBIDO NO MÊS</div><div class="value green" id="dashboardReceived">R$ 445,50</div></div>
+        <div class="cash-detail"><div class="label">RECEBIDO NO MÊS</div><div class="value green" id="dashboardReceived">R$ 0,00</div></div>
         <div class="cash-detail"><div class="label">A RECEBER (DO MÊS)</div><div class="value" id="dashboardPending">R$ 0,00</div></div>
-        <div class="cash-detail"><div class="label">DESPESAS REAIS</div><div class="value red" id="dashboardExpenses">R$ 120,00</div></div>
+        <div class="cash-detail"><div class="label">DESPESAS REAIS</div><div class="value red" id="dashboardExpenses">R$ 0,00</div></div>
       </div>
       <div class="cash-note"><b>Importante:</b> o novo mês começa visualmente em zero, mas o histórico anterior não é apagado. Este valor representa o trabalho do mês, não o dinheiro disponível na carteira.</div>
     </div>
@@ -1154,10 +1154,10 @@
         <div class="dashboard-chart-summary">
           <div>
             <div class="label">RESULTADO ACUMULADO</div>
-            <div class="value" id="dashboardChartValue">R$ 325,50</div>
-            <div class="detail" id="dashboardChartDetail">R$ 445,50 recebido · R$ 120,00 em despesas</div>
+            <div class="value" id="dashboardChartValue">R$ 0,00</div>
+            <div class="detail" id="dashboardChartDetail">R$ 0,00 recebido · R$ 0,00 em despesas</div>
           </div>
-          <span class="dashboard-chart-status" id="dashboardChartStatus">POSITIVO</span>
+          <span class="dashboard-chart-status balanced" id="dashboardChartStatus">EQUILÍBRIO</span>
         </div>
         <div class="dashboard-chart-canvas">
           <canvas id="monthlyResultChart" aria-label="Gráfico ampliado do resultado acumulado no mês" role="img"></canvas>
@@ -1195,15 +1195,15 @@
     <div class="balance-card">
       <div class="balance-row">
         <span class="label">Total de entradas</span>
-        <span class="amt green" id="balEntradas">R$ 445,50</span>
+        <span class="amt green" id="balEntradas">R$ 0,00</span>
       </div>
       <div class="balance-row">
         <span class="label">Total de despesas</span>
-        <span class="amt red" id="balDespesas">R$ 120,00</span>
+        <span class="amt red" id="balDespesas">R$ 0,00</span>
       </div>
       <div class="balance-row result">
         <span class="label">Resultado</span>
-        <span class="amt" id="balResultado">+ R$ 325,50</span>
+        <span class="amt" id="balResultado">R$ 0,00</span>
       </div>
     </div>
 
@@ -1266,12 +1266,12 @@
       <div class="stat-card">
         <svg class="icon" viewBox="0 0 24 24"><path d="M12 22c4-4 7-7.5 7-12A7 7 0 0 0 5 10c0 4.5 3 8 7 12Z"/><circle cx="12" cy="10" r="2.4"/></svg>
         <div class="label">TOTAL NO MÊS</div>
-        <div class="value orange" id="refuelTotalValue">R$ 120,00</div>
+        <div class="value orange" id="refuelTotalValue">R$ 0,00</div>
       </div>
       <div class="stat-card">
         <svg class="icon" viewBox="0 0 24 24"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M4 11h8"/></svg>
         <div class="label">PREÇO DO LITRO</div>
-        <div class="value" id="refuelLatestPriceValue">R$ 6,11</div>
+        <div class="value" id="refuelLatestPriceValue">Não informado</div>
       </div>
     </div>
 
@@ -1290,17 +1290,13 @@
         </div>
         <div class="cheapest-station-main">
           <div>
-            <div class="cheapest-station-name" id="cheapestStationName">Posto Ipiranga - Centro</div>
-            <div class="cheapest-station-date" id="cheapestStationDate">Atualizado hoje</div>
+            <div class="cheapest-station-name" id="cheapestStationName">Ainda não há comparação</div>
+            <div class="cheapest-station-date" id="cheapestStationDate">Registre abastecimentos em postos diferentes</div>
           </div>
-          <div class="cheapest-station-price" id="cheapestStationPrice">R$ 6,11 <small>/L</small></div>
+          <div class="cheapest-station-price" id="cheapestStationPrice">— <small>/L</small></div>
         </div>
-        <div class="cheapest-station-saving" id="cheapestStationSaving">R$ 0,04 por litro abaixo do segundo posto mais barato registrado.</div>
-        <div class="station-ranking" id="stationRanking" aria-label="Ranking dos postos mais baratos">
-          <div class="station-ranking-row"><span class="station-rank">1</span><span class="station-ranking-name">Posto Ipiranga - Centro<span class="station-ranking-date">hoje</span></span><span class="station-ranking-price">R$ 6,11</span></div>
-          <div class="station-ranking-row"><span class="station-rank">2</span><span class="station-ranking-name">Posto Raízen - Vila Nova<span class="station-ranking-date">há 9 dias</span></span><span class="station-ranking-price">R$ 6,15</span></div>
-          <div class="station-ranking-row"><span class="station-rank">3</span><span class="station-ranking-name">Posto Shell - Av. Brasil<span class="station-ranking-date">ontem</span></span><span class="station-ranking-price">R$ 6,22</span></div>
-        </div>
+        <div class="cheapest-station-saving" id="cheapestStationSaving">Precisamos de preços recentes de pelo menos dois postos para indicar o mais barato.</div>
+        <div class="station-ranking" id="stationRanking" aria-label="Ranking dos postos mais baratos"></div>
         <div class="cheapest-station-note">Comparação feita somente com abastecimentos informados neste aplicativo. Não representa preço ao vivo da internet.</div>
       </div>
     </section>
@@ -1391,7 +1387,7 @@
       <div class="moto-specs">
         <div class="moto-spec">
           <div class="label">QUILOMETRAGEM ATUAL</div>
-          <div class="value" id="motoKmValue">42.680 km</div>
+          <div class="value" id="motoKmValue">0 km</div>
         </div>
         <div class="moto-spec">
           <div class="label">CAPACIDADE DO TANQUE</div>
@@ -1767,9 +1763,10 @@
   </div>
 
 <script>
-  // ---------- dados de teste (mock) ----------
+  // ---------- estado local do aplicativo ----------
   const APP_NOW = new Date();
-  const LOCAL_STATE_KEY = 'motoboy-front-etapa1-v1';
+  // A chave v2 inicia uma base limpa e mantém a versão antiga recuperável no navegador.
+  const LOCAL_STATE_KEY = 'motoboy-front-etapa1-v2-clean';
   let localStorageAvailable = true;
 
   function readLocalState(){
@@ -1797,16 +1794,6 @@
     date.setDate(date.getDate() - days);
     return toISODateLocal(date);
   }
-  function monthOffsetISO(offset, day){
-    const date = new Date(APP_NOW.getFullYear(), APP_NOW.getMonth() - offset, day, 12, 0, 0, 0);
-    return toISODateLocal(date);
-  }
-  function monthNameFromOffset(offset){
-    const date = new Date(APP_NOW.getFullYear(), APP_NOW.getMonth() - offset, 1);
-    const label = new Intl.DateTimeFormat('pt-BR', { month:'long' }).format(date);
-    return label.replace(/^./, letter => letter.toUpperCase());
-  }
-
   // ---------- data escolhida pelo motoboy (ponto 8) ----------
   // Todos os registros passam a aceitar uma data. Se o motoboy não mexer, fica "hoje".
   // O valor de um <input type="date"> vem como "AAAA-MM-DD", que é o mesmo formato que
@@ -1840,14 +1827,7 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
   }
-  const demoRefuels = [
-    { local:"Posto Ipiranga - Centro", quando:"Hoje, 07:40", litros:"3,6 L", litrosValue:3.6, valor:22.00, odometer:42680, dateISO:daysAgoISO(0) },
-    { local:"Posto Shell - Av. Brasil", quando:"Ontem, 18:15", litros:"4,1 L", litrosValue:4.1, valor:25.50, odometer:42553, dateISO:daysAgoISO(1) },
-    { local:"Posto BR - Setor Sul", quando:"Segunda, 08:02", litros:"3,8 L", litrosValue:3.8, valor:23.80, odometer:42417, dateISO:daysAgoISO(3) },
-    { local:"Posto Ipiranga - Centro", quando:"Sexta, 07:35", litros:"3,9 L", litrosValue:3.9, valor:24.10, odometer:42280, dateISO:daysAgoISO(7) },
-    { local:"Posto Raízen - Vila Nova", quando:"Quarta, 17:50", litros:"4,0 L", litrosValue:4.0, valor:24.60, odometer:42140, dateISO:daysAgoISO(9) },
-  ];
-  let refuels = Array.isArray(localState.refuels) ? localState.refuels : demoRefuels;
+  let refuels = Array.isArray(localState.refuels) ? localState.refuels : [];
 
   const fuelIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M4 11h8"/><path d="M14 8h2.5L19 11v6a1.5 1.5 0 0 1-3 0v-2a1 1 0 0 0-1-1h-1"/><path d="M2 21h14"/></svg>`;
   const wrenchIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.7 2.7-2-2Z"/></svg>`;
@@ -2374,16 +2354,9 @@
   let billingHistoryChart = null;
 
   // ---------- minha moto / manutenções ----------
-  const DEFAULT_MOTO_KM = 42680;
+  const DEFAULT_MOTO_KM = 0;
   let motoKm = Number(localState.motoKm) > 0 ? Number(localState.motoKm) : DEFAULT_MOTO_KM;
-  const demoMaintenances = [
-    { desc:`Troca de óleo · ${monthNameFromOffset(1)} (demonstração)`, valor:92.00, km:null, data:`${monthNameFromOffset(1)} · demonstração`, dateISO:monthOffsetISO(1, 18) },
-    { desc:`Revisão de freios · ${monthNameFromOffset(2)} (demonstração)`, valor:145.00, km:null, data:`${monthNameFromOffset(2)} · demonstração`, dateISO:monthOffsetISO(2, 16) },
-    { desc:`Ajuste da relação · ${monthNameFromOffset(3)} (demonstração)`, valor:78.00, km:null, data:`${monthNameFromOffset(3)} · demonstração`, dateISO:monthOffsetISO(3, 17) },
-    { desc:`Troca de óleo · ${monthNameFromOffset(4)} (demonstração)`, valor:122.00, km:null, data:`${monthNameFromOffset(4)} · demonstração`, dateISO:monthOffsetISO(4, 19) },
-    { desc:`Revisão preventiva · ${monthNameFromOffset(5)} (demonstração)`, valor:110.00, km:null, data:`${monthNameFromOffset(5)} · demonstração`, dateISO:monthOffsetISO(5, 15) },
-  ];
-  let maintenances = Array.isArray(localState.maintenances) ? localState.maintenances : demoMaintenances;
+  let maintenances = Array.isArray(localState.maintenances) ? localState.maintenances : [];
   const expenseCategories = {
     maintenance:{ label:'Manutenção', tag:'maint', icon:wrenchIcon, needsDescription:true, fieldLabel:'O QUE VOCÊ CONSERTOU OU TROCOU?', placeholder:'Ex: Troca de óleo' },
     wash:{ label:'Lavagem', tag:'wash', icon:washIcon, needsDescription:false },
@@ -2652,17 +2625,7 @@
   });
 
   // ---------- faturamento: entradas + despesas ----------
-  const demoEntradas = [
-    { desc:"Corridas do dia - segunda", valor:145.00, data:"Segunda", dateISO:daysAgoISO(5) },
-    { desc:"Corridas do dia - terça", valor:162.50, data:"Terça", dateISO:daysAgoISO(4) },
-    { desc:"Corridas do dia - quarta", valor:138.00, data:"Quarta", dateISO:daysAgoISO(3) },
-    { desc:`Corridas de ${monthNameFromOffset(1)} (demonstração)`, valor:720.00, data:`${monthNameFromOffset(1)} · demonstração`, dateISO:monthOffsetISO(1, 24) },
-    { desc:`Corridas de ${monthNameFromOffset(2)} (demonstração)`, valor:645.00, data:`${monthNameFromOffset(2)} · demonstração`, dateISO:monthOffsetISO(2, 23) },
-    { desc:`Corridas de ${monthNameFromOffset(3)} (demonstração)`, valor:780.00, data:`${monthNameFromOffset(3)} · demonstração`, dateISO:monthOffsetISO(3, 25) },
-    { desc:`Corridas de ${monthNameFromOffset(4)} (demonstração)`, valor:590.00, data:`${monthNameFromOffset(4)} · demonstração`, dateISO:monthOffsetISO(4, 22) },
-    { desc:`Corridas de ${monthNameFromOffset(5)} (demonstração)`, valor:670.00, data:`${monthNameFromOffset(5)} · demonstração`, dateISO:monthOffsetISO(5, 24) },
-  ];
-  let entradas = Array.isArray(localState.entradas) ? localState.entradas : demoEntradas;
+  let entradas = Array.isArray(localState.entradas) ? localState.entradas : [];
   let editingEntryIndex = null;
 
   function resetEntryFormMode(){
@@ -3053,7 +3016,7 @@
   // O consumo vem de Minha Moto e o preço por litro vem do último abastecimento.
   // Um serviço = 1 coleta que pode gerar várias entregas (motoboy pega vários pacotes
   // no mesmo lugar e entrega em endereços diferentes).
-  let CONSUMO_ATUAL = Number(localState.manualConsumption) > 0 ? Number(localState.manualConsumption) : 35; // pode ser informado em Minha Moto ou calculado pelos abastecimentos
+  let CONSUMO_ATUAL = Number(localState.manualConsumption) > 0 ? Number(localState.manualConsumption) : 0; // informado em Minha Moto ou calculado pelos abastecimentos
   let PRECO_ATUAL = latestRefuelPrice(); // calculado em Abastecimentos
   let consumoReal = null;                // km/L calculado a partir dos abastecimentos com km do painel
   let consumoManualDefinido = Boolean(localState.consumoManualDefinido && Number(localState.manualConsumption) > 0); // se o motoboy digitou um consumo à mão, respeitamos a escolha dele
