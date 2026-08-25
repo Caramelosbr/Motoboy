@@ -37,6 +37,7 @@
     --drawer-w:270px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  [hidden]{display:none !important;}
   html,body{height:100%;}
   body{
     margin:0;
@@ -49,6 +50,9 @@
   .display{font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:0.02em;}
   svg.icon{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
   button{ font-family:'Inter',sans-serif; touch-action:manipulation; }
+  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--orange); outline-offset:2px; border-radius:4px;
+  }
   .sr-only{
     position:absolute !important;
     width:1px !important; height:1px !important;
@@ -65,13 +69,13 @@
     background:rgba(20,23,28,0.94);
     backdrop-filter:blur(6px);
     border-bottom:1px solid var(--line);
-    padding:14px 16px;
+    padding:calc(14px + env(safe-area-inset-top)) 16px 14px;
     display:flex;
     align-items:center;
     gap:12px;
   }
   .menu-btn{
-    width:38px; height:38px;
+    width:44px; height:44px;
     display:flex; align-items:center; justify-content:center;
     background:var(--surface);
     border:1px solid var(--line);
@@ -84,11 +88,11 @@
   .menu-btn svg.icon{ width:19px; height:19px; }
 
   .topbar-titles h1{ font-size:14px; margin:0; font-weight:600; letter-spacing:0.05em; line-height:1.2; }
-  .topbar-titles .sub{ font-size:10px; color:var(--muted); margin-top:1px; }
+  .topbar-titles .sub{ font-size:12px; color:var(--muted); margin-top:1px; }
 
   .topbar .date{
     margin-left:auto;
-    font-size:11px; color:var(--muted); text-align:right; line-height:1.4;
+    font-size:12px; color:var(--muted); text-align:right; line-height:1.4;
   }
 
   /* ============ DRAWER + BACKDROP ============ */
@@ -129,7 +133,7 @@
   }
   .drawer-head .brand span{ font-size:13px; font-weight:600; letter-spacing:0.05em; }
   .drawer-close{
-    width:32px; height:32px;
+    width:44px; height:44px;
     display:flex; align-items:center; justify-content:center;
     background:transparent; border:none; color:var(--muted); cursor:pointer;
     border-radius:8px;
@@ -154,7 +158,7 @@
   .drawer-foot{
     margin-top:auto;
     padding-top:var(--space-4);
-    font-size:10px; color:var(--muted-2); letter-spacing:0.03em;
+    font-size:12px; color:var(--muted-2); letter-spacing:0.03em;
   }
 
   /* ============ CONTENT ============ */
@@ -182,17 +186,17 @@
     width:180px; height:180px;
     background:radial-gradient(circle, rgba(255,122,26,0.15), transparent 70%);
   }
-  .gauge-label{ font-size:11px; color:var(--muted); letter-spacing:0.12em; font-weight:600; }
+  .gauge-label{ font-size:12px; color:var(--muted); letter-spacing:0.12em; font-weight:600; }
   .gauge-wrap{ display:flex; justify-content:center; margin-top:6px; }
   .gauge-svg{ width:230px; height:135px; }
   .gauge-center{ text-align:center; margin-top:-58px; }
   .gauge-value{ font-size:34px; font-weight:700; display:block; }
-  .gauge-sub{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .gauge-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
   .gauge-foot{
     display:flex; justify-content:space-between;
     margin-top:14px; padding-top:14px;
     border-top:1px solid var(--line);
-    font-size:11px; color:var(--muted);
+    font-size:12px; color:var(--muted);
   }
   .gauge-foot b{ color:var(--text); font-family:'JetBrains Mono',monospace; font-weight:600; }
 
@@ -205,14 +209,14 @@
     padding:14px;
   }
   .stat-card svg.icon{ color:var(--muted); width:18px; height:18px; }
-  .stat-card .label{ font-size:10.5px; color:var(--muted); margin-top:10px; letter-spacing:0.03em; }
+  .stat-card .label{ font-size:12px; color:var(--muted); margin-top:10px; letter-spacing:0.03em; }
   .stat-card .value{ font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:700; margin-top:3px; }
   .stat-card .value.orange{ color:var(--orange); }
   .stat-card .value.red{ color:var(--red); }
   .dashboard-stats{ grid-template-columns:1fr; gap:6px; }
   .dashboard-stats .stat-card{ padding:14px 16px; min-width:0; display:flex; align-items:center; gap:12px; text-align:left; }
   .dashboard-stats .stat-card .icon{ margin:0; flex-shrink:0; }
-  .dashboard-stats .stat-card .label{ font-size:11px; line-height:1.25; margin:0; flex:1; }
+  .dashboard-stats .stat-card .label{ font-size:12px; line-height:1.25; margin:0; flex:1; }
   .dashboard-stats .stat-card .value{ font-size:20px; white-space:nowrap; margin:0; }
 
   .noscript-warning{
@@ -232,33 +236,33 @@
     border-radius:50%; background:var(--orange-dim); pointer-events:none;
   }
   .cash-card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; position:relative; z-index:1; }
-  .cash-label{ font-size:11px; color:var(--muted); letter-spacing:.09em; font-weight:700; }
+  .cash-label{ font-size:12px; color:var(--muted); letter-spacing:.09em; font-weight:700; }
   .cash-value{ font-family:'JetBrains Mono',monospace; font-size:34px; font-weight:700; margin-top:6px; letter-spacing:-.04em; }
   .demo-badge{
     color:var(--orange); background:var(--orange-dim); border:1px solid rgba(255,122,26,.28);
-    border-radius:999px; padding:6px 9px; font-size:10px; font-weight:700; white-space:nowrap;
+    border-radius:999px; padding:6px 9px; font-size:12px; font-weight:700; white-space:nowrap;
   }
   .cash-formula{
-    display:flex; align-items:center; gap:7px; margin-top:10px; color:var(--muted); font-size:11.5px; line-height:1.45;
+    display:flex; align-items:center; gap:7px; margin-top:10px; color:var(--muted); font-size:12px; line-height:1.45;
   }
   .cash-formula svg.icon{ width:16px; height:16px; color:var(--orange); }
   .cash-details{
     display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px; padding-top:15px; border-top:1px solid var(--line);
   }
-  .cash-detail .label{ font-size:10px; color:var(--muted); }
+  .cash-detail .label{ font-size:12px; color:var(--muted); }
   .cash-detail .value{ font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; margin-top:4px; }
   .cash-detail .value.green{ color:var(--green); }
   .cash-detail .value.red{ color:var(--red); }
   .cash-note{
     margin-top:12px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--surface-2);
-    color:var(--muted); font-size:11px; line-height:1.5;
+    color:var(--muted); font-size:12px; line-height:1.5;
   }
   .cash-note b{ color:var(--text); }
   .quick-actions{ display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
   .quick-action{
     min-height:72px; border:1px solid var(--line); border-radius:var(--radius-md); background:var(--surface);
     color:var(--text); padding:11px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:7px; font-size:11.5px; font-weight:600; cursor:pointer;
+    gap:7px; font-size:12px; font-weight:600; cursor:pointer;
   }
   .quick-action svg.icon{ width:21px; height:21px; color:var(--orange); }
   .quick-action:active{ background:var(--surface-2); }
@@ -268,7 +272,7 @@
   .section-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
   .section-head h2{ font-size:13px; margin:0; font-weight:600; letter-spacing:0.06em; color:var(--muted); }
   .section-head button.link{
-    font-size:11px; color:var(--orange); background:none; border:none; padding:0; cursor:pointer;
+    font-size:12px; color:var(--orange); background:none; border:none; padding:0; cursor:pointer;
   }
 
   .chart-card{
@@ -276,15 +280,15 @@
     border:1px solid var(--line); border-radius:var(--radius-lg); padding:17px 14px 13px;
   }
   .dashboard-chart-summary{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:0 3px; }
-  .dashboard-chart-summary .label{ color:var(--muted); font-size:9.5px; font-weight:700; letter-spacing:.07em; }
+  .dashboard-chart-summary .label{ color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.07em; }
   .dashboard-chart-summary .value{
     margin-top:4px; color:var(--text); font-family:'JetBrains Mono',monospace;
     font-size:25px; font-weight:700; letter-spacing:-.03em;
   }
-  .dashboard-chart-summary .detail{ margin-top:4px; color:var(--muted); font-size:10.5px; line-height:1.4; }
+  .dashboard-chart-summary .detail{ margin-top:4px; color:var(--muted); font-size:12px; line-height:1.4; }
   .dashboard-chart-status{
     padding:6px 8px; border-radius:999px; background:var(--green-dim); color:var(--green);
-    border:1px solid rgba(63,178,127,.25); font-size:8.5px; font-weight:800; letter-spacing:.04em;
+    border:1px solid rgba(63,178,127,.25); font-size:12px; font-weight:800; letter-spacing:.04em;
     white-space:nowrap;
   }
   .dashboard-chart-status.negative{ background:var(--red-dim); color:var(--red); border-color:rgba(255,107,118,.28); }
@@ -293,7 +297,7 @@
   .dashboard-chart-canvas canvas{ width:100% !important; height:100% !important; max-height:none; }
   .dashboard-chart-guide{
     display:flex; align-items:center; gap:6px; margin-top:8px; padding:9px 10px;
-    border-radius:9px; background:var(--surface-2); color:var(--muted); font-size:9.5px; line-height:1.35;
+    border-radius:9px; background:var(--surface-2); color:var(--muted); font-size:12px; line-height:1.35;
   }
   .dashboard-chart-guide svg.icon{ width:14px; height:14px; color:var(--orange); }
   .weekly-refuel-card{
@@ -304,10 +308,10 @@
   .weekly-refuel-summary .value{
     font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:700; color:var(--text);
   }
-  .weekly-refuel-summary .label{ margin-top:2px; color:var(--muted); font-size:10.5px; }
+  .weekly-refuel-summary .label{ margin-top:2px; color:var(--muted); font-size:12px; }
   .weekly-refuel-trend{
     padding:6px 8px; border-radius:999px; background:var(--orange-dim); color:var(--orange);
-    font-size:9.5px; font-weight:700; text-align:center; white-space:nowrap;
+    font-size:12px; font-weight:700; text-align:center; white-space:nowrap;
   }
   .weekly-refuel-chart{
     margin-top:15px; padding-top:13px; border-top:1px solid var(--line);
@@ -318,7 +322,7 @@
     align-items:center; gap:9px;
   }
   .weekly-refuel-period{
-    color:var(--muted); font-size:10px; line-height:1.2; font-weight:600;
+    color:var(--muted); font-size:12px; line-height:1.2; font-weight:600;
   }
   .weekly-refuel-bar-track{
     position:relative; width:100%; height:11px; overflow:hidden;
@@ -337,9 +341,9 @@
   .weekly-refuel-count{
     width:28px; height:28px; display:flex; align-items:center; justify-content:center;
     border-radius:8px; background:var(--surface-3); color:var(--text);
-    font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700;
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
   }
-  .weekly-refuel-note{ margin-top:9px; color:var(--muted); font-size:10.5px; line-height:1.45; }
+  .weekly-refuel-note{ margin-top:9px; color:var(--muted); font-size:12px; line-height:1.45; }
 
   .cheapest-station-card{
     position:relative; overflow:hidden;
@@ -356,26 +360,26 @@
     border-radius:10px; background:var(--orange-dim); color:var(--orange); flex-shrink:0;
   }
   .cheapest-station-icon svg.icon{ width:18px; height:18px; }
-  .cheapest-station-head .title{ font-size:11px; color:var(--muted); letter-spacing:.06em; font-weight:700; }
-  .cheapest-station-head .period{ margin-top:2px; color:var(--text); font-size:10.5px; }
+  .cheapest-station-head .title{ font-size:12px; color:var(--muted); letter-spacing:.06em; font-weight:700; }
+  .cheapest-station-head .period{ margin-top:2px; color:var(--text); font-size:12px; }
   .cheapest-station-badge{
     margin-left:auto; padding:5px 7px; border-radius:999px; background:var(--green-dim);
-    color:var(--green); border:1px solid rgba(63,178,127,.25); font-size:8.5px; font-weight:700;
+    color:var(--green); border:1px solid rgba(63,178,127,.25); font-size:12px; font-weight:700;
   }
   .cheapest-station-main{
     position:relative; z-index:1; margin-top:15px; display:flex; align-items:flex-end;
     justify-content:space-between; gap:12px;
   }
   .cheapest-station-name{ font-size:15px; font-weight:700; line-height:1.3; }
-  .cheapest-station-date{ margin-top:4px; color:var(--muted); font-size:10.5px; }
+  .cheapest-station-date{ margin-top:4px; color:var(--muted); font-size:12px; }
   .cheapest-station-price{
     color:var(--orange); font-family:'JetBrains Mono',monospace; font-size:22px;
     font-weight:700; white-space:nowrap;
   }
-  .cheapest-station-price small{ color:var(--muted); font-size:10px; font-family:'Inter',sans-serif; }
+  .cheapest-station-price small{ color:var(--muted); font-size:12px; font-family:'Inter',sans-serif; }
   .cheapest-station-saving{
     position:relative; z-index:1; margin-top:12px; padding:9px 10px; border-radius:10px;
-    background:var(--orange-dim); color:var(--text); font-size:10.5px; line-height:1.4;
+    background:var(--orange-dim); color:var(--text); font-size:12px; line-height:1.4;
   }
   .station-ranking{ position:relative; z-index:1; margin-top:13px; border-top:1px solid var(--line); }
   .station-ranking-row{
@@ -386,13 +390,13 @@
   .station-rank{
     width:24px; height:24px; display:flex; align-items:center; justify-content:center;
     border-radius:7px; background:var(--surface-3); color:var(--muted);
-    font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700;
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
   }
   .station-ranking-row:first-child .station-rank{ background:var(--orange-dim); color:var(--orange); }
-  .station-ranking-name{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11.5px; }
-  .station-ranking-date{ display:block; margin-top:2px; color:var(--muted); font-size:9px; }
-  .station-ranking-price{ font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; }
-  .cheapest-station-note{ position:relative; z-index:1; margin-top:11px; color:var(--muted); font-size:9.5px; line-height:1.45; }
+  .station-ranking-name{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+  .station-ranking-date{ display:block; margin-top:2px; color:var(--muted); font-size:12px; }
+  .station-ranking-price{ font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; }
+  .cheapest-station-note{ position:relative; z-index:1; margin-top:11px; color:var(--muted); font-size:12px; line-height:1.45; }
   .period-select{
     min-height:44px; background:var(--surface-2); color:var(--text); border:1px solid var(--line);
     border-radius:var(--radius-sm); padding:8px 34px 8px 10px; font-size:12px; font-weight:600;
@@ -410,16 +414,38 @@
   .list-item .badge.green svg.icon{ color:var(--green); }
   .list-item .info{ flex:1; min-width:0; }
   .list-item .info .title{ font-size:13.5px; font-weight:500; }
-  .list-item .info .sub{ font-size:11px; color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px; }
+  .list-item .info .sub{ font-size:12px; color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px; }
   .list-item .amount{ font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; color:var(--orange); white-space:nowrap; }
   .list-item .amount.green{ color:var(--green); }
+  .record-side{ display:flex; flex-direction:column; align-items:flex-end; gap:7px; flex-shrink:0; }
+  .edit-badge{
+    display:inline-block; font-size:12px; font-weight:600; color:var(--muted);
+    background:var(--surface-3); border:1px solid var(--line); border-radius:999px;
+    padding:1px 7px; margin-left:6px; vertical-align:middle; letter-spacing:0.02em; cursor:help;
+  }
+  .edit-reason-field{ border-top:1px dashed var(--line); padding-top:12px; }
+  .record-actions{ display:flex; align-items:center; justify-content:flex-end; gap:5px; }
+  .record-action-btn{
+    width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); border-radius:10px; background:var(--surface-2);
+    color:var(--muted); cursor:pointer; flex-shrink:0;
+  }
+  .record-action-btn svg.icon{ width:17px; height:17px; }
+  .record-action-btn.edit:active{ color:var(--orange); border-color:rgba(255,122,26,.45); }
+  .record-action-btn.delete:active{ color:var(--red); border-color:rgba(255,107,118,.45); }
+  .form-action-row{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px; align-items:stretch; }
+  .form-action-row .btn-secondary{ margin-top:14px; min-height:44px; white-space:nowrap; }
 
   .cat-tag{
-    font-size:9px; letter-spacing:0.04em; font-weight:600; padding:2px 6px; border-radius:5px; text-transform:uppercase;
+    font-size:12px; letter-spacing:0.04em; font-weight:600; padding:2px 6px; border-radius:5px; text-transform:uppercase;
     flex-shrink:0;
   }
   .cat-tag.fuel{ background:var(--orange-dim); color:var(--orange); }
   .cat-tag.maint{ background:var(--surface-3); color:var(--muted); }
+  .cat-tag.wash{ background:rgba(75,153,255,.13); color:#82B8FF; }
+  .cat-tag.toll{ background:rgba(167,125,255,.13); color:#C1A3FF; }
+  .cat-tag.parking{ background:rgba(63,178,127,.13); color:#74D2A8; }
+  .cat-tag.other{ background:rgba(139,146,160,.13); color:#AEB4BF; }
 
   /* ============ INFO STATE ============ */
   .info-banner{
@@ -428,16 +454,16 @@
   }
   .info-banner svg.icon{ width:20px;height:20px; color:var(--orange); flex-shrink:0; margin-top:1px; }
   .info-banner .title{ font-size:13px; font-weight:600; }
-  .info-banner .desc{ font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.55; }
+  .info-banner .desc{ font-size:12px; color:var(--muted); margin-top:4px; line-height:1.55; }
 
   .example-tag{
-    font-size:9px; letter-spacing:0.05em; font-weight:600; color:var(--muted-2);
+    font-size:12px; letter-spacing:0.05em; font-weight:600; color:var(--muted-2);
     background:var(--surface-2); padding:2px 7px; border-radius:5px; text-transform:uppercase;
   }
 
   /* ============ FORM FIELDS ============ */
   .field-group{ display:flex; flex-direction:column; gap:6px; }
-  .field-label{ font-size:11px; color:var(--muted); letter-spacing:0.03em; }
+  .field-label{ font-size:12px; color:var(--muted); letter-spacing:0.03em; }
   .field-input{
     background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm);
     padding:11px 12px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:15px;
@@ -446,6 +472,11 @@
   .field-input:focus{ outline:none; border-color:var(--orange); box-shadow:0 0 0 3px var(--orange-dim); }
   .field-input::placeholder{ color:var(--muted-2); font-family:'Inter',sans-serif; font-size:13px; }
   .field-input.text{ font-family:'Inter',sans-serif; font-size:14px; }
+  .form-message{
+    display:none; padding:10px 11px; border-radius:var(--radius-sm); font-size:12px; line-height:1.45;
+  }
+  .form-message.visible{ display:block; }
+  .form-message.error{ color:var(--red); background:var(--red-dim); border:1px solid rgba(255,107,118,.32); }
 
   .form-card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px; }
   .form-row{ display:flex; gap:10px; }
@@ -455,7 +486,7 @@
     display:flex; gap:10px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
   }
   .assumptions .field-group{ flex:1; }
-  .assumptions .field-label{ font-size:10px; }
+  .assumptions .field-label{ font-size:12px; }
   .assumptions .field-input{ padding:8px 10px; font-size:13px; }
 
   .btn-primary{
@@ -470,6 +501,11 @@
     padding:12px; font-weight:600; font-size:13.5px; cursor:pointer;
   }
   .btn-secondary:active{ background:var(--surface-3); }
+  .btn-danger{
+    background:var(--red); color:#1d090c; border:none; border-radius:var(--radius-sm);
+    padding:12px; font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+  .btn-danger:active{ opacity:.85; }
 
   /* ============ RESULT CARD ============ */
   .result-card{
@@ -487,7 +523,7 @@
   /* ============ TRIP LIST ============ */
   .trip-list-item{ display:flex; justify-content:space-between; align-items:center; padding:11px 14px; border-bottom:1px solid var(--line); }
   .trip-list-item:last-child{ border-bottom:none; }
-  .trip-list-item .trip-meta{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .trip-list-item .trip-meta{ font-size:12px; color:var(--muted); margin-top:2px; }
   .trip-amt{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13.5px; white-space:nowrap; }
   .trip-amt.profit{ color:var(--green); }
   .trip-amt.loss{ color:var(--red); }
@@ -508,9 +544,9 @@
   }
   .moto-icon-wrap svg.icon{ width:26px;height:26px; color:var(--orange); }
   .moto-card-head .name{ font-size:16px; font-weight:600; }
-  .moto-card-head .year{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .moto-card-head .year{ font-size:12px; color:var(--muted); margin-top:2px; }
   .moto-specs{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding-top:16px; border-top:1px solid var(--line); }
-  .moto-spec .label{ font-size:10px; color:var(--muted); letter-spacing:0.03em; }
+  .moto-spec .label{ font-size:12px; color:var(--muted); letter-spacing:0.03em; }
   .moto-spec .value{ font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; margin-top:3px; }
 
   /* ===== consumo real da moto + gráfico ===== */
@@ -519,10 +555,10 @@
     border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px;
   }
   .consumo-real-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
-  .consumo-real-label{ font-size:11px; color:var(--muted); letter-spacing:0.06em; font-weight:600; }
+  .consumo-real-label{ font-size:12px; color:var(--muted); letter-spacing:0.06em; font-weight:600; }
   .consumo-real-value{ font-family:'JetBrains Mono',monospace; font-size:30px; font-weight:700; color:var(--green); margin-top:4px; }
   .consumo-real-badge{
-    font-size:11px; color:var(--muted); background:var(--surface-3); border-radius:999px;
+    font-size:12px; color:var(--muted); background:var(--surface-3); border-radius:999px;
     padding:5px 10px; white-space:nowrap; flex-shrink:0;
   }
   .consumo-real-note{ font-size:12px; color:var(--muted); line-height:1.5; margin-top:8px; }
@@ -552,6 +588,66 @@
   .balance-row.result .label{ font-weight:600; color:var(--text); font-size:13px; }
   .balance-row.result .amt{ font-size:21px; }
 
+  .billing-period-card{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    margin-bottom:12px; padding:14px 15px; background:var(--surface);
+    border:1px solid var(--line); border-radius:var(--radius-md);
+  }
+  .billing-period-copy{ min-width:0; }
+  .billing-period-label{ color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.08em; }
+  .billing-period-value{ margin-top:3px; color:var(--text); font-size:14px; font-weight:700; }
+  .billing-period-note{ margin-top:3px; color:var(--muted); font-size:12px; line-height:1.35; }
+  .billing-period-card .period-select{ flex-shrink:0; }
+  .billing-history-card{
+    background:linear-gradient(180deg, #22272F 0%, var(--surface) 100%);
+    border:1px solid var(--line); border-radius:var(--radius-lg); padding:17px 14px 13px;
+  }
+  .billing-history-summary{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:0 3px; }
+  .billing-history-summary .label{ color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.07em; }
+  .billing-history-summary .value{
+    margin-top:4px; color:var(--text); font-family:'JetBrains Mono',monospace;
+    font-size:24px; font-weight:700; letter-spacing:-.03em;
+  }
+  .billing-history-summary .detail{ margin-top:4px; color:var(--muted); font-size:12px; line-height:1.4; }
+  .billing-history-status{
+    padding:6px 8px; border-radius:999px; background:var(--green-dim); color:var(--green);
+    border:1px solid rgba(63,178,127,.25); font-size:12px; font-weight:800; letter-spacing:.04em;
+    white-space:nowrap;
+  }
+  .billing-history-status.negative{ background:var(--red-dim); color:var(--red); border-color:rgba(255,107,118,.28); }
+  .billing-history-status.balanced{ background:var(--surface-3); color:var(--muted); border-color:var(--line); }
+  .billing-chart-legend{
+    display:flex; align-items:center; flex-wrap:wrap; gap:9px 13px;
+    margin-top:13px; padding:10px; border-radius:9px; background:var(--surface-2);
+  }
+  .billing-chart-legend-item{ display:flex; align-items:center; gap:6px; color:var(--muted); font-size:12px; font-weight:700; }
+  .billing-chart-swatch{ width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+  .billing-chart-swatch.entries{ background:var(--green); }
+  .billing-chart-swatch.expenses{ background:var(--red); }
+  .billing-chart-swatch.result{
+    width:16px; height:3px; border-radius:999px; background:var(--orange); position:relative;
+  }
+  .billing-chart-swatch.result::after{
+    content:""; position:absolute; width:7px; height:7px; left:5px; top:-2px;
+    border-radius:50%; background:var(--orange); border:1px solid var(--surface-2);
+  }
+  .billing-year-select{ min-width:92px; }
+  .billing-history-scroll{
+    width:100%; margin-top:8px; overflow-x:auto; overflow-y:hidden; padding-bottom:5px;
+    overscroll-behavior-inline:contain; scroll-behavior:smooth; scrollbar-width:thin;
+    scrollbar-color:var(--surface-3) transparent;
+  }
+  .billing-history-scroll::-webkit-scrollbar{ height:6px; }
+  .billing-history-scroll::-webkit-scrollbar-track{ background:transparent; }
+  .billing-history-scroll::-webkit-scrollbar-thumb{ background:var(--surface-3); border-radius:999px; }
+  .billing-history-canvas{ position:relative; width:820px; min-width:820px; height:260px; margin:0; }
+  .billing-history-canvas canvas{ width:100% !important; height:100% !important; max-height:none; }
+  .billing-history-guide{
+    display:flex; align-items:flex-start; gap:7px; margin-top:8px; padding:10px;
+    border-radius:9px; background:var(--surface-2); color:var(--muted); font-size:12px; line-height:1.45;
+  }
+  .billing-history-guide svg.icon{ width:15px; height:15px; color:var(--orange); margin-top:1px; }
+
   /* ============ MODAL ============ */
   .modal-backdrop{
     position:fixed; inset:0; background:rgba(0,0,0,0.6);
@@ -572,14 +668,18 @@
   .modal.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%); }
   .modal-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
   .modal-head h3{ font-size:15px; margin:0; font-weight:600; }
-  .modal-head .desc{ font-size:11.5px; color:var(--muted); margin-top:3px; }
+  .modal-head .desc{ font-size:12px; color:var(--muted); margin-top:3px; }
   .modal-close{
-    width:28px;height:28px; display:flex; align-items:center; justify-content:center;
+    width:44px;height:44px; display:flex; align-items:center; justify-content:center;
     background:transparent; border:none; color:var(--muted); cursor:pointer; border-radius:8px; flex-shrink:0;
   }
   .modal-body{ margin-top:14px; display:flex; flex-direction:column; gap:12px; }
   .modal-foot{ display:flex; gap:10px; margin-top:18px; }
-  .modal-foot .btn-secondary, .modal-foot .btn-primary{ flex:1; margin-top:0; }
+  .modal-foot .btn-secondary, .modal-foot .btn-primary, .modal-foot .btn-danger{ flex:1; margin-top:0; min-height:44px; }
+  .delete-warning{
+    padding:12px; border:1px solid rgba(255,107,118,.32); border-radius:var(--radius-sm);
+    background:var(--red-dim); color:var(--text); font-size:12.5px; line-height:1.55;
+  }
 
   /* ============ ROTAS: PONTO DE PARTIDA ============ */
   .start-card{
@@ -591,17 +691,17 @@
     display:flex; align-items:center; justify-content:center; color:var(--green); flex-shrink:0;
   }
   .start-card .info{ flex:1; }
-  .start-card .label{ font-size:9.5px; color:var(--muted); letter-spacing:0.05em; }
+  .start-card .label{ font-size:12px; color:var(--muted); letter-spacing:0.05em; }
   .start-card .value{ font-size:13.5px; font-weight:600; margin-top:2px; }
   .start-card .check{
-    width:24px;height:24px; border-radius:50%; background:var(--green);
-    display:flex; align-items:center; justify-content:center; color:#0d1f16; flex-shrink:0;
+    width:44px;height:44px; border-radius:50%; background:var(--green);
+    display:flex; align-items:center; justify-content:center; color:#0d1f16; flex-shrink:0; cursor:pointer; border:none;
   }
   .start-card .check svg.icon{ width:14px; height:14px; stroke-width:3; }
 
   .order-head{ display:flex; justify-content:space-between; align-items:center; margin:18px 0 10px; }
   .order-head h2{ font-size:12px; color:var(--muted); letter-spacing:0.06em; font-weight:600; margin:0; }
-  .drag-hint{ font-size:10px; color:var(--muted-2); display:flex; align-items:center; gap:4px; }
+  .drag-hint{ font-size:12px; color:var(--muted-2); display:flex; align-items:center; gap:4px; }
   .drag-hint svg.icon{ width:13px; height:13px; }
 
   /* ============ ROTAS: SERVIÇO CARD ============ */
@@ -614,13 +714,13 @@
   .service-head-left{ display:flex; align-items:center; gap:8px; }
   .service-head .badge-num{
     width:22px;height:22px; border-radius:50%; background:var(--surface-3); color:var(--text);
-    font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;
     font-family:'JetBrains Mono',monospace; flex-shrink:0;
   }
-  .service-head .title{ font-size:11.5px; letter-spacing:0.05em; font-weight:600; color:var(--muted); }
+  .service-head .title{ font-size:12px; letter-spacing:0.05em; font-weight:600; color:var(--muted); }
   .service-remove{
     background:transparent; border:none; color:var(--muted-2); cursor:pointer;
-    width:30px;height:30px; border-radius:8px; display:flex;align-items:center;justify-content:center;
+    width:44px;height:44px; border-radius:8px; display:flex;align-items:center;justify-content:center;
   }
   .service-remove:active{ background:var(--surface-2); color:var(--red); }
 
@@ -630,7 +730,7 @@
   .stop-dot.entrega{ border-color:var(--orange); background:var(--orange); }
   .stop-line{ width:2px; flex:1; background:var(--line); margin:3px 0; min-height:14px; }
   .stop-body{ flex:1; padding-bottom:10px; position:relative; }
-  .stop-label{ font-size:9px; color:var(--muted); letter-spacing:0.05em; margin-bottom:4px; }
+  .stop-label{ font-size:12px; color:var(--muted); letter-spacing:0.05em; margin-bottom:4px; }
 
   .suggest-list{
     position:absolute; left:0; right:0; top:100%; margin-top:4px;
@@ -642,17 +742,17 @@
   .suggest-item{ width:100%; padding:10px 12px; font-size:12.5px; font-family:'Inter',sans-serif; color:var(--text); cursor:pointer; border:0; border-bottom:1px solid var(--line); background:transparent; text-align:left; }
   .suggest-item:last-child{ border-bottom:none; }
   .suggest-item:active{ background:var(--surface-2); }
-  .suggest-empty{ padding:10px 12px; font-size:11.5px; color:var(--muted); }
+  .suggest-empty{ padding:10px 12px; font-size:12px; color:var(--muted); }
 
   .service-meta-row{ display:flex; gap:8px; padding-top:10px; border-top:1px solid var(--line); align-items:flex-end; }
   .service-meta-row .field-group{ flex:1; gap:4px; }
-  .service-meta-row .field-label{ font-size:8.5px; }
+  .service-meta-row .field-label{ font-size:12px; }
   .service-meta-row .field-input{ padding:8px 9px; font-size:12.5px; }
   .valor-group{ max-width:110px; }
 
   .route-calc{
     flex:1.4; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm);
-    padding:9px 10px; font-size:11.5px; color:var(--muted-2); display:flex; align-items:center; gap:7px;
+    padding:9px 10px; font-size:12px; color:var(--muted-2); display:flex; align-items:center; gap:7px;
     min-height:38px;
   }
   .route-calc.ok{ color:var(--text); }
@@ -717,8 +817,8 @@
   .entrega-block:first-child{ border-top:none; margin-top:0; padding-top:0; }
   .entrega-remove{
     background:transparent; border:none; color:var(--muted-2); cursor:pointer;
-    width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center;
-    flex-shrink:0; align-self:flex-start; margin-top:18px;
+    width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; align-self:flex-start; margin-top:12px;
   }
   .entrega-remove:active{ background:var(--surface-2); color:var(--red); }
 
@@ -740,7 +840,7 @@
   }
   .cliente-card .info{ flex:1; min-width:0; }
   .cliente-card .info .name{ font-size:13.5px; font-weight:600; }
-  .cliente-card .info .sub{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .cliente-card .info .sub{ font-size:12px; color:var(--muted); margin-top:2px; }
   .cliente-card .info .sub.owed{ color:var(--red); }
   .cliente-card .info .sub.clear{ color:var(--green); }
   .cliente-card .btn-charge{
@@ -748,13 +848,14 @@
     padding:9px 14px; font-weight:700; font-size:12px; cursor:pointer; flex-shrink:0; white-space:nowrap;
   }
   .cliente-card .btn-charge:active{ opacity:.85; }
-  .cliente-card .account-count{ display:block; margin-top:3px; color:var(--muted); font-size:10px; }
+  .cliente-card .account-count{ display:block; margin-top:3px; color:var(--muted); font-size:12px; }
+  .cliente-side{ display:flex; flex-direction:column; align-items:flex-end; gap:7px; flex-shrink:0; }
   .cliente-empty{ padding:22px 16px; font-size:12px; color:var(--muted); text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); }
   .receipt-balance{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
     background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px;
   }
-  .receipt-balance .label{ color:var(--muted); font-size:11px; }
+  .receipt-balance .label{ color:var(--muted); font-size:12px; }
   .receipt-balance .value{ font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:700; color:var(--orange); }
 
   /* ============ ROTAS: RESUMO E AÇÃO SEMPRE VISÍVEIS ============ */
@@ -778,7 +879,7 @@
   .route-dock-stat{ min-width:0; padding-right:5px; border-right:1px solid var(--line); }
   .route-dock-stat:last-child{ border-right:0; padding-right:0; }
   .route-dock-stat .label{
-    color:var(--muted); font-size:8.5px; line-height:1.2; letter-spacing:.03em;
+    color:var(--muted); font-size:12px; line-height:1.2; letter-spacing:.03em;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .route-dock-stat .value{
@@ -804,17 +905,87 @@
     display:flex; align-items:center; justify-content:space-between; gap:12px;
     box-shadow:0 12px 30px rgba(0,0,0,.42);
   }
-  .route-confirmation .message{ font-size:11.5px; line-height:1.5; }
+  .route-confirmation .message{ font-size:12px; line-height:1.5; }
   .route-confirmation .message b{ display:block; margin-bottom:2px; color:var(--green); font-size:12.5px; }
   .route-confirmation .view-clients{
     min-height:44px; border:1px solid var(--green); border-radius:var(--radius-sm); background:transparent;
-    color:var(--green); padding:9px 12px; font-weight:700; font-size:11.5px; cursor:pointer; white-space:nowrap;
+    color:var(--green); padding:9px 12px; font-weight:700; font-size:12px; cursor:pointer; white-space:nowrap;
   }
   .route-keyboard-open .route-action-dock{
     transform:translateY(calc(100% + 6px)) !important; opacity:0 !important; pointer-events:none !important;
   }
 
-  footer.appfoot{ text-align:center; font-size:10.5px; color:var(--muted-2); padding:10px 16px 4px; letter-spacing:0.04em; }
+  /* ============ HISTÓRICO DE ROTAS ============ */
+  .route-history-filter{
+    display:flex; align-items:flex-end; gap:10px; padding:14px;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+  }
+  .route-history-filter .field-group{ flex:1; min-width:0; }
+  .route-history-list{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+  .route-history-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden;
+  }
+  .route-history-summary{
+    width:100%; padding:15px; background:transparent; color:var(--text); border:0; cursor:pointer; text-align:left;
+  }
+  .route-history-summary:active{ background:var(--surface-2); }
+  .route-history-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .route-history-title{ font-size:14px; font-weight:650; }
+  .route-history-date{ color:var(--muted); font-size:12px; margin-top:3px; }
+  .route-history-chevron{
+    width:30px; height:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    color:var(--muted); border:1px solid var(--line); border-radius:9px;
+  }
+  .route-history-chevron svg{ transition:transform .18s ease; }
+  .route-history-summary[aria-expanded="true"] .route-history-chevron svg{ transform:rotate(180deg); }
+  .route-history-metrics{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; margin-top:13px; }
+  .route-history-metric{
+    min-width:0; padding:9px 8px; background:var(--surface-2); border-radius:9px;
+  }
+  .route-history-metric .label{ color:var(--muted); font-size:12px; letter-spacing:.03em; }
+  .route-history-metric .value{
+    margin-top:4px; font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .route-history-metric .value.positive{ color:var(--green); }
+  .route-history-metric .value.negative{ color:var(--red); }
+  .route-history-details{ padding:0 15px 15px; border-top:1px solid var(--line); }
+  .route-history-section-title{
+    margin-top:14px; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.07em;
+  }
+  .route-history-service{ margin-top:9px; padding:11px; background:var(--surface-2); border-radius:10px; }
+  .route-history-service-head{ display:flex; justify-content:space-between; gap:10px; font-size:12px; }
+  .route-history-payment{ color:var(--muted); font-size:12px; text-align:right; }
+  .route-history-stop{ display:flex; align-items:flex-start; gap:9px; margin-top:9px; font-size:12px; line-height:1.45; }
+  .route-history-stop-dot{ width:8px; height:8px; border-radius:50%; background:var(--orange); margin-top:4px; flex-shrink:0; }
+  .route-history-stop.delivery .route-history-stop-dot{ background:var(--green); }
+  .route-history-stop-main{ min-width:0; flex:1; }
+  .route-history-stop-label{ color:var(--muted); font-size:12px; margin-bottom:2px; }
+  .route-history-stop-value{ overflow-wrap:anywhere; }
+  .route-history-stop-price{ color:var(--text); font-family:'JetBrains Mono',monospace; white-space:nowrap; }
+  .route-history-finance{ margin-top:9px; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .route-history-finance-row{ display:flex; justify-content:space-between; gap:12px; padding:9px 10px; font-size:12px; border-bottom:1px solid var(--line); }
+  .route-history-finance-row:last-child{ border-bottom:0; }
+  .route-history-finance-row span{ color:var(--muted); }
+  .route-history-finance-row b{ font-family:'JetBrains Mono',monospace; }
+  .route-cancel-btn{
+    width:100%; margin-top:14px; padding:11px; min-height:44px;
+    background:transparent; color:var(--red); border:1.5px solid var(--red);
+    border-radius:var(--radius-sm); font-size:13px; font-weight:600; cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .route-cancel-btn:active{ background:var(--red-dim); }
+  .route-cancel-note{ margin-top:8px; font-size:12px; color:var(--muted); line-height:1.5; text-align:center; }
+  .route-history-legacy{
+    margin-top:12px; padding:10px; color:var(--muted); background:var(--surface-2); border-radius:9px;
+    font-size:12px; line-height:1.5;
+  }
+  .route-history-empty{
+    padding:28px 18px; text-align:center; color:var(--muted); background:var(--surface);
+    border:1px dashed var(--line); border-radius:var(--radius-md); font-size:12px; line-height:1.55;
+  }
+
+  footer.appfoot{ text-align:center; font-size:12px; color:var(--muted-2); padding:10px 16px 4px; letter-spacing:0.04em; }
 
   @media(max-width:380px){
     .cash-card{ padding:17px; }
@@ -827,10 +998,15 @@
     .pending-client-field{ padding-left:0; }
     .section-head{ flex-wrap:wrap; gap:8px; }
     .period-select{ width:100%; }
+    .billing-period-card{ align-items:stretch; flex-direction:column; }
+    .billing-period-card .period-select{ width:100%; }
     .cliente-card{ align-items:flex-start; flex-wrap:wrap; }
     .cliente-card .btn-charge{ width:calc(100% - 50px); min-height:44px; margin-left:50px; }
     .route-confirmation.open{ align-items:stretch; flex-direction:column; }
     .route-confirmation .view-clients{ width:100%; }
+    .route-history-filter{ align-items:stretch; flex-direction:column; }
+    .route-history-filter .field-group{ width:100%; }
+    .route-history-metrics{ grid-template-columns:1fr 1fr; }
   }
 
   @media(max-width:480px){
@@ -901,6 +1077,12 @@
         </button>
       </li>
       <li>
+        <button type="button" class="drawer-item" data-view="historico-rotas">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+          <span class="label">Histórico de rotas</span>
+        </button>
+      </li>
+      <li>
         <button type="button" class="drawer-item" data-view="clientes">
           <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 8.5a2.8 2.8 0 1 1 0 5.6"/><path d="M16.5 14.3c2.2.3 3.9 1.7 4 3.9"/></svg>
           <span class="label">Clientes</span>
@@ -908,7 +1090,7 @@
       </li>
     </ul>
 
-    <div class="drawer-foot mono">v0.7</div>
+    <div class="drawer-foot mono">v0.8</div>
   </nav>
 
   <!-- ============ CONTENT ============ -->
@@ -930,7 +1112,7 @@
       </div>
       <div class="cash-details">
         <div class="cash-detail"><div class="label">RECEBIDO NO MÊS</div><div class="value green" id="dashboardReceived">R$ 445,50</div></div>
-        <div class="cash-detail"><div class="label">A RECEBER (TOTAL)</div><div class="value" id="dashboardPending">R$ 0,00</div></div>
+        <div class="cash-detail"><div class="label">A RECEBER (DO MÊS)</div><div class="value" id="dashboardPending">R$ 0,00</div></div>
         <div class="cash-detail"><div class="label">DESPESAS REAIS</div><div class="value red" id="dashboardExpenses">R$ 120,00</div></div>
       </div>
       <div class="cash-note"><b>Importante:</b> o novo mês começa visualmente em zero, mas o histórico anterior não é apagado. Este valor representa o trabalho do mês, não o dinheiro disponível na carteira.</div>
@@ -1000,6 +1182,16 @@
   <!-- ===== VIEW: FATURAMENTO ===== -->
   <main class="view" id="view-faturamento">
 
+    <div class="billing-period-card">
+      <div class="billing-period-copy">
+        <div class="billing-period-label">PERÍODO DO FATURAMENTO</div>
+        <div class="billing-period-value" id="billingPeriodLabel">Mês atual</div>
+        <div class="billing-period-note" id="billingStorageStatus">O novo mês começa em zero e o histórico fica salvo neste dispositivo.</div>
+      </div>
+      <label class="sr-only" for="billingMonth">Selecionar mês do faturamento</label>
+      <select class="period-select" id="billingMonth" aria-label="Selecionar mês do faturamento"></select>
+    </div>
+
     <div class="balance-card">
       <div class="balance-row">
         <span class="label">Total de entradas</span>
@@ -1014,6 +1206,38 @@
         <span class="amt" id="balResultado">+ R$ 325,50</span>
       </div>
     </div>
+
+    <section>
+      <div class="section-head">
+        <h2>ENTRADAS X DESPESAS — ANO</h2>
+        <label class="sr-only" for="billingYear">Selecionar ano do gráfico</label>
+        <select class="period-select billing-year-select" id="billingYear" aria-label="Selecionar ano do gráfico"></select>
+      </div>
+      <div class="billing-history-card">
+        <div class="billing-history-summary">
+          <div>
+            <div class="label">RESULTADO DO MÊS SELECIONADO</div>
+            <div class="value" id="billingHistoryValue">R$ 0,00</div>
+            <div class="detail" id="billingHistoryDetail">R$ 0,00 em entradas · R$ 0,00 em despesas</div>
+          </div>
+          <span class="billing-history-status balanced" id="billingHistoryStatus">EQUILÍBRIO</span>
+        </div>
+        <div class="billing-chart-legend" aria-label="Legenda do gráfico">
+          <span class="billing-chart-legend-item"><span class="billing-chart-swatch entries"></span>Entradas</span>
+          <span class="billing-chart-legend-item"><span class="billing-chart-swatch expenses"></span>Despesas</span>
+          <span class="billing-chart-legend-item"><span class="billing-chart-swatch result"></span>Resultado</span>
+        </div>
+        <div class="billing-history-scroll" id="billingHistoryScroll" tabindex="0" aria-label="Gráfico anual com rolagem horizontal">
+          <div class="billing-history-canvas">
+            <canvas id="billingHistoryChart" role="img" aria-label="Comparação anual de entradas, despesas e resultado"></canvas>
+          </div>
+        </div>
+        <div class="billing-history-guide">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+          Deslize para ver janeiro a dezembro. Compare as barras, acompanhe a linha do resultado e toque no mês para abrir os detalhes.
+        </div>
+      </div>
+    </section>
 
     <section>
       <div class="section-head">
@@ -1103,32 +1327,44 @@
 
     <section style="margin-top:18px;">
       <div class="section-head"><h2>NOVO ABASTECIMENTO</h2></div>
-      <div class="form-card">
+      <div class="form-card" id="refuelFormCard">
         <div class="field-group">
           <label class="field-label" for="refuelLocation">POSTO</label>
           <input type="text" class="field-input text" id="refuelLocation" list="refuelStationOptions" placeholder="Ex: Posto Ipiranga - Centro">
           <datalist id="refuelStationOptions"></datalist>
         </div>
+        <div class="field-group" style="margin-top:10px">
+          <label class="field-label" for="refuelDate">QUANDO FOI?</label>
+          <input type="date" class="field-input" id="refuelDate">
+        </div>
         <div class="form-row" style="margin-top:10px">
           <div class="field-group">
             <label class="field-label" for="refuelLiterPriceInput">PREÇO DO LITRO (R$)</label>
-            <input type="number" inputmode="decimal" class="field-input" id="refuelLiterPriceInput" placeholder="Ex: 6,10">
+            <input type="text" inputmode="decimal" class="field-input" id="refuelLiterPriceInput" placeholder="Ex: 6,10" autocomplete="off">
           </div>
           <div class="field-group">
             <label class="field-label" for="refuelPaidValue">VALOR PAGO (R$)</label>
-            <input type="number" inputmode="decimal" class="field-input" id="refuelPaidValue" placeholder="Ex: 31,70">
+            <input type="text" inputmode="decimal" class="field-input" id="refuelPaidValue" placeholder="Ex: 31,70" autocomplete="off">
           </div>
         </div>
         <div class="field-group" style="margin-top:10px">
           <label class="field-label" for="refuelOdometer">KM DO PAINEL (OPCIONAL, MAS AJUDA)</label>
-          <input type="number" inputmode="decimal" class="field-input" id="refuelOdometer" placeholder="Ex: 42500">
+          <input type="text" inputmode="numeric" class="field-input" id="refuelOdometer" placeholder="Ex: 42.500" autocomplete="off">
           <div class="config-note">Olha o número do hodômetro da moto e digita aqui. Com ele, o app calcula sozinho quantos km por litro sua moto faz de verdade.</div>
+        </div>
+        <div class="field-group edit-reason-field" id="refuelEditReasonField" hidden style="margin-top:10px">
+          <label class="field-label" for="refuelEditReason">MOTIVO DA CORREÇÃO (OPCIONAL)</label>
+          <input type="text" class="field-input" id="refuelEditReason" placeholder="Ex: tinha digitado o valor errado" autocomplete="off">
+          <div class="config-note">A alteração fica registrada no histórico deste abastecimento, com data e hora.</div>
         </div>
         <div class="calculated-price" aria-live="polite">
           <div><div class="label">LITROS ABASTECIDOS</div><div class="config-note" style="margin-top:3px">Calculado pelo valor pago e preço do litro</div></div>
           <div class="value" id="refuelCalculatedLiters">0,0 L</div>
         </div>
-        <button type="button" class="btn-primary" id="btnSaveRefuel">Salvar abastecimento</button>
+        <div class="form-action-row">
+          <button type="button" class="btn-primary" id="btnSaveRefuel">Salvar abastecimento</button>
+          <button type="button" class="btn-secondary" id="btnCancelRefuelEdit" hidden>Cancelar edição</button>
+        </div>
       </div>
     </section>
 
@@ -1184,7 +1420,7 @@
       <div class="form-card" style="margin-top:12px;">
         <div class="field-group">
           <label class="field-label" for="motoConsumptionInput">AJUSTAR CONSUMO À MÃO (KM/L)</label>
-          <input type="number" inputmode="decimal" class="field-input" id="motoConsumptionInput" value="35" placeholder="Ex: 35">
+          <input type="text" inputmode="decimal" class="field-input" id="motoConsumptionInput" value="35" placeholder="Ex: 35" autocomplete="off">
         </div>
         <div class="config-note" id="motoConsumptionStatus">Se quiser, digite um consumo fixo. Senão, o app usa o consumo real calculado acima.</div>
         <button type="button" class="btn-primary" id="btnSaveConsumption">Salvar consumo à mão</button>
@@ -1194,7 +1430,7 @@
     <div class="stats-grid" style="margin-top:14px;">
       <div class="stat-card">
         <svg class="icon" viewBox="0 0 24 24"><path d="M12 22c4-4 7-7.5 7-12A7 7 0 0 0 5 10c0 4.5 3 8 7 12Z"/><circle cx="12" cy="10" r="2.4"/></svg>
-        <div class="label">GASTO EM MANUTENÇÃO</div>
+        <div class="label">GASTOS DA MOTO E OPERAÇÃO</div>
         <div class="value orange" id="maintTotalValue">R$ 0,00</div>
       </div>
       <div class="stat-card">
@@ -1206,8 +1442,8 @@
 
     <section>
       <div class="section-head">
-        <h2>MANUTENÇÕES REGISTRADAS</h2>
-        <button type="button" class="btn-add" id="btnOpenMaint" aria-label="Registrar manutenção" aria-haspopup="dialog" aria-controls="maintModal">
+        <h2>GASTOS REGISTRADOS</h2>
+        <button type="button" class="btn-add" id="btnOpenMaint" aria-label="Registrar gasto" aria-haspopup="dialog" aria-controls="maintModal">
           <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
         </button>
       </div>
@@ -1290,11 +1526,31 @@
       <button type="button" class="view-clients" id="btnViewPendingClients">Ver em Clientes</button>
     </div>
 
-    <section id="confirmedRoutesSection" style="display:none;">
-      <div class="section-head"><h2>ROTAS CONFIRMADAS HOJE</h2></div>
-      <div class="list-card" id="confirmedRoutesList"></div>
-    </section>
+  </main>
 
+  <!-- ===== VIEW: HISTÓRICO DE ROTAS ===== -->
+  <main class="view" id="view-historico-rotas">
+    <div class="info-banner">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+      <div>
+        <div class="title">Rotas confirmadas</div>
+        <div class="desc">Consulte os números usados no dia da rota. Alterações futuras na gasolina ou no consumo da moto não mudam este histórico.</div>
+      </div>
+    </div>
+
+    <section style="margin-top:14px;">
+      <div class="route-history-filter" aria-label="Filtrar histórico de rotas">
+        <div class="field-group">
+          <label class="field-label" for="routeHistoryMonth">MÊS</label>
+          <select class="field-input text" id="routeHistoryMonth"></select>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="routeHistoryYear">ANO</label>
+          <select class="field-input text" id="routeHistoryYear"></select>
+        </div>
+      </div>
+      <div class="route-history-list" id="routeHistoryList" aria-live="polite"></div>
+    </section>
   </main>
 
   <!-- ===== VIEW: CLIENTES ===== -->
@@ -1343,8 +1599,8 @@
   <div class="modal" id="maintModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="maintModalTitle" aria-describedby="maintModalDesc" tabindex="-1">
     <div class="modal-head">
       <div>
-        <h3 id="maintModalTitle">Registrar manutenção</h3>
-        <div class="desc" id="maintModalDesc">Conta rápido o que foi feito na moto</div>
+        <h3 id="maintModalTitle">Registrar gasto</h3>
+        <div class="desc" id="maintModalDesc">Manutenção, lavagem ou gasto da operação</div>
       </div>
       <button type="button" class="modal-close" id="modalClose" aria-label="Fechar janela de manutenção">
         <svg class="icon" viewBox="0 0 24 24"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
@@ -1352,22 +1608,43 @@
     </div>
     <div class="modal-body">
       <div class="field-group">
-        <label class="field-label" for="maintDesc">O QUE VOCÊ CONSERTOU OU TROCOU?</label>
+        <label class="field-label" for="maintCategory">TIPO DE GASTO</label>
+        <select class="field-input text" id="maintCategory">
+          <option value="maintenance">Manutenção</option>
+          <option value="wash">Lavagem</option>
+          <option value="toll">Pedágio</option>
+          <option value="parking">Estacionamento</option>
+          <option value="other">Outro</option>
+        </select>
+        <div class="config-note">Para lavagem, pedágio e estacionamento, basta escolher o tipo e informar o valor. A descrição aparece apenas em Manutenção e Outro. Por enquanto, pedágio e estacionamento não ficam vinculados automaticamente a uma rota.</div>
+      </div>
+      <div class="field-group" id="maintDescGroup">
+        <label class="field-label" for="maintDesc" id="maintDescLabel">O QUE VOCÊ CONSERTOU OU TROCOU?</label>
         <input type="text" class="field-input text" id="maintDesc" placeholder="Ex: Troca de óleo">
       </div>
       <div class="field-group">
         <label class="field-label" for="maintValor">QUANTO FOI GASTO? (R$)</label>
-        <input type="number" inputmode="decimal" class="field-input" id="maintValor" placeholder="Ex: 45,00">
+        <input type="text" inputmode="decimal" class="field-input" id="maintValor" placeholder="Ex: 45,00" autocomplete="off">
       </div>
       <div class="field-group">
+        <label class="field-label" for="maintDate">QUANDO FOI?</label>
+        <input type="date" class="field-input" id="maintDate">
+      </div>
+      <div class="field-group" id="maintKmGroup">
         <label class="field-label" for="maintKm">KM DO PAINEL AGORA (OPCIONAL)</label>
-        <input type="number" inputmode="decimal" class="field-input" id="maintKm" placeholder="Ex: 42700">
+        <input type="text" inputmode="numeric" class="field-input" id="maintKm" placeholder="Ex: 42.700" autocomplete="off">
         <div class="config-note">Anotar aqui mantém a quilometragem da moto sempre em dia.</div>
       </div>
+      <div class="field-group edit-reason-field" id="maintEditReasonField" hidden>
+        <label class="field-label" for="maintEditReason">MOTIVO DA CORREÇÃO (OPCIONAL)</label>
+        <input type="text" class="field-input" id="maintEditReason" placeholder="Ex: valor estava errado" autocomplete="off">
+        <div class="config-note">A alteração fica registrada no histórico deste gasto, com data e hora.</div>
+      </div>
+      <div class="form-message error" id="maintFormMessage" role="alert" aria-live="assertive"></div>
     </div>
     <div class="modal-foot">
       <button type="button" class="btn-secondary" id="maintCancel">Cancelar</button>
-      <button type="button" class="btn-primary" id="maintSave" style="margin-top:0;">Salvar manutenção</button>
+      <button type="button" class="btn-primary" id="maintSave" style="margin-top:0;">Salvar gasto</button>
     </div>
   </div>
 
@@ -1390,7 +1667,16 @@
       </div>
       <div class="field-group">
         <label class="field-label" for="entradaValor">QUANTO VOCÊ RECEBEU? (R$)</label>
-        <input type="number" inputmode="decimal" class="field-input" id="entradaValor" placeholder="Ex: 150,00">
+        <input type="text" inputmode="decimal" class="field-input" id="entradaValor" placeholder="Ex: 150,00" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="entradaDate">QUANDO VOCÊ RECEBEU?</label>
+        <input type="date" class="field-input" id="entradaDate">
+      </div>
+      <div class="field-group edit-reason-field" id="entradaEditReasonField" hidden>
+        <label class="field-label" for="entradaEditReason">MOTIVO DA CORREÇÃO (OPCIONAL)</label>
+        <input type="text" class="field-input" id="entradaEditReason" placeholder="Ex: valor lançado errado" autocomplete="off">
+        <div class="config-note">A alteração fica registrada no histórico desta entrada, com data e hora.</div>
       </div>
     </div>
     <div class="modal-foot">
@@ -1442,7 +1728,11 @@
       </div>
       <div class="field-group">
         <label class="field-label" for="recebimentoValor">VALOR RECEBIDO AGORA (R$)</label>
-        <input type="number" inputmode="decimal" class="field-input" id="recebimentoValor" placeholder="Ex: 50,00">
+        <input type="text" inputmode="decimal" class="field-input" id="recebimentoValor" placeholder="Ex: 50,00" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="recebimentoDate">QUANDO RECEBEU?</label>
+        <input type="date" class="field-input" id="recebimentoDate">
       </div>
       <div class="info-banner" style="padding:11px 12px">
         <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
@@ -1455,9 +1745,45 @@
     </div>
   </div>
 
+  <!-- ============ MODAL: CONFIRMAR EXCLUSÃO ============ -->
+  <div class="modal-backdrop" id="deleteBackdrop" aria-hidden="true"></div>
+  <div class="modal" id="deleteModal" role="alertdialog" aria-modal="true" aria-hidden="true" aria-labelledby="deleteModalTitle" aria-describedby="deleteModalMessage" tabindex="-1">
+    <div class="modal-head">
+      <div>
+        <h3 id="deleteModalTitle">Excluir registro?</h3>
+        <div class="desc">Confira antes de continuar</div>
+      </div>
+      <button type="button" class="modal-close" id="deleteClose" aria-label="Fechar confirmação de exclusão">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6 18 18"/><path d="M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-warning" id="deleteModalMessage">Este registro será excluído.</div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-secondary" id="deleteCancel">Cancelar</button>
+      <button type="button" class="btn-danger" id="deleteConfirm">Excluir</button>
+    </div>
+  </div>
+
 <script>
   // ---------- dados de teste (mock) ----------
   const APP_NOW = new Date();
+  const LOCAL_STATE_KEY = 'motoboy-front-etapa1-v1';
+  let localStorageAvailable = true;
+
+  function readLocalState(){
+    try{
+      const saved = localStorage.getItem(LOCAL_STATE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    }catch(error){
+      localStorageAvailable = false;
+      return {};
+    }
+  }
+
+  const localState = readLocalState();
+
   function pad2(value){ return value < 10 ? '0' + value : String(value); }
   function toISODateLocal(date){
     const y = date.getFullYear();
@@ -1471,6 +1797,40 @@
     date.setDate(date.getDate() - days);
     return toISODateLocal(date);
   }
+  function monthOffsetISO(offset, day){
+    const date = new Date(APP_NOW.getFullYear(), APP_NOW.getMonth() - offset, day, 12, 0, 0, 0);
+    return toISODateLocal(date);
+  }
+  function monthNameFromOffset(offset){
+    const date = new Date(APP_NOW.getFullYear(), APP_NOW.getMonth() - offset, 1);
+    const label = new Intl.DateTimeFormat('pt-BR', { month:'long' }).format(date);
+    return label.replace(/^./, letter => letter.toUpperCase());
+  }
+
+  // ---------- data escolhida pelo motoboy (ponto 8) ----------
+  // Todos os registros passam a aceitar uma data. Se o motoboy não mexer, fica "hoje".
+  // O valor de um <input type="date"> vem como "AAAA-MM-DD", que é o mesmo formato que
+  // usamos internamente (dateISO), então dá pra usar direto.
+  function todayInputValue(){ return toISODateLocal(APP_NOW); }
+
+  // Transforma um dateISO num rótulo curto e humano: "Hoje", "Ontem" ou "12/06/2026".
+  function dateLabelFromISO(iso){
+    if(!iso) return 'Hoje';
+    const hoje = toISODateLocal(APP_NOW);
+    const ontem = daysAgoISO(1);
+    if(iso === hoje) return 'Hoje';
+    if(iso === ontem) return 'Ontem';
+    const d = localDateFromISO(iso);
+    if(!d) return 'Hoje';
+    return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+
+  // Impede escolher uma data no futuro (registro só pode ser de hoje pra trás).
+  function clampDateNotFuture(iso){
+    if(!iso) return todayInputValue();
+    const hoje = toISODateLocal(APP_NOW);
+    return iso > hoje ? hoje : iso;
+  }
   function safeText(value){
     const text = value === null || value === undefined ? '' : String(value);
     return text
@@ -1480,38 +1840,166 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
   }
-  const refuels = [
+  const demoRefuels = [
     { local:"Posto Ipiranga - Centro", quando:"Hoje, 07:40", litros:"3,6 L", litrosValue:3.6, valor:22.00, odometer:42680, dateISO:daysAgoISO(0) },
     { local:"Posto Shell - Av. Brasil", quando:"Ontem, 18:15", litros:"4,1 L", litrosValue:4.1, valor:25.50, odometer:42553, dateISO:daysAgoISO(1) },
     { local:"Posto BR - Setor Sul", quando:"Segunda, 08:02", litros:"3,8 L", litrosValue:3.8, valor:23.80, odometer:42417, dateISO:daysAgoISO(3) },
     { local:"Posto Ipiranga - Centro", quando:"Sexta, 07:35", litros:"3,9 L", litrosValue:3.9, valor:24.10, odometer:42280, dateISO:daysAgoISO(7) },
     { local:"Posto Raízen - Vila Nova", quando:"Quarta, 17:50", litros:"4,0 L", litrosValue:4.0, valor:24.60, odometer:42140, dateISO:daysAgoISO(9) },
   ];
+  let refuels = Array.isArray(localState.refuels) ? localState.refuels : demoRefuels;
 
   const fuelIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15"/><path d="M4 11h8"/><path d="M14 8h2.5L19 11v6a1.5 1.5 0 0 1-3 0v-2a1 1 0 0 0-1-1h-1"/><path d="M2 21h14"/></svg>`;
   const wrenchIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.7 2.7-2-2Z"/></svg>`;
   const cashIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M12 3v18"/></svg>`;
   const routeIcon = `<svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="5" r="2.2"/><path d="M6 16.8V13a4 4 0 0 1 4-4h4a4 4 0 0 0 4-4"/></svg>`;
   const clientIcon = `<svg class="icon" viewBox="0 0 24 24" style="width:18px;height:18px;"><circle cx="12" cy="8" r="3.2"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>`;
+  const washIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M12 3s5 5.7 5 10a5 5 0 0 1-10 0c0-4.3 5-10 5-10Z"/><path d="M9.5 14.5c.6 1 1.4 1.5 2.5 1.5"/></svg>`;
+  const tollIcon = `<svg class="icon" viewBox="0 0 24 24"><path d="M5 21 9 3M15 3l4 18"/><path d="M12 6v3M12 12v3M12 18v3"/></svg>`;
+  const parkingIcon = `<svg class="icon" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>`;
+  const editIcon = `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/><path d="m14 7 3 3"/></svg>`;
+  const trashIcon = `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="m6 7 1 13h10l1-13"/><path d="M10 11v5M14 11v5"/></svg>`;
 
   function round2(v){ return Math.round((v || 0) * 100) / 100; }
+
+  // ---------- rastro de alterações (RD-013) ----------
+  // Sempre que um valor histórico é editado, guardamos o que mudou, quando e (se houver)
+  // o motivo. Assim o fechamento do mês nunca muda "no escuro": dá pra ver que um registro
+  // foi alterado e do que pra quê. O rastro fica dentro do próprio registro, em editLog.
+  function nowStamp(){
+    const d = new Date();
+    return {
+      iso: d.toISOString(),
+      label: d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+    };
+  }
+
+  // Compara os campos que importam entre o registro antigo e o novo e devolve uma
+  // lista legível de mudanças, ex: "valor: R$ 25,00 → R$ 52,00".
+  function diffCampos(previous, atual, campos){
+    const mudancas = [];
+    campos.forEach(({ chave, rotulo, tipo }) => {
+      const antes = previous ? previous[chave] : undefined;
+      const depois = atual[chave];
+      const norm = v => tipo === 'money' ? round2(v || 0) : (v ?? '');
+      if(norm(antes) !== norm(depois)){
+        const fmt = v => tipo === 'money' ? fmtBRL(v || 0) : (v || '—');
+        mudancas.push(`${rotulo}: ${fmt(antes)} → ${fmt(depois)}`);
+      }
+    });
+    return mudancas;
+  }
+
+  // Anexa uma entrada de rastro ao registro editado. Recebe o registro anterior (pra saber
+  // o estado de origem), o novo, a lista de campos a comparar e um motivo opcional.
+  function registrarEdicao(record, previous, campos, motivo){
+    const mudancas = diffCampos(previous, record, campos);
+    if(mudancas.length === 0 && !motivo) return; // nada mudou de fato
+    const stamp = nowStamp();
+    record.editLog = (previous && Array.isArray(previous.editLog)) ? previous.editLog.slice() : [];
+    record.editLog.push({
+      quando: stamp.label,
+      quandoISO: stamp.iso,
+      mudancas,
+      motivo: (motivo || '').trim() || null
+    });
+  }
+
+  // Monta o trechinho de HTML que mostra "editado" num registro que tem rastro.
+  function editBadgeHTML(record){
+    if(!record || !Array.isArray(record.editLog) || record.editLog.length === 0) return '';
+    const ultima = record.editLog[record.editLog.length - 1];
+    const n = record.editLog.length;
+    const titulo = safeText(`Editado ${n}x. Última: ${ultima.quando}. ${ultima.mudancas.join('; ')}${ultima.motivo ? ' — motivo: ' + ultima.motivo : ''}`);
+    return `<span class="edit-badge" title="${titulo}">editado</span>`;
+  }
+
   function fmtBRL(v){ return 'R$ ' + round2(v).toFixed(2).replace('.', ','); }
   function parseNum(v){
     const n = parseFloat(String(v).replace(',', '.'));
     return isNaN(n) ? null : n;
   }
+  function parseBrazilianInput(value){
+    let normalized = String(value || '').trim().replace(/\s/g, '').replace(/R\$/gi, '');
+    if(!normalized) return null;
+    normalized = normalized.replace(/[^0-9,.-]/g, '');
+    if(normalized.includes(',')){
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    }else if(/^\-?\d{1,3}(\.\d{3})+$/.test(normalized)){
+      normalized = normalized.replace(/\./g, '');
+    }
+    const number = Number(normalized);
+    return Number.isFinite(number) ? number : null;
+  }
+  function editableNumber(value, digits){
+    if(value === null || value === undefined || !Number.isFinite(Number(value))) return '';
+    return Number(value).toFixed(digits).replace('.', ',');
+  }
+  function recordActionsHTML(kind, index, label){
+    const safeLabel = safeText(label);
+    return `<div class="record-actions">
+      <button type="button" class="record-action-btn edit" data-record-action="edit" data-record-kind="${kind}" data-index="${index}" aria-label="Editar ${safeLabel}">${editIcon}</button>
+      <button type="button" class="record-action-btn delete" data-record-action="delete" data-record-kind="${kind}" data-index="${index}" aria-label="Excluir ${safeLabel}">${trashIcon}</button>
+    </div>`;
+  }
+  function wireRecordActions(container, onEdit, onDelete){
+    container.querySelectorAll('[data-record-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const index = Number(button.dataset.index);
+        if(button.dataset.recordAction === 'edit') onEdit(index);
+        if(button.dataset.recordAction === 'delete') onDelete(index);
+      });
+    });
+  }
 
-  function renderRefuelList(el, items){
-    el.innerHTML = items.map(r => `
+  function updateStorageStatus(){
+    const status = document.getElementById('billingStorageStatus');
+    if(!status) return;
+    status.textContent = localStorageAvailable
+      ? 'O novo mês começa em zero e o histórico fica salvo neste dispositivo.'
+      : 'O navegador bloqueou o armazenamento local. Os dados durarão somente enquanto esta página estiver aberta.';
+  }
+
+  function saveLocalState(){
+    try{
+      localStorage.setItem(LOCAL_STATE_KEY, JSON.stringify({
+        refuels,
+        maintenances,
+        entradas,
+        confirmedRoutes,
+        clientes,
+        motoKm,
+        consumoManualDefinido,
+        manualConsumption: consumoManualDefinido ? CONSUMO_ATUAL : null
+      }));
+      localStorageAvailable = true;
+    }catch(error){
+      localStorageAvailable = false;
+    }
+    updateStorageStatus();
+  }
+
+  function renderRefuelList(el, items, withActions){
+    if(items.length === 0){
+      el.innerHTML = '<div class="trip-empty">Nenhum abastecimento registrado.</div>';
+      return;
+    }
+    el.innerHTML = items.map(r => {
+      const refuelIndex = refuels.indexOf(r);
+      return `
       <div class="list-item">
         <div class="badge">${fuelIcon}</div>
         <div class="info">
-          <div class="title">${safeText(r.local)}</div>
+          <div class="title">${safeText(r.local)} ${editBadgeHTML(r)}</div>
           <div class="sub">${safeText(r.quando)} · ${safeText(r.litros)}</div>
         </div>
-        <div class="amount">${fmtBRL(r.valor)}</div>
+        <div class="record-side">
+          <div class="amount">${fmtBRL(r.valor)}</div>
+          ${withActions ? recordActionsHTML('refuel', refuelIndex, 'abastecimento em ' + r.local) : ''}
+        </div>
       </div>
-    `).join('');
+    `}).join('');
+    if(withActions) wireRecordActions(el, editRefuel, deleteRefuel);
   }
   function refuelTotal(){ return refuels.reduce((s, r) => s + r.valor, 0); }
   function latestRefuelPrice(){
@@ -1675,7 +2163,7 @@
   }
   function renderRefuelViews(){
     renderRefuelList(document.getElementById('dashRefuelList'), refuels.slice(0,3));
-    renderRefuelList(document.getElementById('fullRefuelList'), refuels);
+    renderRefuelList(document.getElementById('fullRefuelList'), refuels, true);
     document.getElementById('refuelTotalValue').textContent = fmtBRL(refuelTotal());
     const latestPrice = latestRefuelPrice();
     document.getElementById('refuelLatestPriceValue').textContent = latestPrice ? fmtBRL(latestPrice) : 'Não informado';
@@ -1685,9 +2173,66 @@
   }
   renderRefuelViews();
 
+  let editingRefuelIndex = null;
+  function resetRefuelForm(){
+    editingRefuelIndex = null;
+    document.getElementById('refuelLocation').value = '';
+    document.getElementById('refuelLiterPriceInput').value = '';
+    document.getElementById('refuelPaidValue').value = '';
+    document.getElementById('refuelOdometer').value = '';
+    document.getElementById('refuelDate').value = todayInputValue();
+    document.getElementById('refuelEditReason').value = '';
+    document.getElementById('refuelEditReasonField').hidden = true;
+    document.getElementById('btnSaveRefuel').textContent = 'Salvar abastecimento';
+    document.getElementById('btnCancelRefuelEdit').hidden = true;
+    updateCalculatedRefuelLiters();
+  }
+  function editRefuel(index){
+    const item = refuels[index];
+    if(!item) return;
+    editingRefuelIndex = index;
+    document.getElementById('refuelLocation').value = item.local === 'Posto não informado' ? '' : item.local;
+    document.getElementById('refuelLiterPriceInput').value = editableNumber(refuelPricePerLiter(item), 2);
+    document.getElementById('refuelPaidValue').value = editableNumber(item.valor, 2);
+    document.getElementById('refuelOdometer').value = item.odometer ? String(item.odometer) : '';
+    document.getElementById('refuelDate').value = item.dateISO || todayInputValue();
+    document.getElementById('refuelEditReason').value = '';
+    document.getElementById('refuelEditReasonField').hidden = false;
+    document.getElementById('btnSaveRefuel').textContent = 'Atualizar abastecimento';
+    document.getElementById('btnCancelRefuelEdit').hidden = false;
+    updateCalculatedRefuelLiters();
+    document.getElementById('refuelFormCard').scrollIntoView({ behavior:'smooth', block:'start' });
+    document.getElementById('refuelLocation').focus();
+  }
+  function deleteRefuel(index){
+    const item = refuels[index];
+    if(!item) return;
+    requestDeleteConfirmation(
+      'Excluir abastecimento?',
+      `${item.local} · ${fmtBRL(item.valor)}. O painel, o preço do litro e os gráficos serão recalculados.`,
+      () => {
+        const currentIndex = refuels.indexOf(item);
+        if(currentIndex < 0) return;
+        refuels.splice(currentIndex, 1);
+        if(editingRefuelIndex === currentIndex) resetRefuelForm();
+        else if(editingRefuelIndex !== null && currentIndex < editingRefuelIndex) editingRefuelIndex -= 1;
+        PRECO_ATUAL = latestRefuelPrice();
+        recalculateMotoKmFromRecords();
+        recalcConsumoReal();
+        saveLocalState();
+        renderRefuelViews();
+        renderMotoConsumo();
+        renderFaturamento();
+        renderDashboard();
+        renderRouteSummary();
+      }
+    );
+  }
+  document.getElementById('btnCancelRefuelEdit').addEventListener('click', resetRefuelForm);
+
   function updateCalculatedRefuelLiters(){
-    const paid = parseNum(document.getElementById('refuelPaidValue').value);
-    const price = parseNum(document.getElementById('refuelLiterPriceInput').value);
+    const paid = parseBrazilianInput(document.getElementById('refuelPaidValue').value);
+    const price = parseBrazilianInput(document.getElementById('refuelLiterPriceInput').value);
     const liters = paid && paid > 0 && price && price > 0 ? paid / price : 0;
     document.getElementById('refuelCalculatedLiters').textContent = liters > 0
       ? liters.toFixed(2).replace('.', ',') + ' L'
@@ -1703,27 +2248,47 @@
       alert('Informe o preço do litro e o valor total pago.');
       return;
     }
-    const odometer = parseNum(document.getElementById('refuelOdometer').value);
-    const lastOdometer = refuels.find(r => r.odometer && r.odometer > 0)?.odometer;
-    if(odometer && lastOdometer && odometer < lastOdometer){
+    const odometer = parseBrazilianInput(document.getElementById('refuelOdometer').value);
+    const lastOdometer = refuels.find((r, index) => index !== editingRefuelIndex && r.odometer && r.odometer > 0)?.odometer;
+    if(editingRefuelIndex === null && odometer && lastOdometer && odometer < lastOdometer){
       alert(`O km do painel (${fmtKm(odometer)}) está menor que o do último abastecimento (${fmtKm(lastOdometer)}). Confere o número — o hodômetro só aumenta.`);
       return;
     }
-    refuels.unshift({ local, quando:'Hoje', litros:`${liters.toFixed(1).replace('.', ',')} L`, litrosValue:liters, valor:paid, pricePerLiter:price, odometer: odometer || null, dateISO:daysAgoISO(0) });
+    const previous = editingRefuelIndex === null ? null : refuels[editingRefuelIndex];
+    const chosenDateEl = document.getElementById('refuelDate');
+    const chosenISO = clampDateNotFuture(chosenDateEl ? chosenDateEl.value : '');
+    const record = {
+      local,
+      quando: dateLabelFromISO(chosenISO),
+      litros:`${liters.toFixed(1).replace('.', ',')} L`,
+      litrosValue:liters,
+      valor:paid,
+      pricePerLiter:price,
+      odometer:odometer || null,
+      dateISO: chosenISO
+    };
+    const wasEditing = editingRefuelIndex !== null;
+    if(wasEditing){
+      registrarEdicao(record, previous, [
+        { chave:'local', rotulo:'Posto', tipo:'text' },
+        { chave:'valor', rotulo:'Valor', tipo:'money' },
+        { chave:'litrosValue', rotulo:'Litros', tipo:'text' },
+        { chave:'odometer', rotulo:'Km do painel', tipo:'text' }
+      ], document.getElementById('refuelEditReason') ? document.getElementById('refuelEditReason').value : '');
+      refuels[editingRefuelIndex] = record;
+    }
+    else refuels.unshift(record);
     PRECO_ATUAL = price;
-    registrarKm(odometer);
+    recalculateMotoKmFromRecords();
     recalcConsumoReal();
+    saveLocalState();
     renderRefuelViews();
     renderMotoConsumo();
     renderFaturamento();
     renderDashboard();
     renderRouteSummary();
-    document.getElementById('refuelLocation').value = '';
-    document.getElementById('refuelLiterPriceInput').value = '';
-    document.getElementById('refuelPaidValue').value = '';
-    document.getElementById('refuelOdometer').value = '';
-    updateCalculatedRefuelLiters();
-    alert(`Abastecimento salvo. O preço usado nas rotas agora é ${fmtBRL(price)} por litro.`);
+    resetRefuelForm();
+    alert(`${wasEditing ? 'Abastecimento atualizado' : 'Abastecimento salvo'}. O preço usado nas rotas agora é ${fmtBRL(price)} por litro.`);
   });
 
   // ---------- menu / drawer ----------
@@ -1764,6 +2329,7 @@
     abastecimentos: { title:"Abastecimentos", sub:"histórico completo" },
     moto: { title:"Minha Moto", sub:"dados e manutenções" },
     rotas: { title:"Rotas", sub:"organize as coletas e entregas" },
+    'historico-rotas': { title:"Histórico de rotas", sub:"rotas confirmadas por mês" },
     clientes: { title:"Clientes", sub:"quem já pagou e quem ficou devendo" },
   };
   function setView(view){
@@ -1782,6 +2348,7 @@
     if(view === 'faturamento'){ renderFaturamento(); }
     if(view === 'clientes'){ renderClientes(); }
     if(view === 'moto'){ renderMotoConsumo(); }
+    if(view === 'historico-rotas'){ renderRouteHistory(); }
   }
   document.querySelectorAll('.drawer-item').forEach(btn => {
     btn.addEventListener('click', () => setView(btn.dataset.view));
@@ -1804,12 +2371,44 @@
 
   // O gráfico mensal é criado depois que entradas, despesas, rotas e clientes já existem.
   let monthlyResultChart = null;
+  let billingHistoryChart = null;
 
   // ---------- minha moto / manutenções ----------
-  let motoKm = 42680;
-  let maintenances = [];
+  const DEFAULT_MOTO_KM = 42680;
+  let motoKm = Number(localState.motoKm) > 0 ? Number(localState.motoKm) : DEFAULT_MOTO_KM;
+  const demoMaintenances = [
+    { desc:`Troca de óleo · ${monthNameFromOffset(1)} (demonstração)`, valor:92.00, km:null, data:`${monthNameFromOffset(1)} · demonstração`, dateISO:monthOffsetISO(1, 18) },
+    { desc:`Revisão de freios · ${monthNameFromOffset(2)} (demonstração)`, valor:145.00, km:null, data:`${monthNameFromOffset(2)} · demonstração`, dateISO:monthOffsetISO(2, 16) },
+    { desc:`Ajuste da relação · ${monthNameFromOffset(3)} (demonstração)`, valor:78.00, km:null, data:`${monthNameFromOffset(3)} · demonstração`, dateISO:monthOffsetISO(3, 17) },
+    { desc:`Troca de óleo · ${monthNameFromOffset(4)} (demonstração)`, valor:122.00, km:null, data:`${monthNameFromOffset(4)} · demonstração`, dateISO:monthOffsetISO(4, 19) },
+    { desc:`Revisão preventiva · ${monthNameFromOffset(5)} (demonstração)`, valor:110.00, km:null, data:`${monthNameFromOffset(5)} · demonstração`, dateISO:monthOffsetISO(5, 15) },
+  ];
+  let maintenances = Array.isArray(localState.maintenances) ? localState.maintenances : demoMaintenances;
+  const expenseCategories = {
+    maintenance:{ label:'Manutenção', tag:'maint', icon:wrenchIcon, needsDescription:true, fieldLabel:'O QUE VOCÊ CONSERTOU OU TROCOU?', placeholder:'Ex: Troca de óleo' },
+    wash:{ label:'Lavagem', tag:'wash', icon:washIcon, needsDescription:false },
+    toll:{ label:'Pedágio', tag:'toll', icon:tollIcon, needsDescription:false },
+    parking:{ label:'Estacionamento', tag:'parking', icon:parkingIcon, needsDescription:false },
+    other:{ label:'Outro', tag:'other', icon:cashIcon, needsDescription:true, fieldLabel:'DESCREVA O GASTO', placeholder:'Ex: Compra de capa de chuva' }
+  };
+  function normalizeExpenseCategory(category){
+    return expenseCategories[category] ? category : 'maintenance';
+  }
+  function expenseCategoryInfo(item){
+    return expenseCategories[normalizeExpenseCategory(item && item.category)];
+  }
+  maintenances.forEach(item => { item.category = normalizeExpenseCategory(item.category); });
 
   function fmtKm(km){ return km.toLocaleString('pt-BR') + ' km'; }
+  function recalculateMotoKmFromRecords(){
+    const recordedKm = [
+      ...refuels.map(item => Number(item.odometer) || 0),
+      ...maintenances.map(item => Number(item.km) || 0)
+    ];
+    motoKm = Math.max(DEFAULT_MOTO_KM, ...recordedKm);
+    const el = document.getElementById('motoKmValue');
+    if(el) el.textContent = fmtKm(motoKm);
+  }
 
   // A quilometragem atual da moto é sempre o maior km já visto — venha ele de um
   // abastecimento ou de uma manutenção. O hodômetro só anda pra frente, então nunca
@@ -1833,16 +2432,23 @@
       list.innerHTML = '<div class="trip-empty">Nenhuma manutenção registrada ainda. Toca no + acima pra adicionar.</div>';
       return;
     }
-    list.innerHTML = maintenances.map(m => `
+    list.innerHTML = maintenances.map((m, index) => {
+      const category = expenseCategoryInfo(m);
+      const showCategoryTag = category.needsDescription || m.desc !== category.label;
+      return `
       <div class="list-item maint-item">
-        <div class="badge">${wrenchIcon}</div>
+        <div class="badge">${category.icon}</div>
         <div class="info">
-          <div class="title">${safeText(m.desc)}</div>
-          <div class="sub">${safeText(m.data)}${m.km ? ' · ' + fmtKm(m.km) : ''}</div>
+          <div class="title">${safeText(m.desc)} ${editBadgeHTML(m)}</div>
+          <div class="sub">${showCategoryTag ? `<span class="cat-tag ${category.tag}">${category.label}</span> ` : ''}${safeText(m.data)}${m.km ? ' · ' + fmtKm(m.km) : ''}</div>
         </div>
-        <div class="amount">${fmtBRL(m.valor)}</div>
+        <div class="record-side">
+          <div class="amount">${fmtBRL(m.valor)}</div>
+          ${recordActionsHTML('maintenance', index, 'gasto ' + m.desc)}
+        </div>
       </div>
-    `).join('');
+    `}).join('');
+    wireRecordActions(list, editMaintenance, deleteMaintenance);
   }
   renderMaint();
 
@@ -1875,118 +2481,582 @@
     return { open, close };
   }
 
+  const deleteModalCtl = wireModal(null, 'deleteModal', 'deleteBackdrop', 'deleteClose', 'deleteCancel');
+  let pendingDeleteAction = null;
+  function clearPendingDelete(){ pendingDeleteAction = null; }
+  function requestDeleteConfirmation(title, message, onConfirm){
+    document.getElementById('deleteModalTitle').textContent = title;
+    document.getElementById('deleteModalMessage').textContent = message;
+    pendingDeleteAction = onConfirm;
+    deleteModalCtl.open();
+    document.getElementById('deleteConfirm').focus();
+  }
+  document.getElementById('deleteConfirm').addEventListener('click', () => {
+    const action = pendingDeleteAction;
+    clearPendingDelete();
+    deleteModalCtl.close();
+    if(typeof action === 'function') action();
+  });
+  ['deleteCancel', 'deleteClose', 'deleteBackdrop'].forEach(id => {
+    document.getElementById(id).addEventListener('click', clearPendingDelete);
+  });
+  document.getElementById('deleteModal').addEventListener('keydown', event => {
+    if(event.key === 'Escape') clearPendingDelete();
+  });
+
   const maintModalCtl = wireModal('btnOpenMaint','maintModal','modalBackdrop','modalClose','maintCancel');
   const entradaModalCtl = wireModal('btnOpenEntrada','entradaModal','entradaBackdrop','entradaClose','entradaCancel');
+  let editingMaintenanceIndex = null;
+  function setMaintFormError(message){
+    const status = document.getElementById('maintFormMessage');
+    status.textContent = message;
+    status.classList.add('visible');
+  }
+  function clearMaintFormError(){
+    const status = document.getElementById('maintFormMessage');
+    status.textContent = '';
+    status.classList.remove('visible');
+  }
+  function updateMaintenanceCategoryUI(){
+    const categoryKey = normalizeExpenseCategory(document.getElementById('maintCategory').value);
+    const category = expenseCategories[categoryKey];
+    const descGroup = document.getElementById('maintDescGroup');
+    const kmGroup = document.getElementById('maintKmGroup');
+    const isMaintenance = categoryKey === 'maintenance';
+    descGroup.hidden = !category.needsDescription;
+    kmGroup.hidden = !isMaintenance;
+    if(!category.needsDescription) document.getElementById('maintDesc').value = '';
+    if(!isMaintenance) document.getElementById('maintKm').value = '';
+    if(category.needsDescription){
+      document.getElementById('maintDescLabel').textContent = category.fieldLabel;
+      document.getElementById('maintDesc').placeholder = category.placeholder;
+    }
+  }
+  function resetMaintenanceFormMode(){
+    editingMaintenanceIndex = null;
+    document.getElementById('maintModalTitle').textContent = 'Registrar gasto';
+    document.getElementById('maintModalDesc').textContent = 'Manutenção, lavagem ou gasto da operação';
+    document.getElementById('maintSave').textContent = 'Salvar gasto';
+    document.getElementById('maintCategory').value = 'maintenance';
+    document.getElementById('maintDesc').value = '';
+    document.getElementById('maintValor').value = '';
+    document.getElementById('maintKm').value = '';
+    document.getElementById('maintDate').value = todayInputValue();
+    document.getElementById('maintEditReason').value = '';
+    document.getElementById('maintEditReasonField').hidden = true;
+    updateMaintenanceCategoryUI();
+    clearMaintFormError();
+  }
+  function editMaintenance(index){
+    const item = maintenances[index];
+    if(!item) return;
+    editingMaintenanceIndex = index;
+    document.getElementById('maintModalTitle').textContent = 'Editar gasto';
+    document.getElementById('maintModalDesc').textContent = 'Corrija os dados deste registro';
+    document.getElementById('maintSave').textContent = 'Atualizar gasto';
+    document.getElementById('maintCategory').value = normalizeExpenseCategory(item.category);
+    document.getElementById('maintDesc').value = item.desc;
+    document.getElementById('maintValor').value = editableNumber(item.valor, 2);
+    document.getElementById('maintKm').value = item.km ? String(item.km) : '';
+    document.getElementById('maintDate').value = item.dateISO || todayInputValue();
+    document.getElementById('maintEditReason').value = '';
+    document.getElementById('maintEditReasonField').hidden = false;
+    updateMaintenanceCategoryUI();
+    clearMaintFormError();
+    maintModalCtl.open();
+    document.getElementById(item && expenseCategoryInfo(item).needsDescription ? 'maintDesc' : 'maintValor').focus();
+  }
+  function deleteMaintenance(index){
+    const item = maintenances[index];
+    if(!item) return;
+    requestDeleteConfirmation(
+      'Excluir gasto?',
+      `${item.desc} · ${fmtBRL(item.valor)}. O financeiro será recalculado.`,
+      () => {
+        const currentIndex = maintenances.indexOf(item);
+        if(currentIndex < 0) return;
+        maintenances.splice(currentIndex, 1);
+        if(editingMaintenanceIndex === currentIndex) resetMaintenanceFormMode();
+        recalculateMotoKmFromRecords();
+        saveLocalState();
+        renderMaint();
+        renderFaturamento();
+        renderDashboard();
+      }
+    );
+  }
+  document.getElementById('maintCategory').addEventListener('change', updateMaintenanceCategoryUI);
+  document.getElementById('btnOpenMaint').addEventListener('click', resetMaintenanceFormMode);
   document.getElementById('dashboardMaintShortcut').addEventListener('click', () => {
     setView('moto');
+    resetMaintenanceFormMode();
     maintModalCtl.open();
   });
 
   document.getElementById('maintSave').addEventListener('click', () => {
-    const desc = document.getElementById('maintDesc').value.trim();
-    const valor = parseNum(document.getElementById('maintValor').value);
-    const km = parseNum(document.getElementById('maintKm').value);
+    const category = normalizeExpenseCategory(document.getElementById('maintCategory').value);
+    const categoryInfo = expenseCategories[category];
+    const typedDesc = document.getElementById('maintDesc').value.trim();
+    const desc = categoryInfo.needsDescription ? typedDesc : categoryInfo.label;
+    const valor = parseBrazilianInput(document.getElementById('maintValor').value);
+    const km = category === 'maintenance' ? parseBrazilianInput(document.getElementById('maintKm').value) : null;
 
-    if(!desc || valor === null || valor <= 0){
-      alert('Preenche pelo menos o que foi feito e o valor gasto.');
+    if(categoryInfo.needsDescription && !typedDesc){
+      setMaintFormError('Descreva este gasto para você conseguir identificá-lo depois.');
+      document.getElementById('maintDesc').focus();
       return;
     }
-    if(km && km < motoKm){
-      alert(`O km informado (${fmtKm(km)}) é menor que a quilometragem atual da moto (${fmtKm(motoKm)}). Confere o número — o hodômetro só aumenta.`);
+    if(valor === null || valor <= 0){
+      setMaintFormError('Informe quanto foi gasto. Você pode digitar, por exemplo, 45,00.');
+      document.getElementById('maintValor').focus();
       return;
     }
-    registrarKm(km);
-
-    maintenances.unshift({ desc, valor, km: km || null, data: 'Hoje', dateISO:daysAgoISO(0) });
+    if(category === 'maintenance' && km !== null && km <= 0){
+      setMaintFormError('A quilometragem precisa ser maior que zero ou pode ficar em branco.');
+      document.getElementById('maintKm').focus();
+      return;
+    }
+    if(category === 'maintenance' && editingMaintenanceIndex === null && km !== null && km < motoKm){
+      setMaintFormError(`O km informado (${fmtKm(km)}) é menor que a quilometragem atual (${fmtKm(motoKm)}). Digite o número atual do painel ou deixe o campo em branco.`);
+      document.getElementById('maintKm').focus();
+      return;
+    }
+    clearMaintFormError();
+    const previous = editingMaintenanceIndex === null ? null : maintenances[editingMaintenanceIndex];
+    const maintDateEl = document.getElementById('maintDate');
+    const maintISO = clampDateNotFuture(maintDateEl ? maintDateEl.value : '');
+    const record = {
+      category,
+      desc,
+      valor,
+      km:km || null,
+      data: dateLabelFromISO(maintISO),
+      dateISO: maintISO
+    };
+    if(previous){
+      registrarEdicao(record, previous, [
+        { chave:'desc', rotulo:'Descrição', tipo:'text' },
+        { chave:'valor', rotulo:'Valor', tipo:'money' },
+        { chave:'km', rotulo:'Km', tipo:'text' }
+      ], document.getElementById('maintEditReason') ? document.getElementById('maintEditReason').value : '');
+      maintenances[editingMaintenanceIndex] = record;
+    }
+    else maintenances.unshift(record);
+    recalculateMotoKmFromRecords();
+    saveLocalState();
     renderMaint();
+    renderFaturamento();
     renderDashboard();
     maintModalCtl.close();
-    document.getElementById('maintDesc').value = '';
-    document.getElementById('maintValor').value = '';
-    document.getElementById('maintKm').value = '';
+    resetMaintenanceFormMode();
   });
 
   // ---------- faturamento: entradas + despesas ----------
-  let entradas = [
+  const demoEntradas = [
     { desc:"Corridas do dia - segunda", valor:145.00, data:"Segunda", dateISO:daysAgoISO(5) },
     { desc:"Corridas do dia - terça", valor:162.50, data:"Terça", dateISO:daysAgoISO(4) },
     { desc:"Corridas do dia - quarta", valor:138.00, data:"Quarta", dateISO:daysAgoISO(3) },
+    { desc:`Corridas de ${monthNameFromOffset(1)} (demonstração)`, valor:720.00, data:`${monthNameFromOffset(1)} · demonstração`, dateISO:monthOffsetISO(1, 24) },
+    { desc:`Corridas de ${monthNameFromOffset(2)} (demonstração)`, valor:645.00, data:`${monthNameFromOffset(2)} · demonstração`, dateISO:monthOffsetISO(2, 23) },
+    { desc:`Corridas de ${monthNameFromOffset(3)} (demonstração)`, valor:780.00, data:`${monthNameFromOffset(3)} · demonstração`, dateISO:monthOffsetISO(3, 25) },
+    { desc:`Corridas de ${monthNameFromOffset(4)} (demonstração)`, valor:590.00, data:`${monthNameFromOffset(4)} · demonstração`, dateISO:monthOffsetISO(4, 22) },
+    { desc:`Corridas de ${monthNameFromOffset(5)} (demonstração)`, valor:670.00, data:`${monthNameFromOffset(5)} · demonstração`, dateISO:monthOffsetISO(5, 24) },
   ];
+  let entradas = Array.isArray(localState.entradas) ? localState.entradas : demoEntradas;
+  let editingEntryIndex = null;
 
-  function entradaTotal(){ return entradas.reduce((s, e) => s + e.valor, 0); }
+  function resetEntryFormMode(){
+    editingEntryIndex = null;
+    document.getElementById('entradaModalTitle').textContent = 'Registrar entrada';
+    document.getElementById('entradaModalDesc').textContent = 'Quanto você recebeu e de onde';
+    document.getElementById('entradaSave').textContent = 'Salvar entrada';
+    document.getElementById('entradaDesc').value = '';
+    document.getElementById('entradaValor').value = '';
+    document.getElementById('entradaDate').value = todayInputValue();
+    document.getElementById('entradaEditReason').value = '';
+    document.getElementById('entradaEditReasonField').hidden = true;
+  }
+  function editEntry(index){
+    const item = entradas[index];
+    if(!item || item.routeId || item.clientName) return;
+    editingEntryIndex = index;
+    document.getElementById('entradaModalTitle').textContent = 'Editar entrada';
+    document.getElementById('entradaModalDesc').textContent = 'Corrija a descrição ou o valor recebido';
+    document.getElementById('entradaSave').textContent = 'Atualizar entrada';
+    document.getElementById('entradaDesc').value = item.desc;
+    document.getElementById('entradaValor').value = editableNumber(item.valor, 2);
+    document.getElementById('entradaDate').value = item.dateISO || todayInputValue();
+    document.getElementById('entradaEditReason').value = '';
+    document.getElementById('entradaEditReasonField').hidden = false;
+    entradaModalCtl.open();
+    document.getElementById('entradaDesc').focus();
+  }
+  function deleteEntry(index){
+    const item = entradas[index];
+    if(!item || item.routeId || item.clientName) return;
+    requestDeleteConfirmation(
+      'Excluir entrada?',
+      `${item.desc} · ${fmtBRL(item.valor)}. O painel e os gráficos serão recalculados.`,
+      () => {
+        const currentIndex = entradas.indexOf(item);
+        if(currentIndex < 0) return;
+        entradas.splice(currentIndex, 1);
+        if(editingEntryIndex === currentIndex) resetEntryFormMode();
+        saveLocalState();
+        renderFaturamento();
+        renderDashboard();
+      }
+    );
+  }
+  document.getElementById('btnOpenEntrada').addEventListener('click', resetEntryFormMode);
 
-  function getDespesas(){
-    const combustivel = refuels.map(r => ({ tipo:'Combustível', tag:'fuel', desc:r.local, data:r.quando, valor:r.valor, icon:fuelIcon }));
-    const manutencao = maintenances.map(m => ({ tipo:'Manutenção', tag:'maint', desc:m.desc, data:m.data, valor:m.valor, icon:wrenchIcon }));
+  function currentMonthKey(){ return toISODateLocal(APP_NOW).slice(0, 7); }
+  function billingMonthKey(){
+    const select = document.getElementById('billingMonth');
+    return select && select.value ? select.value : currentMonthKey();
+  }
+  function billingYearValue(){
+    const select = document.getElementById('billingYear');
+    return select && select.value ? Number(select.value) : APP_NOW.getFullYear();
+  }
+  function billingYearMonthKeys(year){
+    const selectedYear = Number(year) || APP_NOW.getFullYear();
+    return Array.from({ length:12 }, (_, index) => `${selectedYear}-${pad2(index + 1)}`);
+  }
+  function availableBillingYears(){
+    const years = new Set([APP_NOW.getFullYear()]);
+    [...entradas, ...refuels, ...maintenances].forEach(item => {
+      const year = Number(String(item.dateISO || '').slice(0, 4));
+      if(year > 2000) years.add(year);
+    });
+    return [...years].sort((a, b) => b - a);
+  }
+  function formatMonthKey(monthKey, short){
+    const parts = String(monthKey).split('-').map(Number);
+    const date = new Date(parts[0], parts[1] - 1, 1);
+    const options = short ? { month:'short' } : { month:'long', year:'numeric' };
+    const label = new Intl.DateTimeFormat('pt-BR', options).format(date).replace('.', '');
+    return label.replace(/^./, letter => letter.toUpperCase());
+  }
+  function fillBillingMonthSelector(year, preferredMonth){
+    const select = document.getElementById('billingMonth');
+    const keys = billingYearMonthKeys(year);
+    select.innerHTML = keys.map(key =>
+      `<option value="${key}">${formatMonthKey(key, false)}</option>`
+    ).join('');
+    const preferredIsValid = preferredMonth && keys.includes(preferredMonth);
+    const latestWithMovement = keys.slice().reverse().find(key => financialMonthSummary(key).hasMovement);
+    select.value = preferredIsValid
+      ? preferredMonth
+      : Number(year) === APP_NOW.getFullYear() ? currentMonthKey() : latestWithMovement || keys[11];
+  }
+  function initBillingMonthSelector(){
+    const yearSelect = document.getElementById('billingYear');
+    yearSelect.innerHTML = availableBillingYears().map(year => `<option value="${year}">${year}</option>`).join('');
+    yearSelect.value = String(APP_NOW.getFullYear());
+    fillBillingMonthSelector(APP_NOW.getFullYear(), currentMonthKey());
+    const select = document.getElementById('billingMonth');
+    select.addEventListener('change', renderFaturamento);
+    yearSelect.addEventListener('change', () => {
+      fillBillingMonthSelector(billingYearValue(), null);
+      renderFaturamento();
+    });
+    updateStorageStatus();
+  }
+  function monthRecords(items, monthKey){
+    return items.filter(item => String(item.dateISO || '').startsWith(monthKey));
+  }
+  function entradaTotal(monthKey){
+    return monthRecords(entradas, monthKey).reduce((sum, item) => sum + item.valor, 0);
+  }
+
+  function getDespesas(monthKey){
+    const combustivel = monthRecords(refuels, monthKey).map(r => ({ tipo:'Combustível', tag:'fuel', desc:r.local, data:r.quando, valor:r.valor, dateISO:r.dateISO, icon:fuelIcon }));
+    const manutencao = monthRecords(maintenances, monthKey).map(m => {
+      const category = expenseCategoryInfo(m);
+      return { tipo:category.label, tag:category.tag, desc:m.desc, data:m.data, valor:m.valor, dateISO:m.dateISO, icon:category.icon };
+    });
     return [...combustivel, ...manutencao];
   }
 
+  function financialMonthSummary(monthKey){
+    const totalEntradas = entradaTotal(monthKey);
+    const totalDespesas = getDespesas(monthKey).reduce((sum, item) => sum + item.valor, 0);
+    return {
+      key:monthKey,
+      entradas:totalEntradas,
+      despesas:totalDespesas,
+      resultado:round2(totalEntradas - totalDespesas),
+      hasMovement:totalEntradas > 0 || totalDespesas > 0
+    };
+  }
+
+  function resultBRL(value){
+    if(value === 0) return fmtBRL(0);
+    return (value > 0 ? '+ ' : '- ') + fmtBRL(Math.abs(value));
+  }
+
+  function centerSelectedBillingMonth(selectedMonth){
+    const scroll = document.getElementById('billingHistoryScroll');
+    const monthIndex = Math.max(0, Number(String(selectedMonth).slice(5, 7)) - 1);
+    if(!scroll) return;
+    requestAnimationFrame(() => {
+      const monthCenter = ((monthIndex + .5) / 12) * scroll.scrollWidth;
+      scroll.scrollLeft = Math.max(0, monthCenter - (scroll.clientWidth / 2));
+    });
+  }
+
+  function renderBillingHistoryChart(selectedMonth){
+    const chartYear = Number(String(selectedMonth).slice(0, 4)) || billingYearValue();
+    const summaries = billingYearMonthKeys(chartYear).map(financialMonthSummary);
+    const selected = summaries.find(item => item.key === selectedMonth) || financialMonthSummary(selectedMonth);
+    const valueEl = document.getElementById('billingHistoryValue');
+    const statusEl = document.getElementById('billingHistoryStatus');
+
+    valueEl.textContent = resultBRL(selected.resultado);
+    valueEl.style.color = selected.resultado < 0 ? 'var(--red)' : selected.resultado > 0 ? 'var(--green)' : 'var(--text)';
+    document.getElementById('billingHistoryDetail').textContent = selected.hasMovement
+      ? `${fmtBRL(selected.entradas)} em entradas · ${fmtBRL(selected.despesas)} em despesas`
+      : 'Nenhuma entrada ou despesa registrada neste mês.';
+    statusEl.textContent = !selected.hasMovement ? 'SEM MOVIMENTO' : selected.resultado < 0 ? 'PREJUÍZO' : selected.resultado > 0 ? 'LUCRO' : 'EQUILÍBRIO';
+    statusEl.className = 'billing-history-status' + (selected.resultado < 0 ? ' negative' : selected.resultado === 0 ? ' balanced' : '');
+
+    const canvas = document.getElementById('billingHistoryChart');
+    canvas.setAttribute('aria-label', summaries.map(item =>
+      `${formatMonthKey(item.key, false)}: entradas ${fmtBRL(item.entradas)}, despesas ${fmtBRL(item.despesas)}, resultado ${resultBRL(item.resultado)}`
+    ).join('. '));
+    if(typeof Chart === 'undefined'){
+      canvas.style.display = 'none';
+      return;
+    }
+    canvas.style.display = 'block';
+    if(billingHistoryChart) billingHistoryChart.destroy();
+
+    billingHistoryChart = new Chart(canvas.getContext('2d'), {
+      type:'bar',
+      data:{
+        labels:summaries.map(item => formatMonthKey(item.key, true)),
+        datasets:[
+          {
+            type:'bar',
+            label:'Entradas',
+            data:summaries.map(item => item.entradas),
+            backgroundColor:summaries.map(item => item.key === selectedMonth ? 'rgba(63,178,127,.94)' : 'rgba(63,178,127,.62)'),
+            borderColor:summaries.map(item => item.key === selectedMonth ? '#A5E7C8' : '#3FB27F'),
+            borderWidth:summaries.map(item => item.key === selectedMonth ? 2 : 1),
+            borderRadius:6,
+            borderSkipped:false,
+            maxBarThickness:28,
+            categoryPercentage:.76,
+            barPercentage:.84,
+            order:2
+          },
+          {
+            type:'bar',
+            label:'Despesas',
+            data:summaries.map(item => item.despesas),
+            backgroundColor:summaries.map(item => item.key === selectedMonth ? 'rgba(255,107,118,.92)' : 'rgba(255,107,118,.60)'),
+            borderColor:summaries.map(item => item.key === selectedMonth ? '#FFB0B7' : '#FF6B76'),
+            borderWidth:summaries.map(item => item.key === selectedMonth ? 2 : 1),
+            borderRadius:6,
+            borderSkipped:false,
+            maxBarThickness:28,
+            categoryPercentage:.76,
+            barPercentage:.84,
+            order:2
+          },
+          {
+            type:'line',
+            label:'Resultado',
+            data:summaries.map(item => item.resultado),
+            borderColor:'#828B99',
+            backgroundColor:'#828B99',
+            borderWidth:2.5,
+            pointRadius:summaries.map(item => item.key === selectedMonth ? 5 : 3.5),
+            pointHoverRadius:6,
+            pointHitRadius:14,
+            pointBackgroundColor:summaries.map(item => item.resultado < 0 ? '#FF6B76' : item.resultado > 0 ? '#3FB27F' : '#828B99'),
+            pointBorderColor:'#14171C',
+            pointBorderWidth:2,
+            segment:{
+              borderColor:ctx => {
+                // cada trecho da linha usa a cor do ponto de destino: verde sobe pro lucro,
+                // vermelho desce pro prejuízo
+                const v = ctx.p1.parsed.y;
+                return v < 0 ? '#FF6B76' : v > 0 ? '#3FB27F' : '#828B99';
+              }
+            },
+            tension:.28,
+            fill:false,
+            order:1
+          }
+        ]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:{ duration:360 },
+        interaction:{ mode:'index', intersect:false },
+        onHover:(event, elements) => {
+          if(event.native && event.native.target) event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+        },
+        onClick:(event, elements) => {
+          if(!elements.length) return;
+          const picked = summaries[elements[0].index];
+          requestAnimationFrame(() => {
+            const select = document.getElementById('billingMonth');
+            select.value = picked.key;
+            renderFaturamento();
+          });
+        },
+        plugins:{
+          legend:{ display:false },
+          tooltip:{
+            displayColors:true,
+            position:'nearest',
+            backgroundColor:'#111419',
+            borderColor:'#3A414B',
+            borderWidth:1,
+            titleColor:'#8B92A0',
+            bodyColor:'#F2F0EB',
+            padding:11,
+            caretPadding:8,
+            callbacks:{
+              title:items => formatMonthKey(summaries[items[0].dataIndex].key, false),
+              labelTextColor:context => {
+                if(context.dataset.label === 'Resultado'){
+                  const v = context.parsed.y;
+                  return v < 0 ? '#FF6B76' : v > 0 ? '#3FB27F' : '#F2F0EB';
+                }
+                return '#F2F0EB';
+              },
+              label:context => context.dataset.label === 'Resultado'
+                ? `Resultado: ${resultBRL(context.parsed.y)}`
+                : `${context.dataset.label}: ${fmtBRL(context.parsed.y)}`
+            }
+          }
+        },
+        scales:{
+          x:{ grid:{ display:false }, ticks:{ color:'#9AA1AD', font:{ size:11, weight:'600' } } },
+          y:{
+            beginAtZero:true,
+            grace:'12%',
+            grid:{ color:context => context.tick.value === 0 ? 'rgba(242,240,235,.28)' : 'rgba(49,55,63,.7)' },
+            ticks:{
+              color:'#9AA1AD', font:{ size:10.5, weight:'600' }, maxTicksLimit:5,
+              callback:value => (value < 0 ? '- ' : '') + 'R$ ' + Math.abs(value).toLocaleString('pt-BR')
+            }
+          }
+        }
+      }
+    });
+    centerSelectedBillingMonth(selectedMonth);
+  }
+
   function renderFaturamento(){
-    const totalEntradas = entradaTotal();
-    const despesas = getDespesas();
+    const monthKey = billingMonthKey();
+    const monthEntries = monthRecords(entradas, monthKey);
+    const totalEntradas = entradaTotal(monthKey);
+    const despesas = getDespesas(monthKey);
     const totalDespesas = despesas.reduce((s, d) => s + d.valor, 0);
     const resultado = totalEntradas - totalDespesas;
 
+    document.getElementById('billingPeriodLabel').textContent = monthKey === currentMonthKey()
+      ? `${formatMonthKey(monthKey, false)} · mês atual`
+      : formatMonthKey(monthKey, false);
     document.getElementById('balEntradas').textContent = fmtBRL(totalEntradas);
     document.getElementById('balDespesas').textContent = fmtBRL(totalDespesas);
     const resEl = document.getElementById('balResultado');
-    resEl.textContent = (resultado >= 0 ? '+ ' : '- ') + fmtBRL(Math.abs(resultado));
-    resEl.style.color = resultado >= 0 ? 'var(--green)' : 'var(--red)';
+    resEl.textContent = resultBRL(resultado);
+    resEl.style.color = resultado < 0 ? 'var(--red)' : resultado > 0 ? 'var(--green)' : 'var(--text)';
 
     const entradaListEl = document.getElementById('entradaList');
-    entradaListEl.innerHTML = entradas.length === 0
-      ? '<div class="trip-empty">Nenhuma entrada registrada ainda. Toca no + acima pra adicionar.</div>'
-      : entradas.map(e => `
+    entradaListEl.innerHTML = monthEntries.length === 0
+      ? '<div class="trip-empty">Nenhuma entrada registrada neste mês.</div>'
+      : monthEntries.map(e => {
+        const entryIndex = entradas.indexOf(e);
+        const editable = !e.routeId && !e.clientName;
+        return `
         <div class="list-item">
           <div class="badge green">${cashIcon}</div>
           <div class="info">
-            <div class="title">${safeText(e.desc)}</div>
+            <div class="title">${safeText(e.desc)} ${editBadgeHTML(e)}</div>
             <div class="sub">${safeText(e.data)}</div>
           </div>
-          <div class="amount green">+ ${fmtBRL(e.valor)}</div>
+          <div class="record-side">
+            <div class="amount green">+ ${fmtBRL(e.valor)}</div>
+            ${editable ? recordActionsHTML('entry', entryIndex, 'entrada ' + e.desc) : ''}
+          </div>
         </div>
-      `).join('');
+      `}).join('');
+    wireRecordActions(entradaListEl, editEntry, deleteEntry);
 
     const despesaListEl = document.getElementById('despesaList');
     despesaListEl.innerHTML = despesas.length === 0
-      ? '<div class="trip-empty">Nenhuma despesa registrada ainda.</div>'
-      : despesas.map(d => `
+      ? '<div class="trip-empty">Nenhuma despesa registrada neste mês.</div>'
+      : despesas.map(d => {
+        const showCategoryTag = d.tag === 'fuel' || d.desc !== d.tipo;
+        return `
         <div class="list-item">
           <div class="badge">${d.icon}</div>
           <div class="info">
             <div class="title">${safeText(d.desc)}</div>
-            <div class="sub"><span class="cat-tag ${d.tag}">${safeText(d.tipo)}</span> ${safeText(d.data)}</div>
+            <div class="sub">${showCategoryTag ? `<span class="cat-tag ${d.tag}">${safeText(d.tipo)}</span> ` : ''}${safeText(d.data)}</div>
           </div>
           <div class="amount">- ${fmtBRL(d.valor)}</div>
         </div>
-      `).join('');
+      `}).join('');
+
+    renderBillingHistoryChart(monthKey);
   }
 
   document.getElementById('entradaSave').addEventListener('click', () => {
     const desc = document.getElementById('entradaDesc').value.trim();
-    const valor = parseNum(document.getElementById('entradaValor').value);
+    const valor = parseBrazilianInput(document.getElementById('entradaValor').value);
 
     if(!desc || valor === null || valor <= 0){
       alert('Preenche de onde veio o valor e quanto foi recebido.');
       return;
     }
 
-    entradas.unshift({ desc, valor, data: 'Hoje', dateISO:daysAgoISO(0) });
+    const previous = editingEntryIndex === null ? null : entradas[editingEntryIndex];
+    const entradaDateEl = document.getElementById('entradaDate');
+    const entradaISO = clampDateNotFuture(entradaDateEl ? entradaDateEl.value : '');
+    const record = {
+      desc,
+      valor,
+      data: dateLabelFromISO(entradaISO),
+      dateISO: entradaISO
+    };
+    if(previous){
+      registrarEdicao(record, previous, [
+        { chave:'desc', rotulo:'Descrição', tipo:'text' },
+        { chave:'valor', rotulo:'Valor', tipo:'money' }
+      ], document.getElementById('entradaEditReason') ? document.getElementById('entradaEditReason').value : '');
+      entradas[editingEntryIndex] = record;
+    }
+    else entradas.unshift(record);
+    if(!previous){
+      const billingYearSelect = document.getElementById('billingYear');
+      const chosenYear = Number(entradaISO.slice(0, 4)) || APP_NOW.getFullYear();
+      if(billingYearSelect) billingYearSelect.value = String(chosenYear);
+      fillBillingMonthSelector(chosenYear, entradaISO.slice(0, 7));
+    }
+    saveLocalState();
     renderFaturamento();
     renderDashboard();
     entradaModalCtl.close();
-    document.getElementById('entradaDesc').value = '';
-    document.getElementById('entradaValor').value = '';
+    resetEntryFormMode();
   });
 
   // ---------- rotas: montador de serviços (1 coleta + N entregas) ----------
   // O consumo vem de Minha Moto e o preço por litro vem do último abastecimento.
   // Um serviço = 1 coleta que pode gerar várias entregas (motoboy pega vários pacotes
   // no mesmo lugar e entrega em endereços diferentes).
-  let CONSUMO_ATUAL = 35;                // pode ser informado em Minha Moto ou calculado pelos abastecimentos
+  let CONSUMO_ATUAL = Number(localState.manualConsumption) > 0 ? Number(localState.manualConsumption) : 35; // pode ser informado em Minha Moto ou calculado pelos abastecimentos
   let PRECO_ATUAL = latestRefuelPrice(); // calculado em Abastecimentos
   let consumoReal = null;                // km/L calculado a partir dos abastecimentos com km do painel
-  let consumoManualDefinido = false;     // se o motoboy digitou um consumo à mão, respeitamos a escolha dele
+  let consumoManualDefinido = Boolean(localState.consumoManualDefinido && Number(localState.manualConsumption) > 0); // se o motoboy digitou um consumo à mão, respeitamos a escolha dele
 
   // Calcula o consumo real (km/L) usando os abastecimentos que têm km do painel anotado.
   // Entre dois abastecimentos consecutivos, o motoboy rodou (km maior - km menor) e, pra
@@ -2111,13 +3181,14 @@
   }
 
   document.getElementById('btnSaveConsumption').addEventListener('click', () => {
-    const consumption = parseNum(document.getElementById('motoConsumptionInput').value);
+    const consumption = parseBrazilianInput(document.getElementById('motoConsumptionInput').value);
     if(!consumption || consumption <= 0){
       alert('Informe um consumo médio maior que zero.');
       return;
     }
     CONSUMO_ATUAL = consumption;
     consumoManualDefinido = true;
+    saveLocalState();
     document.getElementById('motoConsumptionStatus').textContent = `${consumption.toFixed(1).replace('.', ',')} km/L salvos à mão e usados nas rotas.`;
     renderMotoConsumo();
     renderRouteSummary();
@@ -2127,7 +3198,7 @@
   function newEntrega(){ return { entrega:'', entregaCoords:null, distancia:null, tempo:null, valor:null, status:'idle', errorMsg:'', approx:false, approxConfirmed:false }; }
   function newService(){ return { coleta:'', coletaCoords:null, cliente:'', paymentStatus:'received', entregas:[ newEntrega() ] }; }
   let routeServices = [ newService() ];
-  let confirmedRoutes = [];
+  let confirmedRoutes = Array.isArray(localState.confirmedRoutes) ? localState.confirmedRoutes : [];
   let dragSrcIndex = null;
   let startCoords = null;
 
@@ -2311,7 +3382,7 @@
 
     const manualKm = el.querySelector('[data-action="manual-km"]');
     if(manualKm) manualKm.addEventListener('change', () => {
-      const km = parseNum(manualKm.value);
+      const km = parseBrazilianInput(manualKm.value);
       if(km && km > 0){
         e.distancia = km;
         e.tempo = Math.round((km / 28) * 60);
@@ -2368,7 +3439,7 @@
           <div class="route-calc" id="routeCalc-${i}-${j}" aria-live="polite">${routeCalcHTML(e)}</div>
           <div class="field-group valor-group">
             <label class="field-label" for="${valorId}">VALOR R$</label>
-            <input id="${valorId}" type="number" inputmode="decimal" class="field-input" data-entrega-field="valor" placeholder="0" value="${e.valor === null || e.valor === undefined ? '' : e.valor}">
+            <input id="${valorId}" type="text" inputmode="decimal" class="field-input" data-entrega-field="valor" placeholder="0,00" value="${e.valor === null || e.valor === undefined ? '' : e.valor}" autocomplete="off">
           </div>
         </div>
       </div>
@@ -2438,7 +3509,7 @@
         <div class="route-calc-warn-text">O serviço de rota falhou. Usamos uma distância aproximada em linha reta (${e.distancia.toFixed(1).replace('.', ',')} km) — pode estar errada perto de rios, rodovias ou retornos.</div>
         <div class="route-calc-warn-actions">
           <button type="button" class="btn-tiny" data-action="confirm-approx">Usar estimativa mesmo assim</button>
-          <input type="number" inputmode="decimal" class="field-input manual-km-input" data-action="manual-km" placeholder="ou km real" aria-label="Informar km real">
+          <input type="text" inputmode="decimal" class="field-input manual-km-input" data-action="manual-km" placeholder="ou km real" aria-label="Informar km real" autocomplete="off">
         </div>
       `;
     }
@@ -2594,7 +3665,7 @@
 
         const valorInp = block.querySelector('[data-entrega-field="valor"]');
         valorInp.addEventListener('input', () => {
-          e.valor = parseNum(valorInp.value);
+          e.valor = parseBrazilianInput(valorInp.value);
           updateServiceVerdict(idx, j);
           renderRouteSummary();
         });
@@ -2739,21 +3810,164 @@
     renderRouteSummary();
   });
 
-  function renderConfirmedRoutes(){
-    const section = document.getElementById('confirmedRoutesSection');
-    const list = document.getElementById('confirmedRoutesList');
-    if(confirmedRoutes.length === 0){ section.style.display = 'none'; return; }
-    section.style.display = 'block';
-    list.innerHTML = confirmedRoutes.map(r => `
-      <div class="list-item">
-        <div class="badge">${routeIcon}</div>
-        <div class="info">
-          <div class="title">${r.count} entrega${r.count > 1 ? 's' : ''} · ${r.distancia.toFixed(1).replace('.', ',')} km</div>
-          <div class="sub">${r.data}${r.pendente > 0 ? ` · ${fmtBRL(r.pendente)} ficou pendente` : ''}</div>
-        </div>
-        <div class="amount green">+ ${fmtBRL(r.recebidoNaHora)}</div>
+  let routeHistoryFiltersReady = false;
+  function routeHistoryMonthLabel(month){
+    const date = new Date(2026, Number(month) - 1, 1);
+    const label = new Intl.DateTimeFormat('pt-BR', { month:'long' }).format(date);
+    return label.replace(/^./, letter => letter.toUpperCase());
+  }
+  function routeHistoryYears(){
+    const years = new Set([APP_NOW.getFullYear()]);
+    confirmedRoutes.forEach(route => {
+      const year = Number(String(route.dateISO || '').slice(0, 4));
+      if(year > 2000) years.add(year);
+    });
+    return [...years].sort((a, b) => b - a);
+  }
+  function initRouteHistoryFilters(){
+    const monthSelect = document.getElementById('routeHistoryMonth');
+    const yearSelect = document.getElementById('routeHistoryYear');
+    if(!monthSelect || !yearSelect) return;
+    const selectedMonth = monthSelect.value || pad2(APP_NOW.getMonth() + 1);
+    const selectedYear = yearSelect.value || String(APP_NOW.getFullYear());
+    monthSelect.innerHTML = Array.from({ length:12 }, (_, index) => {
+      const value = pad2(index + 1);
+      return `<option value="${value}">${routeHistoryMonthLabel(value)}</option>`;
+    }).join('');
+    yearSelect.innerHTML = routeHistoryYears().map(year => `<option value="${year}">${year}</option>`).join('');
+    monthSelect.value = selectedMonth;
+    yearSelect.value = routeHistoryYears().includes(Number(selectedYear)) ? selectedYear : String(APP_NOW.getFullYear());
+    if(!routeHistoryFiltersReady){
+      monthSelect.addEventListener('change', renderRouteHistory);
+      yearSelect.addEventListener('change', renderRouteHistory);
+      routeHistoryFiltersReady = true;
+    }
+  }
+  function routeHistoryNumber(value){
+    if(value === null || value === undefined || value === '') return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+  function routeHistoryDate(route){
+    const date = localDateFromISO(route.dateISO);
+    if(!date) return safeText(route.data || 'Data não registrada');
+    const formatted = new Intl.DateTimeFormat('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }).format(date);
+    return formatted + (route.hora ? ` · ${safeText(route.hora)}` : '');
+  }
+  function routeHistoryResult(route){
+    const stored = routeHistoryNumber(route.resultado);
+    if(stored !== null) return stored;
+    const total = routeHistoryNumber(route.valorTotal);
+    const fuel = routeHistoryNumber(route.custoCombustivel);
+    return total !== null && fuel !== null ? round2(total - fuel) : null;
+  }
+  function routeHistoryDetailsHTML(route){
+    const services = Array.isArray(route.services) ? route.services : [];
+    const routeTotal = routeHistoryNumber(route.valorTotal);
+    const inferredTotal = routeTotal !== null
+      ? routeTotal
+      : round2((routeHistoryNumber(route.recebidoNaHora) || 0) + (routeHistoryNumber(route.pendente) || 0));
+    const servicesHTML = services.length === 0
+      ? '<div class="route-history-legacy">Esta rota foi registrada antes do histórico detalhado. Tempo, combustível e endereços não estavam sendo salvos.</div>'
+      : `<div class="route-history-section-title">ORDEM DA ROTA</div>${services.map((service, serviceIndex) => {
+          const isPending = service.paymentStatus === 'pending';
+          const paymentText = isPending
+            ? `A receber${service.cliente ? ' de ' + safeText(service.cliente) : ''}`
+            : 'Recebido na hora';
+          const deliveries = Array.isArray(service.entregas) ? service.entregas : [];
+          return `<div class="route-history-service">
+            <div class="route-history-service-head">
+              <b>Serviço ${serviceIndex + 1}</b>
+              <span class="route-history-payment">${paymentText}</span>
+            </div>
+            <div class="route-history-stop">
+              <span class="route-history-stop-dot"></span>
+              <div class="route-history-stop-main">
+                <div class="route-history-stop-label">COLETA</div>
+                <div class="route-history-stop-value">${safeText(service.coleta || 'Endereço não registrado')}</div>
+              </div>
+            </div>
+            ${deliveries.map((delivery, deliveryIndex) => `<div class="route-history-stop delivery">
+              <span class="route-history-stop-dot"></span>
+              <div class="route-history-stop-main">
+                <div class="route-history-stop-label">ENTREGA ${deliveryIndex + 1}</div>
+                <div class="route-history-stop-value">${safeText(delivery.endereco || 'Endereço não registrado')}</div>
+              </div>
+              <div class="route-history-stop-price">${fmtBRL(routeHistoryNumber(delivery.valor) || 0)}</div>
+            </div>`).join('')}
+          </div>`;
+        }).join('')}`;
+    return `${servicesHTML}
+      <div class="route-history-section-title">VALORES DA ROTA</div>
+      <div class="route-history-finance">
+        <div class="route-history-finance-row"><span>Valor total</span><b>${fmtBRL(inferredTotal)}</b></div>
+        <div class="route-history-finance-row"><span>Recebido na hora</span><b>${fmtBRL(routeHistoryNumber(route.recebidoNaHora) || 0)}</b></div>
+        <div class="route-history-finance-row"><span>A receber</span><b>${fmtBRL(routeHistoryNumber(route.pendente) || 0)}</b></div>
       </div>
-    `).join('');
+      ${route.id ? `<button type="button" class="route-cancel-btn" data-cancel-route="${safeText(route.id)}">Cancelar esta rota</button>
+      <div class="route-cancel-note">Cancelar desfaz o que entrou no faturamento e a conta criada no cliente. Não dá pra desfazer o cancelamento.</div>` : ''}`;
+  }
+  function renderRouteHistory(){
+    const list = document.getElementById('routeHistoryList');
+    const monthSelect = document.getElementById('routeHistoryMonth');
+    const yearSelect = document.getElementById('routeHistoryYear');
+    if(!list || !monthSelect || !yearSelect) return;
+    if(!monthSelect.options.length || !yearSelect.options.length) initRouteHistoryFilters();
+    const monthKey = `${yearSelect.value}-${monthSelect.value}`;
+    const routes = confirmedRoutes.filter(route => String(route.dateISO || '').slice(0, 7) === monthKey);
+    if(routes.length === 0){
+      list.innerHTML = `<div class="route-history-empty">Nenhuma rota confirmada em ${safeText(routeHistoryMonthLabel(monthSelect.value))} de ${safeText(yearSelect.value)}.</div>`;
+      return;
+    }
+    list.innerHTML = routes.map((route, index) => {
+      const distance = routeHistoryNumber(route.distancia);
+      const time = routeHistoryNumber(route.tempoMin);
+      const fuel = routeHistoryNumber(route.custoCombustivel);
+      const result = routeHistoryResult(route);
+      const resultClass = result === null ? '' : result > 0 ? 'positive' : result < 0 ? 'negative' : '';
+      const detailsId = `route-history-details-${index}`;
+      return `<article class="route-history-card">
+        <button type="button" class="route-history-summary" data-route-history-toggle aria-expanded="false" aria-controls="${detailsId}">
+          <div class="route-history-head">
+            <div>
+              <div class="route-history-title">${route.count || 0} entrega${route.count === 1 ? '' : 's'}</div>
+              <div class="route-history-date">${routeHistoryDate(route)}</div>
+            </div>
+            <span class="route-history-chevron" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
+          </div>
+          <div class="route-history-metrics">
+            <div class="route-history-metric"><div class="label">TEMPO</div><div class="value">${time === null ? 'Não registrado' : Math.round(time) + ' min'}</div></div>
+            <div class="route-history-metric"><div class="label">KM</div><div class="value">${distance === null ? 'Não registrado' : distance.toFixed(1).replace('.', ',') + ' km'}</div></div>
+            <div class="route-history-metric"><div class="label">COMBUSTÍVEL</div><div class="value">${fuel === null ? 'Não registrado' : fmtBRL(fuel)}</div></div>
+            <div class="route-history-metric"><div class="label">RESULTADO</div><div class="value ${resultClass}">${result === null ? 'Não registrado' : resultBRL(result)}</div></div>
+          </div>
+        </button>
+        <div class="route-history-details" id="${detailsId}" hidden>${routeHistoryDetailsHTML(route)}</div>
+      </article>`;
+    }).join('');
+    list.querySelectorAll('[data-route-history-toggle]').forEach(button => {
+      button.addEventListener('click', () => {
+        const details = document.getElementById(button.getAttribute('aria-controls'));
+        const opening = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', String(opening));
+        details.hidden = !opening;
+      });
+    });
+    list.querySelectorAll('[data-cancel-route]').forEach(button => {
+      button.addEventListener('click', () => {
+        const routeId = button.dataset.cancelRoute;
+        const bloqueio = routeCancelBlockReason(routeId);
+        if(bloqueio){
+          alert(bloqueio);
+          return;
+        }
+        requestDeleteConfirmation(
+          'Cancelar esta rota?',
+          'A entrada que ela gerou no faturamento e a conta criada no cliente serão desfeitas. Isso não pode ser revertido.',
+          () => cancelConfirmedRoute(routeId)
+        );
+      });
+    });
   }
 
   document.getElementById('btnConfirmRoute').addEventListener('click', async () => {
@@ -2779,9 +3993,29 @@
     // distância real da rota inteira (cadeia sequencial), não a soma de trechos soltos
     const chain = await computeRouteChain();
     const totalKm = chain ? chain.totalKm : all.reduce((s, x) => s + (x.distancia || 0), 0);
+    const totalMin = chain ? chain.totalMin : all.reduce((s, x) => s + (x.tempo || 0), 0);
+    const valorTotal = round2(all.reduce((sum, entrega) => sum + (entrega.valor || 0), 0));
+    const custoCombustivel = CONSUMO_ATUAL > 0 && PRECO_ATUAL > 0
+      ? round2((totalKm / CONSUMO_ATUAL) * PRECO_ATUAL)
+      : null;
+    const resultadoRota = custoCombustivel === null ? null : round2(valorTotal - custoCombustivel);
     let recebidoNaHora = 0;
     let pendenteTotal = 0;
     const routeId = `rota-${Date.now()}`;
+    const confirmedAt = new Date();
+    const servicesSnapshot = routeServices.map(service => ({
+      coleta:service.coleta,
+      cliente:service.cliente,
+      paymentStatus:service.paymentStatus,
+      valorTotal:round2(service.entregas.reduce((sum, entrega) => sum + (entrega.valor || 0), 0)),
+      entregas:service.entregas.map(entrega => ({
+        endereco:entrega.entrega,
+        valor:entrega.valor || 0,
+        distancia:entrega.distancia,
+        tempo:entrega.tempo,
+        aproximada:Boolean(entrega.approx)
+      }))
+    }));
 
     routeServices.forEach(s => {
       const totalServico = s.entregas.reduce((sum, e) => sum + (e.valor || 0), 0);
@@ -2794,12 +4028,32 @@
       }
     });
 
-    confirmedRoutes.unshift({ id:routeId, count: all.length, distancia: totalKm, recebidoNaHora, pendente: pendenteTotal, data: 'Hoje', dateISO:daysAgoISO(0) });
+    confirmedRoutes.unshift({
+      id:routeId,
+      count:all.length,
+      distancia:totalKm,
+      tempoMin:totalMin,
+      valorTotal,
+      custoCombustivel,
+      resultado:resultadoRota,
+      recebidoNaHora,
+      pendente:pendenteTotal,
+      data:'Hoje',
+      dateISO:toISODateLocal(confirmedAt),
+      hora:confirmedAt.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }),
+      createdAt:confirmedAt.toISOString(),
+      consumoKmL:CONSUMO_ATUAL,
+      precoLitro:PRECO_ATUAL,
+      aproximada:Boolean(chain && chain.approx),
+      services:servicesSnapshot
+    });
     if(recebidoNaHora > 0){
       entradas.unshift({ desc: `Rota confirmada · ${all.length} entrega(s)`, valor: recebidoNaHora, data: 'Hoje', dateISO:daysAgoISO(0), routeId });
     }
 
-    renderConfirmedRoutes();
+    saveLocalState();
+    initRouteHistoryFilters();
+    renderRouteHistory();
     renderClientes();
     renderFaturamento();
     renderDashboard();
@@ -2820,10 +4074,11 @@
 
   renderServices();
   renderRouteSummary();
-  renderConfirmedRoutes();
+  initRouteHistoryFilters();
+  renderRouteHistory();
 
   // ---------- clientes de coleta (saldo a receber / fiado) ----------
-  let clientes = [];
+  let clientes = Array.isArray(localState.clientes) ? localState.clientes : [];
 
   function newClient(nome){
     return { nome, pendente:0, contas:[], recebimentos:[] };
@@ -2855,6 +4110,63 @@
 
   function clientesTotal(){ return clientes.reduce((s, c) => s + c.pendente, 0); }
 
+  // "A receber" respeitando o mês (ponto 4). No painel de um mês específico, mostramos
+  // quanto das contas CRIADAS naquele mês ainda está em aberto — não o saldo devedor de hoje.
+  // Assim, ao olhar um mês passado, o número reflete a realidade daquele mês, não a de agora.
+  function pendingForMonth(monthKey){
+    let total = 0;
+    clientes.forEach(c => {
+      (c.contas || []).forEach(conta => {
+        if(String(conta.dateISO || '').slice(0, 7) === monthKey){
+          total += (conta.saldo || 0);
+        }
+      });
+    });
+    return round2(total);
+  }
+
+  // ---------- cancelamento de rota com estorno em cascata (ponto 2) ----------
+  // Cancelar uma rota não pode deixar "restos" espalhados: a entrada que ela gerou no
+  // faturamento e a dívida que criou no cliente precisam ser desfeitas junto. E tem uma
+  // trava de honestidade: se o cliente já pagou (mesmo que em parte) a conta daquela rota,
+  // não dá pra cancelar no clique — porque isso apagaria um dinheiro que de fato entrou.
+  function routeCancelBlockReason(routeId){
+    for(const c of clientes){
+      for(const conta of (c.contas || [])){
+        if(conta.routeId === routeId && (conta.recebido || 0) > 0){
+          return `O cliente ${c.nome} já pagou ${fmtBRL(conta.recebido)} referente a esta rota. Para cancelar, primeiro trate esse recebimento com o cliente.`;
+        }
+      }
+    }
+    return null;
+  }
+
+  function cancelConfirmedRoute(routeId){
+    const idx = confirmedRoutes.findIndex(r => r.id === routeId);
+    if(idx < 0) return;
+
+    // 1) remove a entrada de faturamento gerada por esta rota (o "recebido na hora")
+    for(let i = entradas.length - 1; i >= 0; i--){
+      if(entradas[i].routeId === routeId) entradas.splice(i, 1);
+    }
+
+    // 2) remove as contas que esta rota criou nos clientes (nenhuma tem pagamento, já checamos)
+    clientes.forEach(c => {
+      if(!Array.isArray(c.contas)) return;
+      c.contas = c.contas.filter(conta => conta.routeId !== routeId);
+      syncClientBalance(c);
+    });
+
+    // 3) remove a própria rota do histórico
+    confirmedRoutes.splice(idx, 1);
+
+    saveLocalState();
+    renderFaturamento();
+    renderClientes();
+    renderDashboard();
+    renderRouteHistory();
+  }
+
   function renderClientes(){
     clientes.forEach(syncClientBalance);
     document.getElementById('clientesTotalValue').textContent = fmtBRL(clientesTotal());
@@ -2873,7 +4185,10 @@
           <div class="sub ${c.pendente > 0 ? 'owed' : 'clear'}">${c.pendente > 0 ? 'A receber: ' + fmtBRL(c.pendente) : 'Em dia'}</div>
           <span class="account-count">${(c.contas || []).filter(conta => conta.saldo > 0).length} conta(s) em aberto</span>
         </div>
-        ${c.pendente > 0 ? `<button type="button" class="btn-charge" data-action="receive" data-i="${i}">Registrar recebimento</button>` : ''}
+        <div class="cliente-side">
+          ${c.pendente > 0 ? `<button type="button" class="btn-charge" data-action="receive" data-i="${i}">Registrar recebimento</button>` : ''}
+          ${recordActionsHTML('client', i, 'cliente ' + c.nome)}
+        </div>
       </div>
     `).join('');
 
@@ -2882,6 +4197,7 @@
         openReceiptForClient(parseInt(btn.dataset.i));
       });
     });
+    wireRecordActions(list, editClient, deleteClient);
   }
 
   let receiptClientIndex = null;
@@ -2894,11 +4210,12 @@
     document.getElementById('recebimentoClienteNome').textContent = cliente.nome;
     document.getElementById('recebimentoSaldo').textContent = fmtBRL(cliente.pendente);
     document.getElementById('recebimentoValor').value = cliente.pendente.toFixed(2);
+    document.getElementById('recebimentoDate').value = todayInputValue();
     receiptModalCtl.open();
     setTimeout(() => document.getElementById('recebimentoValor').focus(), 0);
   }
 
-  function applyReceipt(cliente, valor){
+  function applyReceipt(cliente, valor, receiptISO){
     let restante = valor;
     const contasMaisAntigasPrimeiro = [...cliente.contas].reverse();
     contasMaisAntigasPrimeiro.forEach(conta => {
@@ -2909,13 +4226,13 @@
       conta.status = conta.saldo <= 0.001 ? 'paid' : 'partial';
       restante -= aplicado;
     });
-    cliente.recebimentos.unshift({ valor, data:'Hoje', dateISO:daysAgoISO(0) });
+    cliente.recebimentos.unshift({ valor, data: dateLabelFromISO(receiptISO), dateISO: receiptISO });
     syncClientBalance(cliente);
   }
 
   document.getElementById('recebimentoSave').addEventListener('click', () => {
     const cliente = clientes[receiptClientIndex];
-    const valor = parseNum(document.getElementById('recebimentoValor').value);
+    const valor = parseBrazilianInput(document.getElementById('recebimentoValor').value);
     if(!cliente){ receiptModalCtl.close(); return; }
     if(valor === null || valor <= 0){
       alert('Informe um valor recebido maior que zero.');
@@ -2926,8 +4243,11 @@
       return;
     }
 
-    applyReceipt(cliente, valor);
-    entradas.unshift({ desc:`Recebimento de ${cliente.nome}`, valor, data:'Hoje', dateISO:daysAgoISO(0), clientName:cliente.nome });
+    const recebimentoDateEl = document.getElementById('recebimentoDate');
+    const receiptISO = clampDateNotFuture(recebimentoDateEl ? recebimentoDateEl.value : '');
+    applyReceipt(cliente, valor, receiptISO);
+    entradas.unshift({ desc:`Recebimento de ${cliente.nome}`, valor, data: dateLabelFromISO(receiptISO), dateISO: receiptISO, clientName:cliente.nome });
+    saveLocalState();
     receiptModalCtl.close();
     receiptClientIndex = null;
     renderClientes();
@@ -2937,17 +4257,76 @@
   });
 
   const clienteModalCtl = wireModal('btnOpenCliente', 'clienteModal', 'clienteBackdrop', 'clienteClose', 'clienteCancel');
+  let editingClientIndex = null;
+  function resetClientFormMode(){
+    editingClientIndex = null;
+    document.getElementById('clienteModalTitle').textContent = 'Adicionar cliente';
+    document.getElementById('clienteModalDesc').textContent = 'Cadastra um local de coleta fixo';
+    document.getElementById('clienteSave').textContent = 'Salvar cliente';
+    document.getElementById('clienteNome').value = '';
+  }
+  function editClient(index){
+    const cliente = clientes[index];
+    if(!cliente) return;
+    editingClientIndex = index;
+    document.getElementById('clienteModalTitle').textContent = 'Editar cliente';
+    document.getElementById('clienteModalDesc').textContent = 'Altere o nome sem perder o histórico';
+    document.getElementById('clienteSave').textContent = 'Atualizar cliente';
+    document.getElementById('clienteNome').value = cliente.nome;
+    clienteModalCtl.open();
+    document.getElementById('clienteNome').focus();
+  }
+  function deleteClient(index){
+    const cliente = clientes[index];
+    if(!cliente) return;
+    const hasFinancialHistory = cliente.pendente > 0 || (cliente.contas || []).length > 0 || (cliente.recebimentos || []).length > 0;
+    if(hasFinancialHistory){
+      alert('Este cliente possui saldo ou histórico financeiro. Para não quebrar os valores, ele só poderá ser excluído depois que implementarmos o estorno e o extrato completo. Você ainda pode editar o nome.');
+      return;
+    }
+    requestDeleteConfirmation(
+      'Excluir cliente?',
+      `${cliente.nome} será removido da lista de clientes.`,
+      () => {
+        const currentIndex = clientes.indexOf(cliente);
+        if(currentIndex < 0) return;
+        clientes.splice(currentIndex, 1);
+        if(editingClientIndex === currentIndex) resetClientFormMode();
+        saveLocalState();
+        renderClientes();
+        renderDashboard();
+      }
+    );
+  }
+  document.getElementById('btnOpenCliente').addEventListener('click', resetClientFormMode);
   document.getElementById('clienteSave').addEventListener('click', () => {
     const nome = document.getElementById('clienteNome').value.trim();
     if(!nome){ alert('Digita o nome do cliente.'); return; }
-    if(clientes.find(c => c.nome.toLowerCase() === nome.toLowerCase())){
+    if(clientes.find((c, index) => index !== editingClientIndex && c.nome.toLowerCase() === nome.toLowerCase())){
       alert('Esse cliente já está cadastrado.');
       return;
     }
-    clientes.push(newClient(nome));
+    const previous = editingClientIndex === null ? null : clientes[editingClientIndex];
+    if(previous){
+      const oldName = previous.nome;
+      previous.nome = nome;
+      entradas.forEach(entry => {
+        if(entry.clientName !== oldName) return;
+        entry.clientName = nome;
+        if(entry.desc === `Recebimento de ${oldName}`) entry.desc = `Recebimento de ${nome}`;
+      });
+      routeServices.forEach(service => {
+        if(service.cliente === oldName) service.cliente = nome;
+      });
+    }else{
+      clientes.push(newClient(nome));
+    }
+    saveLocalState();
     renderClientes();
+    renderFaturamento();
+    renderDashboard();
     clienteModalCtl.close();
-    document.getElementById('clienteNome').value = '';
+    resetClientFormMode();
   });
 
   // ---------- painel mensal (dados locais, sem backend) ----------
@@ -2992,7 +4371,7 @@
     resultEl.textContent = signedBRL(result);
     resultEl.style.color = result < 0 ? 'var(--red)' : 'var(--text)';
     document.getElementById('dashboardReceived').textContent = fmtBRL(received);
-    document.getElementById('dashboardPending').textContent = fmtBRL(clientesTotal());
+    document.getElementById('dashboardPending').textContent = fmtBRL(pendingForMonth(monthKey));
     document.getElementById('dashboardExpenses').textContent = fmtBRL(expenses);
     const chartValueEl = document.getElementById('dashboardChartValue');
     const chartStatusEl = document.getElementById('dashboardChartStatus');
@@ -3108,7 +4487,14 @@
   }
 
   initMonthSelector();
+  initBillingMonthSelector();
+  if(consumoManualDefinido){
+    document.getElementById('motoConsumptionInput').value = CONSUMO_ATUAL;
+    document.getElementById('motoConsumptionStatus').textContent = `${CONSUMO_ATUAL.toFixed(1).replace('.', ',')} km/L salvos à mão e usados nas rotas.`;
+  }
+  recalculateMotoKmFromRecords();
   recalcConsumoReal();
+  saveLocalState();
   renderMotoConsumo();
   renderClientes();
   renderFaturamento();
