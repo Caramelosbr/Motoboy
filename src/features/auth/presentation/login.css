@@ -761,3 +761,65 @@
     transition: none;
   }
 }
+
+/* ============================================================
+   Etapa 3 — Cadastro e verificação (painéis extras no mesmo shell)
+   ============================================================ */
+
+/* Garante que apenas o painel do passo ativo apareça. */
+.auth-panel[hidden] {
+  display: none !important;
+}
+
+/* Aceite dos Termos (RF-07). */
+.auth-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 2px;
+  color: var(--auth-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.auth-terms input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--auth-orange);
+  cursor: pointer;
+}
+
+.auth-terms.has-error span {
+  color: #ffb4b0;
+}
+
+.auth-link {
+  color: var(--auth-orange);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* Tela de verificação de e-mail (RF-08). */
+.auth-verify-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  justify-items: center;
+}
+
+.auth-verify-actions .auth-submit {
+  width: 100%;
+}
+
+.auth-verify-email {
+  color: var(--auth-text);
+  font-weight: 700;
+  word-break: break-all;
+}

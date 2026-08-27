@@ -1,23 +1,31 @@
 rules_version = '2';
 
+// Isolamento por proprietário (Etapa 4).
+// Cada motoboy só lê e grava dentro de users/{seu-uid}. Não há mais uid fixo:
+// qualquer conta autenticada acessa exclusivamente os próprios dados (RD-03, RD-05, §6).
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isMotoboy() {
-      return request.auth != null
-        && request.auth.uid == "Xj74AqC6z2Ypuh3Gr1OYJ510hfa2";
+    function signedIn() {
+      return request.auth != null;
     }
 
+    // true quando o usuário autenticado é o dono do caminho users/{userId}.
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    // Perfil e TODA a subárvore do motoboy (rotas, clientes, abastecimentos,
+    // manutenções, faturamento, financeiro, dados da moto...).
     match /users/{userId} {
-      allow read, write: if isMotoboy()
-        && userId == request.auth.uid;
+      allow read, write: if isOwner(userId);
+
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
-    match /users/{userId}/{document=**} {
-      allow read, write: if isMotoboy()
-        && userId == request.auth.uid;
-    }
-
+    // Qualquer outro caminho é negado por padrão.
     match /{document=**} {
       allow read, write: if false;
     }
