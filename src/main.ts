@@ -13,6 +13,10 @@ import {
   installFaturamentoBridge,
   loadFaturamentoIntoPanel,
 } from './features/faturamento/presentation/panel-bridge';
+import {
+  installRotasBridge,
+  loadRotasIntoPanel,
+} from './features/rotas/presentation/panel-bridge';
 
 // Chaves de estado local do painel (hoje ele guarda os dados em localStorage).
 const PANEL_STATE_KEYS = ['motoboy-front-etapa1-v2-clean'];
@@ -57,6 +61,7 @@ function ensureLocalIsolation(uid: string): boolean {
 installAbastecimentosBridge();
 installManutencoesBridge();
 installFaturamentoBridge();
+installRotasBridge();
 
 // Mostra o login imediatamente, cobrindo o painel — assim ninguém vê o painel
 // antes de checarmos a sessão (RF-10).
@@ -74,6 +79,7 @@ observeAuth((user) => {
     void loadAbastecimentosIntoPanel();
     void loadManutencoesIntoPanel();
     void loadFaturamentoIntoPanel();
+    void loadRotasIntoPanel();
   } else {
     mountLoginView();
   }

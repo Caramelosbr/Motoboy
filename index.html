@@ -4101,7 +4101,7 @@
       }
     });
 
-    confirmedRoutes.unshift({
+    const novaRota = {
       id:routeId,
       count:all.length,
       distancia:totalKm,
@@ -4119,7 +4119,10 @@
       precoLitro:PRECO_ATUAL,
       aproximada:Boolean(chain && chain.approx),
       services:servicesSnapshot
-    });
+    };
+    confirmedRoutes.unshift(novaRota);
+    // Ponte: grava a rota no Firestore (por uid).
+    if(window.__motoboyRotas) window.__motoboyRotas.save(novaRota);
     if(recebidoNaHora > 0){
       entradas.unshift({ desc: `Rota confirmada · ${all.length} entrega(s)`, valor: recebidoNaHora, data: 'Hoje', dateISO:daysAgoISO(0), routeId });
     }
@@ -4149,6 +4152,23 @@
   renderRouteSummary();
   initRouteHistoryFilters();
   renderRouteHistory();
+
+  // Ponte: recebe as rotas do Firestore e mescla com as locais (offline).
+  window.__applyRemoteRotas = function(entities){
+    if(!Array.isArray(entities)) return;
+    const remoteIds = new Set(entities.map(function(r){ return r.id; }));
+    const locaisOffline = confirmedRoutes.filter(function(r){ return !remoteIds.has(r.id); });
+    confirmedRoutes = entities.concat(locaisOffline);
+    confirmedRoutes.sort(function(a,b){
+      return String(b.dateISO||'').localeCompare(String(a.dateISO||''))
+          || String(b.createdAt||'').localeCompare(String(a.createdAt||''));
+    });
+    saveLocalState();
+    initRouteHistoryFilters();
+    renderRouteHistory();
+    renderRouteSummary();
+    renderDashboard();
+  };
 
   // ---------- clientes de coleta (saldo a receber / fiado) ----------
   let clientes = Array.isArray(localState.clientes) ? localState.clientes : [];
@@ -4232,6 +4252,8 @@
 
     // 3) remove a própria rota do histórico
     confirmedRoutes.splice(idx, 1);
+    // Ponte: remove a rota no Firestore.
+    if(window.__motoboyRotas) window.__motoboyRotas.remove(routeId);
 
     saveLocalState();
     renderFaturamento();
