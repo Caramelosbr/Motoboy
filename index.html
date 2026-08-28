@@ -2742,6 +2742,8 @@
         const currentIndex = entradas.indexOf(item);
         if(currentIndex < 0) return;
         entradas.splice(currentIndex, 1);
+        // Ponte: remove a entrada MANUAL no Firestore.
+        if(window.__motoboyEntradas && item.fsId) window.__motoboyEntradas.remove(item.fsId);
         if(editingEntryIndex === currentIndex) resetEntryFormMode();
         saveLocalState();
         renderFaturamento();
@@ -2750,6 +2752,28 @@
     );
   }
   document.getElementById('btnOpenEntrada').addEventListener('click', resetEntryFormMode);
+
+  // Ponte: recebe as entradas MANUAIS do Firestore e mescla com as locais
+  // (preserva as de rota — routeId/clientName — e as ainda não sincronizadas).
+  function entradaEntityToVM(e){
+    return {
+      fsId: e.id,
+      desc: e.desc || '',
+      valor: Number(e.valor) || 0,
+      data: dateLabelFromISO(e.dateISO),
+      dateISO: e.dateISO
+    };
+  }
+  window.__applyRemoteEntradas = function(entities){
+    if(!Array.isArray(entities)) return;
+    const remoto = entities.map(entradaEntityToVM);
+    const locaisPreservadas = entradas.filter(function(e){ return e.routeId || e.clientName || !e.fsId; });
+    entradas = remoto.concat(locaisPreservadas);
+    entradas.sort(function(a,b){ return String(b.dateISO||'').localeCompare(String(a.dateISO||'')); });
+    saveLocalState();
+    renderFaturamento();
+    renderDashboard();
+  };
 
   function currentMonthKey(){ return toISODateLocal(APP_NOW).slice(0, 7); }
   function billingMonthKey(){
@@ -3067,7 +3091,8 @@
       desc,
       valor,
       data: dateLabelFromISO(entradaISO),
-      dateISO: entradaISO
+      dateISO: entradaISO,
+      fsId: previous ? (previous.fsId || null) : null
     };
     if(previous){
       registrarEdicao(record, previous, [
@@ -3077,6 +3102,13 @@
       entradas[editingEntryIndex] = record;
     }
     else entradas.unshift(record);
+    // Ponte: grava a entrada MANUAL no Firestore (por uid).
+    if(previous){
+      if(window.__motoboyEntradas) window.__motoboyEntradas.update(record.fsId, record);
+    } else {
+      const addPromise = window.__motoboyEntradas && window.__motoboyEntradas.add(record);
+      if(addPromise && addPromise.then) addPromise.then(function(id){ if(id) record.fsId = id; });
+    }
     if(!previous){
       const billingYearSelect = document.getElementById('billingYear');
       const chosenYear = Number(entradaISO.slice(0, 4)) || APP_NOW.getFullYear();
