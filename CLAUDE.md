@@ -32,3 +32,15 @@
 - Operações financeiras não devem ser apagadas definitivamente.
 - Valores monetários devem futuramente ser armazenados em centavos.
 - Erros de persistência não podem ser ignorados silenciosamente.
+
+## Registro de decisões arquiteturais
+
+- Antes de propor uma mudança estrutural, leia `docs/architecture/DECISIONS.md`.
+- Toda decisão nova que afete arquitetura, dados, segurança, dependências ou infraestrutura deve ser registrada.
+- Antes de registrar uma decisão, apresente a proposta e aguarde aprovação.
+- Depois da aprovação, adicione uma nova decisão usando o próximo número disponível.
+- Nunca apague decisões anteriores.
+- Se uma decisão antiga deixar de valer, marque-a como `Substituída` e informe qual decisão a substituiu.
+- Ao concluir cada tarefa, informe obrigatoriamente:
+  - `Nova decisão arquitetural: Sim ou Não`.
+  - Se sim, qual registro foi criado ou atualizado.
