@@ -17,6 +17,7 @@ import {
   installRotasBridge,
   loadRotasIntoPanel,
 } from './features/rotas/presentation/panel-bridge';
+import { installMapaBridge } from './features/mapa/presentation/panel-bridge';
 
 // Chaves de estado local do painel (hoje ele guarda os dados em localStorage).
 const PANEL_STATE_KEYS = ['motoboy-front-etapa1-v2-clean'];
@@ -62,6 +63,7 @@ installAbastecimentosBridge();
 installManutencoesBridge();
 installFaturamentoBridge();
 installRotasBridge();
+installMapaBridge();
 
 // Mostra o login imediatamente, cobrindo o painel — assim ninguém vê o painel
 // antes de checarmos a sessão (RF-10).

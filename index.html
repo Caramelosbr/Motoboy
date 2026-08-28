@@ -3315,6 +3315,16 @@
   }
 
   async function routeBetween(origem, destino){
+    // 1) Google Routes API (quando a chave estiver configurada no .env)
+    try{
+      if(window.__motoboyRoute){
+        const g = await window.__motoboyRoute(origem, destino);
+        if(g && typeof g.km === 'number'){
+          return { km: g.km, min: g.min, approx: !!g.approx };
+        }
+      }
+    }catch(e){ /* segue para o OSRM */ }
+    // 2) OSRM (fallback gratuito)
     try{
       const url = `https://router.project-osrm.org/route/v1/driving/${origem.lon},${origem.lat};${destino.lon},${destino.lat}?overview=false`;
       const res = await fetch(url);
@@ -3323,7 +3333,7 @@
       if(!data.routes || data.routes.length === 0) throw new Error('osrm-empty');
       return { km: data.routes[0].distance / 1000, min: Math.round(data.routes[0].duration / 60), approx: false };
     }catch(e){
-      // plano B: linha reta com um fator de correção pra viário real + velocidade média urbana
+      // 3) plano B: linha reta com fator de correção viário + velocidade média urbana
       const km = haversineKm(origem, destino) * 1.3;
       const min = Math.round((km / 28) * 60);
       return { km, min, approx: true };
