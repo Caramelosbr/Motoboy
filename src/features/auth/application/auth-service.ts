@@ -177,12 +177,27 @@ export async function reloadAndCheckVerified(): Promise<boolean> {
   const user = auth.currentUser;
   if (!user) return false;
   await user.reload();
-  return Boolean(auth.currentUser?.emailVerified);
+  const verified = Boolean(auth.currentUser?.emailVerified);
+  if (verified) {
+    // Força a renovação do token para o claim email_verified chegar às
+    // regras do Firestore (senão as escritas seriam negadas logo após verificar).
+    try {
+      await auth.currentUser?.getIdToken(true);
+    } catch {
+      /* ignora falha de refresh */
+    }
+  }
+  return verified;
 }
 
 /** E-mail do usuário autenticado no momento (para a tela de verificação). */
 export function currentEmail(): string | null {
   return auth.currentUser?.email ?? null;
+}
+
+/** uid do usuário autenticado no momento (para escopar os dados por dono). */
+export function currentUid(): string | null {
+  return auth.currentUser?.uid ?? null;
 }
 
 /** RF-09: encerra a sessão. */

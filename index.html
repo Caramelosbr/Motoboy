@@ -2201,6 +2201,8 @@
         const currentIndex = refuels.indexOf(item);
         if(currentIndex < 0) return;
         refuels.splice(currentIndex, 1);
+        // Ponte: remove no Firestore.
+        if(window.__motoboyAbastecimentos && item.fsId) window.__motoboyAbastecimentos.remove(item.fsId);
         if(editingRefuelIndex === currentIndex) resetRefuelForm();
         else if(editingRefuelIndex !== null && currentIndex < editingRefuelIndex) editingRefuelIndex -= 1;
         PRECO_ATUAL = latestRefuelPrice();
@@ -2252,7 +2254,8 @@
       valor:paid,
       pricePerLiter:price,
       odometer:odometer || null,
-      dateISO: chosenISO
+      dateISO: chosenISO,
+      fsId: previous ? (previous.fsId || null) : null
     };
     const wasEditing = editingRefuelIndex !== null;
     if(wasEditing){
@@ -2265,6 +2268,13 @@
       refuels[editingRefuelIndex] = record;
     }
     else refuels.unshift(record);
+    // Ponte: grava no Firestore (por uid). O cache local segue via saveLocalState().
+    if(wasEditing){
+      if(window.__motoboyAbastecimentos) window.__motoboyAbastecimentos.update(record.fsId, record);
+    } else {
+      const addPromise = window.__motoboyAbastecimentos && window.__motoboyAbastecimentos.add(record);
+      if(addPromise && addPromise.then) addPromise.then(function(id){ if(id) record.fsId = id; });
+    }
     PRECO_ATUAL = price;
     recalculateMotoKmFromRecords();
     recalcConsumoReal();
@@ -2277,6 +2287,35 @@
     resetRefuelForm();
     alert(`${wasEditing ? 'Abastecimento atualizado' : 'Abastecimento salvo'}. O preço usado nas rotas agora é ${fmtBRL(price)} por litro.`);
   });
+
+  // Ponte: recebe os abastecimentos do Firestore (dono atual) e re-renderiza.
+  function abastecimentoEntityToVM(e){
+    const liters = Number(e.liters) || 0;
+    return {
+      fsId: e.id,
+      local: e.location || 'Posto não informado',
+      quando: dateLabelFromISO(e.dateISO),
+      litros: liters.toFixed(1).replace('.', ',') + ' L',
+      litrosValue: liters,
+      valor: Number(e.paidValue) || 0,
+      pricePerLiter: Number(e.pricePerLiter) || 0,
+      odometer: e.odometer || null,
+      dateISO: e.dateISO
+    };
+  }
+  window.__applyRemoteAbastecimentos = function(entities){
+    if(!Array.isArray(entities)) return;
+    refuels = entities.map(abastecimentoEntityToVM);
+    PRECO_ATUAL = latestRefuelPrice();
+    recalculateMotoKmFromRecords();
+    recalcConsumoReal();
+    saveLocalState();
+    renderRefuelViews();
+    renderMotoConsumo();
+    renderFaturamento();
+    renderDashboard();
+    renderRouteSummary();
+  };
 
   // ---------- menu / drawer ----------
   const drawer = document.getElementById('drawer');
