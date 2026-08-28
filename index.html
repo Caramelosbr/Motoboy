@@ -2595,6 +2595,8 @@
         const currentIndex = maintenances.indexOf(item);
         if(currentIndex < 0) return;
         maintenances.splice(currentIndex, 1);
+        // Ponte: remove no Firestore.
+        if(window.__motoboyManutencoes && item.fsId) window.__motoboyManutencoes.remove(item.fsId);
         if(editingMaintenanceIndex === currentIndex) resetMaintenanceFormMode();
         recalculateMotoKmFromRecords();
         saveLocalState();
@@ -2650,7 +2652,8 @@
       valor,
       km:km || null,
       data: dateLabelFromISO(maintISO),
-      dateISO: maintISO
+      dateISO: maintISO,
+      fsId: previous ? (previous.fsId || null) : null
     };
     if(previous){
       registrarEdicao(record, previous, [
@@ -2661,6 +2664,13 @@
       maintenances[editingMaintenanceIndex] = record;
     }
     else maintenances.unshift(record);
+    // Ponte: grava no Firestore (por uid).
+    if(previous){
+      if(window.__motoboyManutencoes) window.__motoboyManutencoes.update(record.fsId, record);
+    } else {
+      const addPromise = window.__motoboyManutencoes && window.__motoboyManutencoes.add(record);
+      if(addPromise && addPromise.then) addPromise.then(function(id){ if(id) record.fsId = id; });
+    }
     recalculateMotoKmFromRecords();
     saveLocalState();
     renderMaint();
@@ -2669,6 +2679,28 @@
     maintModalCtl.close();
     resetMaintenanceFormMode();
   });
+
+  // Ponte: recebe as manutenções do Firestore (dono atual) e re-renderiza.
+  function manutencaoEntityToVM(e){
+    return {
+      fsId: e.id,
+      category: e.category || 'maintenance',
+      desc: e.desc || '',
+      valor: Number(e.valor) || 0,
+      km: e.km || null,
+      data: dateLabelFromISO(e.dateISO),
+      dateISO: e.dateISO
+    };
+  }
+  window.__applyRemoteManutencoes = function(entities){
+    if(!Array.isArray(entities)) return;
+    maintenances = entities.map(manutencaoEntityToVM);
+    recalculateMotoKmFromRecords();
+    saveLocalState();
+    renderMaint();
+    renderFaturamento();
+    renderDashboard();
+  };
 
   // ---------- faturamento: entradas + despesas ----------
   let entradas = Array.isArray(localState.entradas) ? localState.entradas : [];

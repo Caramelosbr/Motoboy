@@ -5,6 +5,10 @@ import {
   installAbastecimentosBridge,
   loadAbastecimentosIntoPanel,
 } from './features/abastecimentos/presentation/panel-bridge';
+import {
+  installManutencoesBridge,
+  loadManutencoesIntoPanel,
+} from './features/manutencoes/presentation/panel-bridge';
 
 // Chaves de estado local do painel (hoje ele guarda os dados em localStorage).
 const PANEL_STATE_KEYS = ['motoboy-front-etapa1-v2-clean'];
@@ -45,8 +49,9 @@ function ensureLocalIsolation(uid: string): boolean {
   return false;
 }
 
-// Ponte de persistência do painel legado (write-through para o Firestore).
+// Pontes de persistência do painel legado (write-through para o Firestore).
 installAbastecimentosBridge();
+installManutencoesBridge();
 
 // Mostra o login imediatamente, cobrindo o painel — assim ninguém vê o painel
 // antes de checarmos a sessão (RF-10).
@@ -60,8 +65,9 @@ observeAuth((user) => {
       return;
     }
     unmountLoginView();
-    // Carrega os abastecimentos do dono no Firestore e injeta no painel.
+    // Carrega os dados do dono no Firestore e injeta no painel.
     void loadAbastecimentosIntoPanel();
+    void loadManutencoesIntoPanel();
   } else {
     mountLoginView();
   }
