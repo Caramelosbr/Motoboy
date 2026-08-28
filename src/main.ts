@@ -67,3 +67,13 @@ declare global {
   }
 }
 window.motoboyLogout = logout;
+
+// RF-09: botão "Sair" do menu do painel.
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  // fecha o menu (cosmético) e encerra a sessão; o observador reexibe o login.
+  document.getElementById('drawer')?.classList.remove('open');
+  document.getElementById('backdrop')?.classList.remove('open');
+  logout().catch(() => {
+    /* ignora falha ao sair */
+  });
+});
