@@ -19,6 +19,7 @@ import {
 } from './features/rotas/presentation/panel-bridge';
 import { installMapaBridge } from './features/mapa/presentation/panel-bridge';
 import { bootstrapPanel } from './legacy/panel.js';
+import type { User } from 'firebase/auth';
 
 // Chaves de estado local do painel (hoje ele guarda os dados em localStorage).
 const PANEL_STATE_KEYS = ['motoboy-front-etapa1-v2-clean'];
@@ -59,11 +60,12 @@ function ensureLocalIsolation(uid: string): boolean {
   return false;
 }
 
-// Etapa 1A: inicializa o painel legado (extraído do index.html para
-// src/legacy/panel.js). Ainda INCONDICIONAL — o gate de autenticação é a
-// Etapa 1B. Roda antes de instalar as pontes, montar o login e registrar os
-// demais eventos, preservando ao máximo a ordem anterior.
-bootstrapPanel();
+// Estado de boot (definido inline no index.html): cobre a tela enquanto a
+// sessão é verificada. Removido no primeiro callback do observeAuth.
+const appBoot = document.getElementById('appBoot');
+function removeBoot(): void {
+  appBoot?.remove();
+}
 
 // Pontes de persistência do painel legado (write-through para o Firestore).
 installAbastecimentosBridge();
@@ -72,25 +74,52 @@ installFaturamentoBridge();
 installRotasBridge();
 installMapaBridge();
 
-// Mostra o login imediatamente, cobrindo o painel — assim ninguém vê o painel
-// antes de checarmos a sessão (RF-10).
-mountLoginView();
+// Etapa 1B: o painel só inicializa dentro de uma entrada autenticada única.
+// O login NÃO é montado antes do primeiro estado da autenticação — assim quem
+// já tem sessão válida não vê o login piscar. Até lá, o #appBoot cobre a tela.
+let panelStarted = false;
+
+/**
+ * Entrada autenticada única. Inicializa o painel legado uma só vez, apenas para
+ * usuário autenticado e verificado. As pontes já foram instaladas acima.
+ */
+function enterAuthenticatedApp(user: User): void {
+  // Troca de usuário: sempre checa o UID atual ANTES da guarda, para que
+  // panelStarted nunca impeça a detecção de troca de usuário.
+  if (ensureLocalIsolation(user.uid)) {
+    window.location.reload();
+    return;
+  }
+  if (panelStarted) {
+    removeBoot();
+    return; // inicialização única por carregamento
+  }
+  // Só agora lemos o localStorage financeiro e renderizamos o painel.
+  bootstrapPanel();
+  panelStarted = true;
+  // As pontes existem; agora carregamos os dados do dono no Firestore.
+  void loadAbastecimentosIntoPanel();
+  void loadManutencoesIntoPanel();
+  void loadFaturamentoIntoPanel();
+  void loadRotasIntoPanel();
+  // Remove o login somente depois de o bootstrap ter sido iniciado.
+  unmountLoginView();
+  // Revela o painel (retira o estado de boot).
+  removeBoot();
+}
 
 // RF-05 / RF-10 / RD-05.
 observeAuth((user) => {
   if (isAuthenticated(user) && user) {
-    if (ensureLocalIsolation(user.uid)) {
-      window.location.reload();
-      return;
-    }
-    unmountLoginView();
-    // Carrega os dados do dono no Firestore e injeta no painel.
-    void loadAbastecimentosIntoPanel();
-    void loadManutencoesIntoPanel();
-    void loadFaturamentoIntoPanel();
-    void loadRotasIntoPanel();
+    enterAuthenticatedApp(user);
+  } else if (panelStarted) {
+    // Sessão terminada/perdida após o painel iniciar: recarrega para remover
+    // dados renderizados, listeners e estado da memória (teardown por reload).
+    window.location.reload();
   } else {
+    // Nunca iniciou: monta o login e só então retira o estado de boot.
     mountLoginView();
+    removeBoot();
   }
 });
 
@@ -106,10 +135,11 @@ window.motoboyLogout = logout;
 
 // RF-09: botão "Sair" do menu do painel.
 document.getElementById('logoutBtn')?.addEventListener('click', () => {
-  // fecha o menu (cosmético) e encerra a sessão; o observador reexibe o login.
+  // Fecha o menu (cosmético). Ao concluir o signOut, o observeAuth recarrega a
+  // página (teardown). Se falhar, mantém o painel utilizável e avisa.
   document.getElementById('drawer')?.classList.remove('open');
   document.getElementById('backdrop')?.classList.remove('open');
   logout().catch(() => {
-    /* ignora falha ao sair */
+    window.alert('Não foi possível sair agora. Verifique sua conexão e tente novamente.');
   });
 });

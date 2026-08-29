@@ -1015,8 +1015,16 @@
     .route-confirmation.open{ bottom:calc(118px + env(safe-area-inset-bottom, 0px)); }
   }
 </style>
+<style>
+  /* Estado de boot (Etapa 1B): cobre a tela enquanto a sessão é verificada,
+     evitando o flash do dashboard. Fundo compatível com a tela de login.
+     Inline no HTML para valer já na primeira pintura, sem depender do main.ts. */
+  #appBoot{position:fixed;inset:0;z-index:100000;background:#111419;}
+</style>
+<noscript><style>#appBoot{display:none !important;}</style></noscript>
 </head>
 <body>
+  <div id="appBoot" aria-hidden="true"></div>
 
   <noscript><div class="noscript-warning"><b>O aplicativo precisa de JavaScript.</b> Abra pelo navegador ou pelo link publicado do app. O visualizador de arquivos do celular pode mostrar a tela, mas não executa as abas nem os cálculos.</div></noscript>
 

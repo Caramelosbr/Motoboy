@@ -606,7 +606,10 @@ export function bootstrapPanel() {
     if(view === 'historico-rotas'){ renderRouteHistory(); }
   }
   document.querySelectorAll('.drawer-item').forEach(btn => {
-    btn.addEventListener('click', () => setView(btn.dataset.view));
+    btn.addEventListener('click', () => {
+      if(!btn.dataset.view) return;
+      setView(btn.dataset.view);
+    });
   });
   document.getElementById('dashboardRouteShortcut').addEventListener('click', () => setView('rotas'));
   document.getElementById('dashboardFuelShortcut').addEventListener('click', () => setView('abastecimentos'));

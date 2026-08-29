@@ -372,8 +372,8 @@ export function mountLoginView(): void {
     setLoading(true);
     try {
       await signIn(email.value.trim(), password.value);
-      // Sucesso: revela o painel. O observador de auth (main.ts) também garante isso.
-      unmountLoginView();
+      // Sucesso: quem revela o painel é a entrada autenticada do main.ts
+      // (Etapa 1B), somente após o bootstrap. Aqui não desmontamos o login.
     } catch (err) {
       const code = err instanceof AuthError ? err.code : 'service-unavailable';
       status.dataset.kind = 'error';
@@ -528,7 +528,9 @@ export function mountLoginView(): void {
       setVerifyLoading(true);
       try {
         if (await reloadAndCheckVerified()) {
-          unmountLoginView();
+          // Etapa 1B: recarrega para o observeAuth entrar no fluxo autenticado
+          // (bootstrap + carga). Não desmontamos o login diretamente.
+          window.location.reload();
           return;
         }
         verifyStatus.dataset.kind = 'error';
