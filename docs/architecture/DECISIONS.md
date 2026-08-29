@@ -205,3 +205,30 @@ Cada etapa deve:
 ### Consequências
 
 Nenhum agente deverá implementar todo o plano de migração de uma vez.
+
+---
+
+## DEC-010 — Mecanismo temporário de carregamento do painel legado
+
+**Status:** Aprovada
+**Data:** 29/08/2026
+
+### Contexto
+
+O JavaScript do painel vivia inline no `index.html` e era executado antes da autenticação. A Etapa 1A o extraiu para `src/legacy/panel.js` a fim de permitir, na Etapa 1B, controlar quando ele inicializa. O scan de strict mode (node --check em módulo; ausência de `this` de topo, `with`, `document.write`, octais e globais implícitas) passou sem bloqueadores, viabilizando um módulo ES.
+
+### Decisão
+
+- `src/legacy/panel.js` é um **módulo temporário** durante a migração; será removido na Etapa 10.
+- `bootstrapPanel()` é o **ponto explícito e único de inicialização** do código legado.
+- `window.setView` é mantido **temporariamente**, exclusivamente por causa do `onclick` legado remanescente no HTML.
+- **Nenhuma nova regra de negócio** poderá ser adicionada ao módulo legado.
+- A **Etapa 1B** criará uma **única entrada autenticada** que chamará `bootstrapPanel()` apenas para usuário autenticado e verificado, uma vez.
+- No **logout**, a Etapa 1B deverá **desmontar completamente o painel ou recarregar a página após o `signOut`**; apenas sobrepor o login **não** será considerado proteção suficiente.
+- Se o módulo ES vier a ser incompatível com strict mode, esta decisão deverá ser **revisada** antes de recorrer a script clássico (`public/legacy`). Scan atual: compatível.
+
+### Consequências
+
+- Na Etapa 1A, `bootstrapPanel()` é chamado de forma **incondicional** em `src/main.ts` (comportamento idêntico ao anterior).
+- A proteção real da inicialização depende da Etapa 1B (ainda não autorizada).
+- O contrato de pontes `window.__motoboy*` / `window.__applyRemote*` é preservado.

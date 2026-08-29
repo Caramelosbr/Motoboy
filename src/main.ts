@@ -18,6 +18,7 @@ import {
   loadRotasIntoPanel,
 } from './features/rotas/presentation/panel-bridge';
 import { installMapaBridge } from './features/mapa/presentation/panel-bridge';
+import { bootstrapPanel } from './legacy/panel.js';
 
 // Chaves de estado local do painel (hoje ele guarda os dados em localStorage).
 const PANEL_STATE_KEYS = ['motoboy-front-etapa1-v2-clean'];
@@ -57,6 +58,12 @@ function ensureLocalIsolation(uid: string): boolean {
   }
   return false;
 }
+
+// Etapa 1A: inicializa o painel legado (extraído do index.html para
+// src/legacy/panel.js). Ainda INCONDICIONAL — o gate de autenticação é a
+// Etapa 1B. Roda antes de instalar as pontes, montar o login e registrar os
+// demais eventos, preservando ao máximo a ordem anterior.
+bootstrapPanel();
 
 // Pontes de persistência do painel legado (write-through para o Firestore).
 installAbastecimentosBridge();
