@@ -232,3 +232,31 @@ O JavaScript do painel vivia inline no `index.html` e era executado antes da aut
 - Na Etapa 1A, `bootstrapPanel()` é chamado de forma **incondicional** em `src/main.ts` (comportamento idêntico ao anterior).
 - A proteção real da inicialização depende da Etapa 1B (ainda não autorizada).
 - O contrato de pontes `window.__motoboy*` / `window.__applyRemote*` é preservado.
+
+---
+
+## DEC-011 — Camada compartilhada de notificações
+
+**Status:** Aprovada
+**Data:** 29/08/2026
+
+### Contexto
+
+O app usa diálogos nativos do navegador (`alert`) para sucesso, validação e erro. Eles têm aparência branca fora do tema, bloqueiam o fluxo e não seguem a acessibilidade do produto.
+
+### Decisão
+
+- Criar uma **camada compartilhada de UI** em `src/shared/presentation/notifications/` (Etapa 1D).
+- **Diálogos nativos do navegador não serão usados** (`alert`/`confirm`/`prompt`).
+- **Toast** será usado para **sucesso, informação, aviso e erro NÃO bloqueante**.
+- **Validações específicas de campo** devem migrar para **mensagens inline** quando cada feature for extraída (não agora).
+- **Confirmações destrutivas** continuarão no **modal atual** (`requestDeleteConfirmation`) por enquanto.
+- Um **`confirmDialog` baseado em Promise** só será criado quando houver **migração real** das confirmações.
+- **Nenhuma API será exposta em `window`** (o componente é um módulo ES importado por `main.ts` e pelo módulo legado).
+- O **componente compartilhado não pode conter regras de negócio**.
+
+### Consequências
+
+- 1D-A cria apenas o `showToast` (sem substituir nenhum `alert` ainda).
+- As substituições de `alert` por toast virão em etapas seguintes (1D-B+).
+- O modal de confirmação e a eventual API assíncrona ficam para uma etapa futura autorizada.

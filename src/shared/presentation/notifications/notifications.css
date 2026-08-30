@@ -1,0 +1,83 @@
+/* Toast compartilhado (Etapa 1D-A) — tema escuro do app, sem aparência nativa. */
+
+.mb-toast-container {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  z-index: 2147483000; /* acima de painel, drawer, modais e overlay de login */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(380px, calc(100vw - 24px));
+  pointer-events: none; /* o container não bloqueia cliques; cada toast reativa */
+}
+
+.mb-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #1e2229;
+  color: #f2f0eb;
+  border: 1px solid #31373f;
+  border-left: 3px solid #8b92a0;
+  border-radius: 12px;
+  padding: 12px 12px 12px 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  animation: mb-toast-in 0.18s ease-out;
+}
+
+.mb-toast--success { border-left-color: #3fb27f; }
+.mb-toast--info    { border-left-color: #5b9dd9; }
+.mb-toast--warning { border-left-color: #ff7a1a; }
+.mb-toast--error   { border-left-color: #ff6b76; }
+
+.mb-toast__msg {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mb-toast__close {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  margin: -2px -2px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #9aa1ae;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  border-radius: 6px;
+}
+.mb-toast__close:hover { color: #f2f0eb; }
+.mb-toast__close:focus-visible {
+  outline: 2px solid #ff7a1a;
+  outline-offset: 2px;
+  color: #f2f0eb;
+}
+
+@keyframes mb-toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Celular: centralizado no topo, respeitando margens laterais. */
+@media (max-width: 560px) {
+  .mb-toast-container {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mb-toast { animation: none; }
+}
