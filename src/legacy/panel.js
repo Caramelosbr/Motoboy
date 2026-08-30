@@ -32,9 +32,13 @@ export function bootstrapPanel() {
   }
   // ---------- data escolhida pelo motoboy (ponto 8) ----------
   // Todos os registros passam a aceitar uma data. Se o motoboy não mexer, fica "hoje".
-  // O valor de um <input type="date"> vem como "AAAA-MM-DD", que é o mesmo formato que
-  // usamos internamente (dateISO), então dá pra usar direto.
-  function todayInputValue(){ return toISODateLocal(APP_NOW); }
+  // Internamente as datas são "AAAA-MM-DD" (dateISO). A apresentação usa o campo
+  // segmentado dia/mês/ano; a conversão fica em setBrDateValue/readBrDateISO.
+  // Data de hoje no fuso LOCAL do dispositivo (nunca UTC), calculada na hora.
+  function localTodayISO(){
+    const d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
 
   // Transforma um dateISO num rótulo curto e humano: "Hoje", "Ontem" ou "12/06/2026".
   function dateLabelFromISO(iso){
@@ -48,12 +52,114 @@ export function bootstrapPanel() {
     return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
   }
 
-  // Impede escolher uma data no futuro (registro só pode ser de hoje pra trás).
-  function clampDateNotFuture(iso){
-    if(!iso) return todayInputValue();
-    const hoje = toISODateLocal(APP_NOW);
-    return iso > hoje ? hoje : iso;
+
+  // ---------- Etapa 1C: campo de data segmentado (dia / mês / ano) ----------
+  // Conversões puras, sem Date e sem timezone.
+  function formatISODateToBR(iso){
+    if(typeof iso !== 'string') return '';
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+    if(!m) return '';
+    return m[3] + '/' + m[2] + '/' + m[1];
   }
+  function isLeapYear(y){ return (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0); }
+  // Converte dd/mm/aaaa -> aaaa-mm-dd validando data real (mês, dia, bissexto).
+  // Retorna '' se estiver incompleta ou inválida (ex.: 31/02).
+  function brToISO(br){
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(br || '').trim());
+    if(!m) return '';
+    const day = Number(m[1]), month = Number(m[2]), year = Number(m[3]);
+    if(month < 1 || month > 12) return '';
+    const daysInMonth = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+    if(day < 1 || day > daysInMonth) return '';
+    return m[3] + '-' + m[2] + '-' + m[1];
+  }
+  // Os três inputs (dia/mês/ano) dentro do contorno único (wrap com id do campo).
+  function dateSegs(wrap){
+    return {
+      day: wrap.querySelector('[data-seg="day"]'),
+      month: wrap.querySelector('[data-seg="month"]'),
+      year: wrap.querySelector('[data-seg="year"]')
+    };
+  }
+  // Escrita: um ISO (aaaa-mm-dd) preenche os três segmentos; vazio limpa.
+  function setBrDateValue(wrap, isoValue){
+    if(!wrap) return;
+    const s = dateSegs(wrap);
+    if(!s.day || !s.month || !s.year) return;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(isoValue || ''));
+    if(m){ s.day.value = m[3]; s.month.value = m[2]; s.year.value = m[1]; }
+    else { s.day.value = ''; s.month.value = ''; s.year.value = ''; }
+    clearDateError(wrap);
+  }
+  // Leitura: junta os três segmentos em aaaa-mm-dd validado ('' se incompleto/inválido).
+  function readBrDateISO(wrap){
+    if(!wrap) return '';
+    const s = dateSegs(wrap);
+    if(!s.day || !s.month || !s.year) return '';
+    const d = s.day.value, mo = s.month.value, y = s.year.value;
+    if(!d || !mo || y.length !== 4) return ''; // incompleto
+    return brToISO(d.padStart(2, '0') + '/' + mo.padStart(2, '0') + '/' + y);
+  }
+  // Erro inline abaixo do campo (sem alert). Marca aria-invalid no componente.
+  function showDateError(wrap, msg, focusYear){
+    if(!wrap) return;
+    const err = document.getElementById(wrap.id + '-error');
+    if(err) err.textContent = msg;
+    wrap.setAttribute('aria-invalid', 'true');
+    if(focusYear){ const y = dateSegs(wrap).year; if(y) y.focus(); }
+  }
+  function clearDateError(wrap){
+    if(!wrap) return;
+    const err = document.getElementById(wrap.id + '-error');
+    if(err) err.textContent = '';
+    wrap.removeAttribute('aria-invalid');
+  }
+  function initDateSegments(wrap){
+    const s = dateSegs(wrap);
+    const order = [s.day, s.month, s.year];
+    order.forEach(function(input, idx){
+      if(!input) return;
+      const max = input === s.year ? 4 : 2;
+      input.addEventListener('input', function(){
+        input.value = input.value.replace(/\D/g, '').slice(0, max); // só dígitos, tamanho fixo
+        clearDateError(wrap); // limpa erro/aria-invalid ao editar
+        if(input.value.length >= max && idx < order.length - 1){ // avança ao completar
+          const next = order[idx + 1];
+          if(next){ next.focus(); try { next.select(); } catch(e){} }
+        }
+      });
+      input.addEventListener('keydown', function(e){
+        // backspace em segmento vazio volta ao anterior
+        if(e.key === 'Backspace' && input.value === '' && idx > 0){
+          e.preventDefault();
+          const prev = order[idx - 1];
+          if(prev){ prev.focus(); try { prev.setSelectionRange(prev.value.length, prev.value.length); } catch(err){} }
+        }
+      });
+      input.addEventListener('blur', function(){
+        // normaliza dia/mês de 1 dígito para 2 (quando preenchido)
+        if(input !== s.year && input.value.length === 1){ input.value = input.value.padStart(2, '0'); }
+      });
+      input.addEventListener('paste', function(e){
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        const digits = String(text || '').replace(/\D/g, '');
+        if(digits.length >= 3){ // data completa/parcial colada: distribui nos três segmentos
+          e.preventDefault();
+          s.day.value = digits.slice(0, 2);
+          s.month.value = digits.slice(2, 4);
+          s.year.value = digits.slice(4, 8);
+          (s.year.value.length === 4 ? s.year : s.month).focus();
+        }
+      });
+    });
+  }
+  function initBrDateFields(){
+    ['refuelDate', 'maintDate', 'entradaDate', 'recebimentoDate'].forEach(function(id){
+      const wrap = document.getElementById(id);
+      if(wrap) initDateSegments(wrap);
+    });
+  }
+
   function safeText(value){
     const text = value === null || value === undefined ? '' : String(value);
     return text
@@ -396,7 +502,7 @@ export function bootstrapPanel() {
     document.getElementById('refuelLiterPriceInput').value = '';
     document.getElementById('refuelPaidValue').value = '';
     document.getElementById('refuelOdometer').value = '';
-    document.getElementById('refuelDate').value = todayInputValue();
+    setBrDateValue(document.getElementById('refuelDate'), localTodayISO());
     document.getElementById('refuelEditReason').value = '';
     document.getElementById('refuelEditReasonField').hidden = true;
     document.getElementById('btnSaveRefuel').textContent = 'Salvar abastecimento';
@@ -411,7 +517,7 @@ export function bootstrapPanel() {
     document.getElementById('refuelLiterPriceInput').value = editableNumber(refuelPricePerLiter(item), 2);
     document.getElementById('refuelPaidValue').value = editableNumber(item.valor, 2);
     document.getElementById('refuelOdometer').value = item.odometer ? String(item.odometer) : '';
-    document.getElementById('refuelDate').value = item.dateISO || todayInputValue();
+    setBrDateValue(document.getElementById('refuelDate'), item.dateISO || localTodayISO());
     document.getElementById('refuelEditReason').value = '';
     document.getElementById('refuelEditReasonField').hidden = false;
     document.getElementById('btnSaveRefuel').textContent = 'Atualizar abastecimento';
@@ -474,7 +580,10 @@ export function bootstrapPanel() {
     }
     const previous = editingRefuelIndex === null ? null : refuels[editingRefuelIndex];
     const chosenDateEl = document.getElementById('refuelDate');
-    const chosenISO = clampDateNotFuture(chosenDateEl ? chosenDateEl.value : '');
+    const chosenISO = readBrDateISO(chosenDateEl);
+    if(!chosenISO){ showDateError(chosenDateEl, 'Informe uma data válida no formato DD/MM/AAAA.'); return; }
+    if(chosenISO > localTodayISO()){ showDateError(chosenDateEl, 'A data não pode ser futura.', true); return; }
+    clearDateError(chosenDateEl);
     const record = {
       local,
       quando: dateLabelFromISO(chosenISO),
@@ -792,7 +901,7 @@ export function bootstrapPanel() {
     document.getElementById('maintDesc').value = '';
     document.getElementById('maintValor').value = '';
     document.getElementById('maintKm').value = '';
-    document.getElementById('maintDate').value = todayInputValue();
+    setBrDateValue(document.getElementById('maintDate'), localTodayISO());
     document.getElementById('maintEditReason').value = '';
     document.getElementById('maintEditReasonField').hidden = true;
     updateMaintenanceCategoryUI();
@@ -809,7 +918,7 @@ export function bootstrapPanel() {
     document.getElementById('maintDesc').value = item.desc;
     document.getElementById('maintValor').value = editableNumber(item.valor, 2);
     document.getElementById('maintKm').value = item.km ? String(item.km) : '';
-    document.getElementById('maintDate').value = item.dateISO || todayInputValue();
+    setBrDateValue(document.getElementById('maintDate'), item.dateISO || localTodayISO());
     document.getElementById('maintEditReason').value = '';
     document.getElementById('maintEditReasonField').hidden = false;
     updateMaintenanceCategoryUI();
@@ -877,7 +986,10 @@ export function bootstrapPanel() {
     clearMaintFormError();
     const previous = editingMaintenanceIndex === null ? null : maintenances[editingMaintenanceIndex];
     const maintDateEl = document.getElementById('maintDate');
-    const maintISO = clampDateNotFuture(maintDateEl ? maintDateEl.value : '');
+    const maintISO = readBrDateISO(maintDateEl);
+    if(!maintISO){ showDateError(maintDateEl, 'Informe uma data válida no formato DD/MM/AAAA.'); return; }
+    if(maintISO > localTodayISO()){ showDateError(maintDateEl, 'A data não pode ser futura.', true); return; }
+    clearDateError(maintDateEl);
     const record = {
       category,
       desc,
@@ -945,7 +1057,7 @@ export function bootstrapPanel() {
     document.getElementById('entradaSave').textContent = 'Salvar entrada';
     document.getElementById('entradaDesc').value = '';
     document.getElementById('entradaValor').value = '';
-    document.getElementById('entradaDate').value = todayInputValue();
+    setBrDateValue(document.getElementById('entradaDate'), localTodayISO());
     document.getElementById('entradaEditReason').value = '';
     document.getElementById('entradaEditReasonField').hidden = true;
   }
@@ -958,7 +1070,7 @@ export function bootstrapPanel() {
     document.getElementById('entradaSave').textContent = 'Atualizar entrada';
     document.getElementById('entradaDesc').value = item.desc;
     document.getElementById('entradaValor').value = editableNumber(item.valor, 2);
-    document.getElementById('entradaDate').value = item.dateISO || todayInputValue();
+    setBrDateValue(document.getElementById('entradaDate'), item.dateISO || localTodayISO());
     document.getElementById('entradaEditReason').value = '';
     document.getElementById('entradaEditReasonField').hidden = false;
     entradaModalCtl.open();
@@ -1318,7 +1430,10 @@ export function bootstrapPanel() {
 
     const previous = editingEntryIndex === null ? null : entradas[editingEntryIndex];
     const entradaDateEl = document.getElementById('entradaDate');
-    const entradaISO = clampDateNotFuture(entradaDateEl ? entradaDateEl.value : '');
+    const entradaISO = readBrDateISO(entradaDateEl);
+    if(!entradaISO){ showDateError(entradaDateEl, 'Informe uma data válida no formato DD/MM/AAAA.'); return; }
+    if(entradaISO > localTodayISO()){ showDateError(entradaDateEl, 'A data não pode ser futura.', true); return; }
+    clearDateError(entradaDateEl);
     const record = {
       desc,
       valor,
@@ -2547,7 +2662,7 @@ export function bootstrapPanel() {
     document.getElementById('recebimentoClienteNome').textContent = cliente.nome;
     document.getElementById('recebimentoSaldo').textContent = fmtBRL(cliente.pendente);
     document.getElementById('recebimentoValor').value = cliente.pendente.toFixed(2);
-    document.getElementById('recebimentoDate').value = todayInputValue();
+    setBrDateValue(document.getElementById('recebimentoDate'), localTodayISO());
     receiptModalCtl.open();
     setTimeout(() => document.getElementById('recebimentoValor').focus(), 0);
   }
@@ -2581,7 +2696,10 @@ export function bootstrapPanel() {
     }
 
     const recebimentoDateEl = document.getElementById('recebimentoDate');
-    const receiptISO = clampDateNotFuture(recebimentoDateEl ? recebimentoDateEl.value : '');
+    const receiptISO = readBrDateISO(recebimentoDateEl);
+    if(!receiptISO){ showDateError(recebimentoDateEl, 'Informe uma data válida no formato DD/MM/AAAA.'); return; }
+    if(receiptISO > localTodayISO()){ showDateError(recebimentoDateEl, 'A data não pode ser futura.', true); return; }
+    clearDateError(recebimentoDateEl);
     applyReceipt(cliente, valor, receiptISO);
     entradas.unshift({ desc:`Recebimento de ${cliente.nome}`, valor, data: dateLabelFromISO(receiptISO), dateISO: receiptISO, clientName:cliente.nome });
     saveLocalState();
@@ -2825,6 +2943,7 @@ export function bootstrapPanel() {
 
   initMonthSelector();
   initBillingMonthSelector();
+  initBrDateFields();
   if(consumoManualDefinido){
     document.getElementById('motoConsumptionInput').value = CONSUMO_ATUAL;
     document.getElementById('motoConsumptionStatus').textContent = `${CONSUMO_ATUAL.toFixed(1).replace('.', ',')} km/L salvos à mão e usados nas rotas.`;
