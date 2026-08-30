@@ -1,4 +1,5 @@
 import './features/auth/presentation/login.css';
+import { showToast } from './shared/presentation/notifications/index';
 import { mountLoginView, unmountLoginView } from './features/auth/presentation/login-view';
 import { observeAuth, isAuthenticated, logout } from './features/auth/application/auth-service';
 import {
@@ -140,6 +141,6 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
   document.getElementById('drawer')?.classList.remove('open');
   document.getElementById('backdrop')?.classList.remove('open');
   logout().catch(() => {
-    window.alert('Não foi possível sair agora. Verifique sua conexão e tente novamente.');
+    showToast('Não foi possível sair agora. Verifique sua conexão e tente novamente.', {kind:'error'});
   });
 });

@@ -1,3 +1,5 @@
+import { showToast } from '../shared/presentation/notifications/index';
+
 export function bootstrapPanel() {
   // ---------- estado local do aplicativo ----------
   const APP_NOW = new Date();
@@ -569,13 +571,13 @@ export function bootstrapPanel() {
     const local = document.getElementById('refuelLocation').value.trim() || 'Posto não informado';
     const { liters, paid, price } = updateCalculatedRefuelLiters();
     if(!price || price <= 0 || !paid || paid <= 0){
-      alert('Informe o preço do litro e o valor total pago.');
+      showToast('Informe o preço do litro e o valor total pago.', {kind:'warning'});
       return;
     }
     const odometer = parseBrazilianInput(document.getElementById('refuelOdometer').value);
     const lastOdometer = refuels.find((r, index) => index !== editingRefuelIndex && r.odometer && r.odometer > 0)?.odometer;
     if(editingRefuelIndex === null && odometer && lastOdometer && odometer < lastOdometer){
-      alert(`O km do painel (${fmtKm(odometer)}) está menor que o do último abastecimento (${fmtKm(lastOdometer)}). Confere o número — o hodômetro só aumenta.`);
+      showToast(`O km do painel (${fmtKm(odometer)}) está menor que o do último abastecimento (${fmtKm(lastOdometer)}). Confere o número — o hodômetro só aumenta.`, {kind:'warning'});
       return;
     }
     const previous = editingRefuelIndex === null ? null : refuels[editingRefuelIndex];
@@ -623,7 +625,7 @@ export function bootstrapPanel() {
     renderDashboard();
     renderRouteSummary();
     resetRefuelForm();
-    alert(`${wasEditing ? 'Abastecimento atualizado' : 'Abastecimento salvo'}. O preço usado nas rotas agora é ${fmtBRL(price)} por litro.`);
+    showToast(`${wasEditing ? 'Abastecimento atualizado' : 'Abastecimento salvo'}. O preço usado nas rotas agora é ${fmtBRL(price)} por litro.`, {kind:'success'});
   });
 
   // Ponte: recebe os abastecimentos do Firestore (dono atual) e re-renderiza.
@@ -1424,7 +1426,7 @@ export function bootstrapPanel() {
     const valor = parseBrazilianInput(document.getElementById('entradaValor').value);
 
     if(!desc || valor === null || valor <= 0){
-      alert('Preenche de onde veio o valor e quanto foi recebido.');
+      showToast('Preenche de onde veio o valor e quanto foi recebido.', {kind:'warning'});
       return;
     }
 
@@ -1603,7 +1605,7 @@ export function bootstrapPanel() {
   document.getElementById('btnSaveConsumption').addEventListener('click', () => {
     const consumption = parseBrazilianInput(document.getElementById('motoConsumptionInput').value);
     if(!consumption || consumption <= 0){
-      alert('Informe um consumo médio maior que zero.');
+      showToast('Informe um consumo médio maior que zero.', {kind:'warning'});
       return;
     }
     CONSUMO_ATUAL = consumption;
@@ -2036,7 +2038,7 @@ export function bootstrapPanel() {
       });
 
       card.querySelector('[data-action="remove"]').addEventListener('click', () => {
-        if(routeServices.length <= 1){ alert('A rota precisa ter pelo menos um serviço.'); return; }
+        if(routeServices.length <= 1){ showToast('A rota precisa ter pelo menos um serviço.', {kind:'warning'}); return; }
         routeServices.splice(idx, 1);
         renderServices();
         renderRouteSummary();
@@ -2388,7 +2390,7 @@ export function bootstrapPanel() {
         const routeId = button.dataset.cancelRoute;
         const bloqueio = routeCancelBlockReason(routeId);
         if(bloqueio){
-          alert(bloqueio);
+          showToast(bloqueio, {kind:'warning'});
           return;
         }
         requestDeleteConfirmation(
@@ -2406,17 +2408,17 @@ export function bootstrapPanel() {
     const all = allEntregas();
     const invalido = all.some(e => e.status !== 'ok' || !e.valor || e.valor <= 0);
     if(invalido || all.length === 0){
-      alert('Preenche a coleta e todas as entregas (esperando o cálculo terminar) e o valor de cada uma antes de confirmar.');
+      showToast('Preenche a coleta e todas as entregas (esperando o cálculo terminar) e o valor de cada uma antes de confirmar.', {kind:'warning'});
       return;
     }
     const needsApproxConfirm = all.some(e => e.approx && !e.approxConfirmed);
     if(needsApproxConfirm){
-      alert('Tem uma distância que foi só estimada (o serviço de rota falhou). Confirma a estimativa ou informa o km real em cada entrega marcada antes de fechar a rota.');
+      showToast('Tem uma distância que foi só estimada (o serviço de rota falhou). Confirma a estimativa ou informa o km real em cada entrega marcada antes de fechar a rota.', {kind:'warning'});
       return;
     }
     const pendingWithoutClient = routeServices.findIndex(s => s.paymentStatus === 'pending' && !s.cliente.trim());
     if(pendingWithoutClient >= 0){
-      alert(`Informe o cliente pagador do serviço ${pendingWithoutClient + 1} antes de confirmar. Esse nome é necessário para criar a conta a receber.`);
+      showToast(`Informe o cliente pagador do serviço ${pendingWithoutClient + 1} antes de confirmar. Esse nome é necessário para criar a conta a receber.`, {kind:'warning'});
       return;
     }
 
@@ -2687,11 +2689,11 @@ export function bootstrapPanel() {
     const valor = parseBrazilianInput(document.getElementById('recebimentoValor').value);
     if(!cliente){ receiptModalCtl.close(); return; }
     if(valor === null || valor <= 0){
-      alert('Informe um valor recebido maior que zero.');
+      showToast('Informe um valor recebido maior que zero.', {kind:'warning'});
       return;
     }
     if(valor > cliente.pendente + 0.001){
-      alert(`O valor informado é maior que o saldo pendente de ${fmtBRL(cliente.pendente)}.`);
+      showToast(`O valor informado é maior que o saldo pendente de ${fmtBRL(cliente.pendente)}.`, {kind:'warning'});
       return;
     }
 
@@ -2708,7 +2710,7 @@ export function bootstrapPanel() {
     renderClientes();
     renderFaturamento();
     renderDashboard();
-    alert(`${fmtBRL(valor)} recebido de ${cliente.nome}. O saldo restante é ${fmtBRL(cliente.pendente)}.`);
+    showToast(`${fmtBRL(valor)} recebido de ${cliente.nome}. O saldo restante é ${fmtBRL(cliente.pendente)}.`, {kind:'success'});
   });
 
   const clienteModalCtl = wireModal('btnOpenCliente', 'clienteModal', 'clienteBackdrop', 'clienteClose', 'clienteCancel');
@@ -2736,7 +2738,7 @@ export function bootstrapPanel() {
     if(!cliente) return;
     const hasFinancialHistory = cliente.pendente > 0 || (cliente.contas || []).length > 0 || (cliente.recebimentos || []).length > 0;
     if(hasFinancialHistory){
-      alert('Este cliente possui saldo ou histórico financeiro. Para não quebrar os valores, ele só poderá ser excluído depois que implementarmos o estorno e o extrato completo. Você ainda pode editar o nome.');
+      showToast('Este cliente possui saldo ou histórico financeiro. Para não quebrar os valores, ele só poderá ser excluído depois que implementarmos o estorno e o extrato completo. Você ainda pode editar o nome.', {kind:'warning'});
       return;
     }
     requestDeleteConfirmation(
@@ -2756,9 +2758,9 @@ export function bootstrapPanel() {
   document.getElementById('btnOpenCliente').addEventListener('click', resetClientFormMode);
   document.getElementById('clienteSave').addEventListener('click', () => {
     const nome = document.getElementById('clienteNome').value.trim();
-    if(!nome){ alert('Digita o nome do cliente.'); return; }
+    if(!nome){ showToast('Digita o nome do cliente.', {kind:'warning'}); return; }
     if(clientes.find((c, index) => index !== editingClientIndex && c.nome.toLowerCase() === nome.toLowerCase())){
-      alert('Esse cliente já está cadastrado.');
+      showToast('Esse cliente já está cadastrado.', {kind:'warning'});
       return;
     }
     const previous = editingClientIndex === null ? null : clientes[editingClientIndex];
