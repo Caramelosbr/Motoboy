@@ -852,6 +852,7 @@ export function bootstrapPanel() {
     closeStationList(); // 2C: fecha o combobox de posto ao navegar entre abas
     if(view === 'dashboard'){ renderDashboard(); }
     if(view === 'abastecimentos'){ ensureRefuelDateDefault(); } // 2B: garante data só se totalmente vazia (não é reset)
+    if(view === 'rotas'){ requestRegionCenter(); } // prepara o centro regional (GPS) para a busca de endereços
     if(view === 'faturamento'){ renderFaturamento(); }
     if(view === 'clientes'){ renderClientes(); }
     if(view === 'moto'){ renderMotoConsumo(); }
@@ -1796,12 +1797,54 @@ export function bootstrapPanel() {
     return [...new Set(parts)].slice(0, 4).join(', ');
   }
 
+  // Busca pela CIDADE ATUAL do motoboy: pega o GPS, descobre a cidade por
+  // geocodificação reversa e passa a filtrar os endereços apenas dessa cidade
+  // (sempre no Brasil). Se o GPS for negado/indisponível, cai para "só Brasil".
+  // A cidade NÃO é fixada no código — vem da posição real do aparelho.
+  let regionCenter = null;    // { lat, lon } do aparelho, quando disponível
+  let regionPlace = null;     // { city, state } da posição atual (reverse geocode)
+  let regionGeoTried = false; // pede a permissão de localização uma única vez
+  async function reverseCity(center){
+    try{
+      const url = `https://photon.komoot.io/reverse/?lon=${center.lon}&lat=${center.lat}&lang=default`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const p = data.features && data.features[0] && data.features[0].properties;
+      if(p && p.city) regionPlace = { city: p.city, state: p.state || null };
+    }catch(e){ /* sem cidade: segue com a caixa + Brasil */ }
+  }
+  function requestRegionCenter(){
+    if(regionGeoTried || regionCenter || !navigator.geolocation) return;
+    regionGeoTried = true;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { regionCenter = { lat: pos.coords.latitude, lon: pos.coords.longitude }; reverseCity(regionCenter); },
+      () => { /* negado/indisponível: segue só com o filtro Brasil */ },
+      { maximumAge: 5 * 60 * 1000, timeout: 8000 }
+    );
+  }
+  function regionBbox(center, delta){
+    const d = delta || 0.3; // ~30 km: cobre a cidade e o entorno imediato
+    return `${center.lon - d},${center.lat - d},${center.lon + d},${center.lat + d}`;
+  }
+
   async function photonSearch(query, limit, signal){
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=${limit}&lang=pt`;
+    const center = regionCenter || startCoords; // GPS, ou o ponto do "usar localização"
+    const fetchLimit = Math.min(limit + 8, 20); // pede a mais p/ compensar os filtros
+    let url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=${fetchLimit}&lang=default`;
+    if(center) url += `&bbox=${encodeURIComponent(regionBbox(center))}`;
     const res = await fetch(url, signal ? { signal } : undefined);
     if(!res.ok) throw new Error('photon-fail');
     const data = await res.json();
-    return (data.features || []).map(f => ({
+    const brasil = (data.features || []).filter(f => f.properties && f.properties.countrycode === 'BR');
+    // Só a cidade atual (quando conhecida). Se nada casar a cidade, mantém o
+    // resultado da caixa para não deixar a lista vazia.
+    let lista = brasil;
+    if(regionPlace && regionPlace.city){
+      const daCidade = brasil.filter(f => f.properties.city === regionPlace.city
+        && (!regionPlace.state || f.properties.state === regionPlace.state));
+      if(daCidade.length > 0) lista = daCidade;
+    }
+    return lista.slice(0, limit).map(f => ({
       label: formatPhotonLabel(f.properties),
       lat: f.geometry.coordinates[1],
       lon: f.geometry.coordinates[0]
@@ -1929,6 +1972,7 @@ export function bootstrapPanel() {
   }
 
   async function fetchSuggestions(query, boxEl, onPick, signal, isCurrent){
+    requestRegionCenter(); // garante o centro regional (GPS) para priorizar a região
     try{
       const results = await photonSearch(query, 5, signal);
       if((signal && signal.aborted) || !isCurrent()) return;
@@ -2279,11 +2323,16 @@ export function bootstrapPanel() {
     valueEl.textContent = 'Localizando...';
     navigator.geolocation.getCurrentPosition(async (pos) => {
       startCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      regionCenter = startCoords; // reaproveita como centro da busca regional
+      regionGeoTried = true;
       try{
-        const url = `https://photon.komoot.io/reverse/?lon=${startCoords.lon}&lat=${startCoords.lat}&lang=pt`;
+        const url = `https://photon.komoot.io/reverse/?lon=${startCoords.lon}&lat=${startCoords.lat}&lang=default`;
         const res = await fetch(url);
         const data = await res.json();
         const f = data.features && data.features[0];
+        if(f && f.properties && f.properties.city){
+          regionPlace = { city: f.properties.city, state: f.properties.state || null };
+        }
         valueEl.textContent = f ? formatPhotonLabel(f.properties) : 'Localização encontrada';
       }catch(e){
         valueEl.textContent = 'Localização encontrada (endereço indisponível agora)';
