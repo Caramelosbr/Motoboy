@@ -472,6 +472,53 @@
   .field-input:focus{ outline:none; border-color:var(--orange); box-shadow:0 0 0 3px var(--orange-dim); }
   .field-input::placeholder{ color:var(--muted-2); font-family:'Inter',sans-serif; font-size:13px; }
   .field-input.text{ font-family:'Inter',sans-serif; font-size:14px; }
+  /* Etapa 2C: combobox de posto (substitui o datalist nativo, tema escuro) */
+  .combo{ position:relative; }
+  .combo-input{ padding-right:44px; } /* espaço para a seta, campo+botão parecem um só */
+  .combo-arrow{
+    position:absolute; top:0; right:0; width:44px; height:44px; padding:0;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent; border:none; color:var(--muted); cursor:pointer; border-radius:var(--radius-sm);
+  }
+  .combo-arrow .icon{ width:18px; height:18px; transition:transform .15s ease; }
+  .combo[data-open="true"] .combo-arrow{ color:var(--text); }
+  .combo[data-open="true"] .combo-arrow .icon{ transform:rotate(180deg); }
+  .combo-arrow:focus-visible{ outline:2px solid var(--orange); outline-offset:-2px; }
+  .combo-list{
+    position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:50;
+    margin:0; padding:4px; list-style:none;
+    background:var(--surface-3); border:1px solid var(--line); border-radius:var(--radius-sm);
+    max-height:220px; overflow-y:auto; overflow-x:hidden;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  .combo-option{
+    min-height:44px; display:flex; align-items:center; padding:0 10px;
+    color:var(--text); font-family:'Inter',sans-serif; font-size:14px;
+    border-radius:6px; cursor:pointer;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .combo-option.active{ background:var(--orange-dim); color:var(--orange); }
+  .combo-empty{
+    padding:11px 10px; color:var(--muted-2);
+    font-family:'Inter',sans-serif; font-size:13px; cursor:default;
+  }
+  @media (hover:hover){
+    .combo-arrow:hover{ color:var(--text); }
+    .combo-option:hover{ background:var(--surface-2); }
+  }
+  /* Autofill do navegador: mantém o tema escuro e impede o fundo branco */
+  #refuelLocation:-webkit-autofill,
+  #refuelLocation:-webkit-autofill:hover,
+  #refuelLocation:-webkit-autofill:focus{
+    -webkit-text-fill-color:var(--text);
+    caret-color:var(--text);
+    -webkit-box-shadow:0 0 0 1000px var(--surface-2) inset;
+    box-shadow:0 0 0 1000px var(--surface-2) inset;
+    transition:background-color 9999s ease-out 0s;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .combo-arrow .icon{ transition:none; }
+  }
   /* Etapa 1C: campo de data segmentado (dia/mês/ano) com contorno único */
   .date-seg{
     display:flex; align-items:center; gap:2px; width:100%;
@@ -1355,8 +1402,13 @@
       <div class="form-card" id="refuelFormCard">
         <div class="field-group">
           <label class="field-label" for="refuelLocation">POSTO</label>
-          <input type="text" class="field-input text" id="refuelLocation" list="refuelStationOptions" placeholder="Ex: Posto Ipiranga - Centro">
-          <datalist id="refuelStationOptions"></datalist>
+          <div class="combo" id="refuelStationCombo">
+            <input type="text" class="field-input text combo-input" id="refuelLocation" placeholder="Ex: Posto Ipiranga - Centro" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="refuelStationList" aria-haspopup="listbox">
+            <button type="button" class="combo-arrow" id="refuelStationArrow" aria-label="Mostrar postos salvos" tabindex="-1">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <ul class="combo-list" id="refuelStationList" role="listbox" aria-label="Postos salvos" hidden></ul>
+          </div>
         </div>
         <div class="field-group" style="margin-top:10px">
           <label class="field-label" for="refuelDate-d">QUANDO FOI?</label>

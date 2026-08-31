@@ -430,9 +430,16 @@ export function bootstrapPanel() {
       .map(key => latestByStation[key])
       .sort((a, b) => a.price - b.price || b.date - a.date);
   }
-  function renderStationOptions(){
-    const datalist = document.getElementById('refuelStationOptions');
-    if(!datalist) return;
+  // ---------- Etapa 2C: combobox de posto (substitui o datalist nativo) ----------
+  // Fonte dos nomes: refuels[].local (dedupe case-insensitive; ignora vazio/"não
+  // informado"). Segurança: opções criadas com createElement + textContent — nunca
+  // innerHTML com nomes de postos. Nenhuma API é exposta em window.
+  let stationNames = [];
+  let stationFiltered = [];
+  let stationComboOpen = false;
+  let stationActiveIndex = -1;
+  let stationComboInstalled = false;
+  function refreshStationNames(){
     const seen = {};
     const names = [];
     refuels.forEach(item => {
@@ -441,7 +448,117 @@ export function bootstrapPanel() {
       seen[key] = true;
       names.push(item.local);
     });
-    datalist.innerHTML = names.map(name => `<option value="${safeText(name)}"></option>`).join('');
+    stationNames = names;
+  }
+  function stationEls(){
+    return {
+      combo: document.getElementById('refuelStationCombo'),
+      input: document.getElementById('refuelLocation'),
+      arrow: document.getElementById('refuelStationArrow'),
+      list: document.getElementById('refuelStationList')
+    };
+  }
+  function renderStationList(){
+    const { input, list } = stationEls();
+    if(!input || !list) return;
+    const termo = normalizedStationName(input.value);
+    stationFiltered = stationNames.filter(name => !termo || normalizedStationName(name).indexOf(termo) !== -1);
+    list.textContent = ''; // limpa filhos sem innerHTML
+    if(stationFiltered.length === 0){
+      const li = document.createElement('li');
+      li.className = 'combo-empty';
+      li.setAttribute('aria-disabled', 'true');
+      li.textContent = 'Nenhum posto salvo. Digite para cadastrar.';
+      list.appendChild(li);
+      stationActiveIndex = -1;
+      input.removeAttribute('aria-activedescendant');
+      return;
+    }
+    stationFiltered.forEach((name, i) => {
+      const li = document.createElement('li');
+      li.className = 'combo-option' + (i === stationActiveIndex ? ' active' : '');
+      li.id = 'refuelStationOption-' + i;
+      li.setAttribute('role', 'option');
+      li.setAttribute('aria-selected', i === stationActiveIndex ? 'true' : 'false');
+      li.textContent = name; // seguro: nome inserido como texto
+      list.appendChild(li);
+    });
+    if(stationActiveIndex >= 0 && stationActiveIndex < stationFiltered.length){
+      input.setAttribute('aria-activedescendant', 'refuelStationOption-' + stationActiveIndex);
+    } else {
+      input.removeAttribute('aria-activedescendant');
+    }
+  }
+  function openStationList(){
+    const { combo, input, list } = stationEls();
+    if(!combo || !input || !list) return;
+    renderStationList();
+    list.hidden = false;
+    combo.setAttribute('data-open', 'true');
+    input.setAttribute('aria-expanded', 'true');
+    stationComboOpen = true;
+  }
+  function closeStationList(){
+    const { combo, input, list } = stationEls();
+    stationComboOpen = false;
+    stationActiveIndex = -1;
+    if(list){ list.hidden = true; list.textContent = ''; }
+    if(combo) combo.removeAttribute('data-open');
+    if(input){ input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); }
+  }
+  function setStationActive(index){
+    if(stationFiltered.length === 0){ stationActiveIndex = -1; return; }
+    const n = stationFiltered.length;
+    stationActiveIndex = ((index % n) + n) % n; // navegação circular
+    renderStationList();
+    const opt = document.getElementById('refuelStationOption-' + stationActiveIndex);
+    if(opt && opt.scrollIntoView) opt.scrollIntoView({ block:'nearest' });
+  }
+  function selectStation(name){
+    const { input } = stationEls();
+    if(!input) return;
+    input.value = name;   // valor final = refuelLocation.value (formato do nome preservado)
+    closeStationList();
+  }
+  // Mantém o nome usado por renderRefuelViews (salvar/editar/excluir/apply remoto).
+  function renderStationOptions(){
+    refreshStationNames();
+    if(stationComboOpen) renderStationList(); // re-filtra se estiver aberta
+  }
+  function installStationCombobox(){
+    if(stationComboInstalled) return; // listeners instalados uma única vez
+    const { combo, input, arrow, list } = stationEls();
+    if(!combo || !input || !arrow || !list) return;
+    stationComboInstalled = true;
+    input.addEventListener('focus', function(){ openStationList(); });
+    input.addEventListener('input', function(){
+      stationActiveIndex = -1;
+      if(!stationComboOpen) openStationList(); else renderStationList();
+    });
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'ArrowDown'){ e.preventDefault(); if(!stationComboOpen) openStationList(); setStationActive(stationActiveIndex + 1); }
+      else if(e.key === 'ArrowUp'){ e.preventDefault(); if(!stationComboOpen) openStationList(); setStationActive(stationActiveIndex - 1); }
+      else if(e.key === 'Enter'){
+        if(stationComboOpen && stationActiveIndex >= 0 && stationActiveIndex < stationFiltered.length){
+          e.preventDefault(); // seleciona sem enviar o formulário
+          selectStation(stationFiltered[stationActiveIndex]);
+        }
+      }
+      else if(e.key === 'Escape'){ if(stationComboOpen){ e.preventDefault(); closeStationList(); } }
+    });
+    // mousedown na lista mantém o foco no input, para o clique/toque na opção registrar.
+    list.addEventListener('mousedown', function(e){ if(e.target.closest('.combo-option')) e.preventDefault(); });
+    list.addEventListener('click', function(e){
+      const li = e.target.closest('.combo-option');
+      if(!li) return;
+      const idx = Number(li.id.replace('refuelStationOption-', ''));
+      if(!Number.isNaN(idx) && stationFiltered[idx] !== undefined) selectStation(stationFiltered[idx]);
+    });
+    // Seta: alterna a lista sem forçar foco no input (funciona com teclado virtual fechado).
+    arrow.addEventListener('mousedown', function(e){ e.preventDefault(); });
+    arrow.addEventListener('click', function(){ if(stationComboOpen) closeStationList(); else openStationList(); });
+    // Clicar/tocar fora fecha.
+    document.addEventListener('mousedown', function(e){ if(stationComboOpen && !combo.contains(e.target)) closeStationList(); });
   }
   function renderCheapestStation(){
     const stations = recentStationPrices();
@@ -509,6 +626,7 @@ export function bootstrapPanel() {
     document.getElementById('refuelEditReasonField').hidden = true;
     document.getElementById('btnSaveRefuel').textContent = 'Salvar abastecimento';
     document.getElementById('btnCancelRefuelEdit').hidden = true;
+    closeStationList(); // 2C: reset não deixa o combobox aberto/inconsistente
     updateCalculatedRefuelLiters();
   }
   // Etapa 2B: no formulário FIXO de abastecimento, a data de hoje só era escrita
@@ -731,6 +849,7 @@ export function bootstrapPanel() {
     document.getElementById('viewTitle').textContent = titles[view].title;
     document.getElementById('viewSub').textContent = titles[view].sub;
     closeDrawer();
+    closeStationList(); // 2C: fecha o combobox de posto ao navegar entre abas
     if(view === 'dashboard'){ renderDashboard(); }
     if(view === 'abastecimentos'){ ensureRefuelDateDefault(); } // 2B: garante data só se totalmente vazia (não é reset)
     if(view === 'faturamento'){ renderFaturamento(); }
@@ -2983,6 +3102,7 @@ export function bootstrapPanel() {
   initBillingMonthSelector();
   initBrDateFields();
   ensureRefuelDateDefault(); // 2B: preenche a data de hoje na carga (form fixo de abastecimento)
+  installStationCombobox(); // 2C: instala o combobox de posto (listeners uma única vez)
   if(consumoManualDefinido){
     document.getElementById('motoConsumptionInput').value = CONSUMO_ATUAL;
     document.getElementById('motoConsumptionStatus').textContent = `${CONSUMO_ATUAL.toFixed(1).replace('.', ',')} km/L salvos à mão e usados nas rotas.`;
