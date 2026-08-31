@@ -260,3 +260,52 @@ O app usa diálogos nativos do navegador (`alert`) para sucesso, validação e e
 - 1D-A cria apenas o `showToast` (sem substituir nenhum `alert` ainda).
 - As substituições de `alert` por toast virão em etapas seguintes (1D-B+).
 - O modal de confirmação e a eventual API assíncrona ficam para uma etapa futura autorizada.
+
+---
+
+## DEC-012 — Firestore como fonte oficial dos dados financeiros e persistência do `fsId`
+
+**Status:** Aprovada
+**Data:** 30/08/2026
+
+### Contexto
+
+A auditoria de persistência e sincronização (ver `CURRENT_STATE.md`, seções 9 a 12) confirmou que abastecimentos, manutenções e entradas manuais gravam no Firestore por ponte, mas o vínculo entre o registro local e o documento remoto (`fsId`) podia se perder: o `saveLocalState()` rodava de forma síncrona **antes** do retorno do `addDoc`, e o `fsId` recebido depois só era escrito em memória, nunca re-persistido. Isso causa registros "não sincronizados", possível duplicação ao recarregar e atualizações/exclusões que não encontram o documento remoto.
+
+A Etapa 2A corrige **somente** essa perda de vínculo para **novos** registros. Ela **não** resolve toda a diferença entre celular e computador (carga inicial, conflitos, offline e `onSnapshot` seguem fora de escopo).
+
+### Decisão
+
+Direção arquitetural registrada (parte já aprovada em decisões anteriores, consolidada aqui):
+
+- O **Firestore será a única fonte oficial** dos dados financeiros.
+- O `localStorage` financeiro atual é **transitório** e será eliminado após a migração.
+- O `localStorage` ficará **somente para preferências não financeiras**.
+- O **estado da interface** será mantido em memória e alimentado pelos repositórios.
+- **Cada feature terá repository próprio.**
+- Dados serão isolados por `users/{uid}/...`.
+- **IDs do Firestore serão a identidade oficial** dos registros.
+- `createdAt` e `updatedAt` usarão **timestamp do servidor**.
+- `effectiveDate` representará a **data real do lançamento** (distinta do carimbo de criação).
+- Estados de **loading, sincronizando, offline e erro** deverão ser visíveis.
+- Os **dados fictícios serão apagados** antes de usuários reais; **não haverá migração** dos dados fictícios.
+- A **persistência offline permanente do Firestore** será decidida posteriormente, considerando dispositivo confiável.
+- `controlStartMonth` será criado por usuário na etapa de **perfil/onboarding**.
+- Esta **etapa de `fsId` é transitória** e **não** transforma o `localStorage` em fonte oficial.
+
+### Escopo aplicado nesta etapa (2A)
+
+- Correção aplicada **apenas a novos registros** de abastecimentos, manutenções e entradas manuais.
+- Após a criação remota concluir com sucesso: valida que o ID é uma string não vazia, **reencontra o registro no estado atual** e confirma que ele ainda existe antes de definir o `fsId`, e só então executa `saveLocalState()`.
+- **Não** cria segundo documento remoto, **não** altera valores financeiros, **não** altera a identidade das rotas (que já usa ID estável), **não** corrige registros antigos sem `fsId` e **não** reconcilia duplicatas existentes.
+- Em falha remota (Promise rejeitada ou `id` inválido) o `fsId` **não** é persistido; o cache local é mantido.
+
+### Nota técnica de identidade local
+
+Os VMs legados (`refuels`, `maintenances`, `entradas`) **não possuem um campo de ID local persistente**; sua identidade em memória é a própria referência do objeto no array. Nesta etapa a reassociação após o retorno remoto é feita reencontrando o registro **no array vivo** (`indexOf` na variável de módulo, que os hooks `__applyRemote*` podem reatribuir) e confirmando que ele ainda existe, em vez de introduzir um novo campo de identidade local — o que seria uma mudança de forma de dado fora do escopo autorizado. A adoção de um ID local estável persistente (alinhado a "IDs do Firestore serão a identidade oficial") fica para uma etapa futura da estratégia de sincronização (Etapa 5).
+
+### Consequências
+
+- Novos lançamentos passam a manter o `fsId` após recarregar a página, reduzindo o risco de duplicação e de operações que não encontram o documento remoto.
+- A diferença total entre dispositivos **permanece em aberto**: carga inicial, conflitos, offline e `onSnapshot` continuam fora de escopo e serão tratados na Etapa 5.
+- Nenhuma mudança de schema do Firestore, regras, coleções ou dados foi feita nesta etapa.
