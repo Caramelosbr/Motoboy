@@ -309,3 +309,205 @@ Os VMs legados (`refuels`, `maintenances`, `entradas`) **não possuem um campo d
 - Novos lançamentos passam a manter o `fsId` após recarregar a página, reduzindo o risco de duplicação e de operações que não encontram o documento remoto.
 - A diferença total entre dispositivos **permanece em aberto**: carga inicial, conflitos, offline e `onSnapshot` continuam fora de escopo e serão tratados na Etapa 5.
 - Nenhuma mudança de schema do Firestore, regras, coleções ou dados foi feita nesta etapa.
+
+---
+
+## DEC-013 — Modelo financeiro normalizado
+
+**Status:** Aprovada (desenho) — implementação não iniciada
+**Data:** 30/08/2026
+
+### Contexto
+
+Clientes, contas a receber e recebimentos vivem no monólito e no `localStorage`, sem sincronização entre aparelhos e com valores em ponto flutuante. A Etapa 3A auditou o modelo atual e definiu o desenho de destino. Esta decisão registra **apenas o desenho aprovado**; nada foi implementado, publicado ou migrado.
+
+### Decisão
+
+- O financeiro passa a viver em **quatro coleções por usuário**, sob `users/{uid}/`:
+  - `clients/{clientId}`
+  - `receivables/{receivableId}`
+  - `payments/{paymentId}`
+  - `incomeEntries/{entryId}`
+- **Firestore é a fonte oficial** dos dados financeiros autenticados.
+- **Valores monetários em centavos inteiros** (`int`), nunca float.
+- **`effectiveDate`** (data real do lançamento, `AAAA-MM-DD`) é **separado** de `createdAt`/`updatedAt` (que usam `serverTimestamp`).
+- **`remainingCents` é calculado** (`amountCents - paidCents`) e **nunca persistido**.
+- **`clientId` é a única identidade** do cliente. **Nomes duplicados são permitidos**; o nome nunca é usado como chave de relacionamento. Campos opcionais de diferenciação (`phone`, `nickname`, `notes`) podem existir; a UI pode alertar sobre nomes semelhantes, mas **não funde históricos** automaticamente. Renomear não gera cascata.
+
+### Invariante de Receivable
+
+- `status == 'cancelled'` ⇒ `paidCents == 0`.
+- Quando **não** cancelado:
+  - `open` ⇒ `paidCents == 0`;
+  - `partial` ⇒ `0 < paidCents < amountCents`;
+  - `paid` ⇒ `paidCents == amountCents`.
+- Sempre: `0 ≤ paidCents ≤ amountCents`.
+
+### Estado de implementação
+
+- Decisão arquitetural **aprovada**. As coleções, o código e os índices **ainda não existem**; nenhum documento foi criado; nenhum deploy foi feito.
+
+### Consequências
+
+- Um repositório por coleção (encaixe direto na Clean Architecture já usada nas features atuais).
+- O `localStorage` financeiro será eliminado no cutover (ver DEC-017); até lá, o comportamento atual permanece intacto.
+
+---
+
+## DEC-014 — IncomeEntry como única fonte do faturamento
+
+**Status:** Aprovada (desenho) — implementação não iniciada
+**Data:** 30/08/2026
+
+### Contexto
+
+Hoje a receita é somada a partir de um array `entradas` que mistura entradas manuais, rota paga na hora e recebimentos — com risco de dupla contagem. A Etapa 3A definiu uma fonte única.
+
+### Decisão
+
+- **Gráficos, totais e faturamento leem somente `incomeEntries`.**
+- Toda receita de rota segue a mesma cadeia: **Route Service → Receivable → Payment → IncomeEntry**. **Não existe atalho `route_cash`.**
+- **`Receivable` e pagamento pendente não entram no faturamento.**
+- Valores de `incomeEntry` são **sempre positivos**; o sinal é dado por **`direction: 'credit' | 'debit'`** (líquido = `Σ credit − Σ debit`).
+- **Todo `IncomeEntry` é imutável, inclusive o de origem manual.** O modelo **não** possui `cancelledAt` nem `updatedAt`.
+- **Correção ou cancelamento gera um novo lançamento compensatório** (`debit`/`credit`), nunca edição ou exclusão.
+
+### Estado de implementação
+
+- Decisão **aprovada**. Nenhuma coleção `incomeEntries`, consulta de gráfico ou lançamento existe ainda; os gráficos atuais continuam lendo o modelo legado até o cutover.
+
+### Consequências
+
+- Faturamento sem dupla contagem, auditável e reconstruível a partir dos lançamentos.
+
+---
+
+## DEC-015 — Operações financeiras atômicas no servidor
+
+**Status:** Aprovada (desenho) — implementação e deploy não realizados
+**Data:** 30/08/2026
+
+### Contexto
+
+As operações financeiras compostas (rateio, confirmação/cancelamento de rota, estorno) precisam de atomicidade e de validação que o cliente não pode garantir sozinho.
+
+### Decisão
+
+- As seguintes operações serão **Cloud Functions callable transacionais** (Admin SDK):
+  - `recordClientPayment`
+  - `confirmRoute`
+  - `cancelRoute`
+  - `reversePayment`
+  - `cancelReceivable`
+  - `createManualIncome`
+  - `reverseManualIncome`
+- Operações compostas usam **`runTransaction`** (todas as leituras, validações, updates e creates na mesma transação).
+- Rateio **FIFO** (conta aberta mais antiga primeiro) com **`MAX_FIFO = 100`**.
+- **`MAX_FIFO` é um limite operacional deliberado do produto**, justificado por **latência** (transação curta), **contenção** (menos locks concorrentes), **tamanho do documento `Payment`** (array `allocations` enxuto), **volume previsível de leituras/atualizações** e **previsibilidade operacional** — **não** por um suposto teto fixo de 500 writes por transação. A consulta usa `limit(MAX_FIFO + 1)` e **rejeita a operação inteira** quando houver mais de 100 recebíveis elegíveis; **nunca** faz rateio parcial silencioso.
+- **O cliente não escreve diretamente em `incomeEntries`** (nem em `payments`, `receivables.paidCents`/`status`).
+- **`cancelRoute` nunca estorna pagamentos automaticamente.** Ele **rejeita** se algum receivable da rota possuir `paidCents > 0`; o pagamento precisa ser revertido **explicitamente** (`reversePayment`) antes, e só então `cancelRoute` cancela os recebíveis abertos.
+
+### Precisão transacional de cancelRoute
+
+- A **transação começa antes da consulta**.
+- A consulta filtra **`sourceType == 'route'` e `sourceId == routeId`**.
+- **Leitura, validação de `paidCents`, cancelamento dos recebíveis e atualização da rota ocorrem dentro da mesma transação.**
+- **Não pode existir janela de concorrência** entre a validação e a escrita.
+
+### Estado de implementação
+
+- Decisão **aprovada**. **Nenhuma Cloud Function foi implementada nem publicada**; o projeto ainda não possui `functions/`; nenhuma callable existe. Depende de configuração de billing/deploy em etapa futura autorizada.
+
+### Consequências
+
+- Invariantes financeiras garantidas fora do cliente; será necessário índice composto para o FIFO (registrado como implementação futura, sem alterar índices agora).
+
+---
+
+## DEC-016 — Idempotência, reversão e imutabilidade
+
+**Status:** Aprovada (desenho) — implementação não iniciada
+**Data:** 30/08/2026
+
+### Decisão
+
+- **`Payment` é totalmente imutável.** O pagamento original **não recebe nenhum campo de retro-referência de reversão**; a ligação existe apenas do lado da reversão, via `reversesPaymentId`.
+- **Reversão de pagamento** é um **novo `Payment`**:
+  - `kind = 'reversal'`;
+  - `amountCents` **positivo**;
+  - `reversesPaymentId` = id do pagamento original;
+  - **mesmas `allocations`** do original;
+  - **ID determinístico `rev_{originalPaymentId}`** — sua existência **impede uma segunda reversão**.
+- **`IncomeEntry` da reversão:** `direction = 'debit'`, `amountCents` positivo, **ID `inc_rev_{originalPaymentId}`**.
+- **Entrada manual:**
+  - criação via callable (`createManualIncome`), **ID determinístico `minc_{idempotencyKey}`**;
+  - reversão via `reverseManualIncome`, **ID `revinc_{originalIncomeEntryId}`** (a existência do id impede segunda reversão).
+- **`idempotencyKey`** validado antes de formar qualquer caminho do Firestore, com **`^[A-Za-z0-9_-]{1,64}$`** (letras, números, `-`, `_`; sem barra, espaço ou caractere especial).
+- **`requestHash` calculado no servidor** (JSON canônico com ordem de chaves estável). **Mesma chave + mesmo pedido → retorna o resultado anterior**; **mesma chave + pedido diferente → conflito** (`already-exists`/`failed-precondition`).
+- **`serviceId` no formato `svc_{UUIDv4}`**, criado **uma única vez** ao adicionar o serviço à rota, estável ao reordenar/editar, **nunca** derivado do índice visual e **nunca** regenerado no `confirmRoute`. Regex: `^svc_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`.
+- **`routeId` e `serviceId` são validados** (tipo, tamanho, ausência de barra) **antes de formar caminhos** determinísticos (`rt_{routeId}_{serviceId}`, `pay_{routeId}_{serviceId}`, `inc_pay_{routeId}_{serviceId}`).
+- **`confirmRoute` usa `confirmationHash`** (servidor) para detectar payload diferente sob os mesmos ids: **IDs determinísticos sozinhos não substituem a comparação do hash**.
+
+### Estado de implementação
+
+- Decisão **aprovada**. Nenhuma dessas Functions, ids ou hashes existe ainda no código.
+
+### Consequências
+
+- Reenvio e duplo clique são seguros; auditoria completa; nada é editado ou apagado.
+
+---
+
+## DEC-017 — Construção paralela e cutover único
+
+**Status:** Aprovada (desenho) — cutover e reset não executados
+**Data:** 30/08/2026
+
+### Decisão
+
+- O **novo núcleo financeiro é construído em paralelo** (`shared/currency`, `customers`, `receivables`, `payments`, `income`, Cloud Functions, regras e testes), **sem nenhuma ligação parcial com o painel legado**.
+- **Nenhum sistema financeiro híbrido na interface**: não substituir só `clientes[]` deixando contas/recebimentos ainda locais.
+- **Sem migração dos dados fictícios atuais.**
+- **Cutover único e controlado**, na ordem:
+  1. **dry-run** do reset fictício;
+  2. **relatório** do que seria apagado;
+  3. **autorização** explícita;
+  4. **reset** dos dados fictícios;
+  5. **ativação das novas bridges**;
+  6. **remoção do `localStorage` financeiro**.
+- **Nenhuma escrita direta do cliente em `incomeEntries`** — apenas leitura (todas as escritas por Functions/Admin).
+
+### Estado de implementação
+
+- Decisão **aprovada**. **O reset dos dados fictícios ainda não foi executado**; nenhuma bridge nova foi ativada; o `localStorage` financeiro segue em uso pelo painel legado. O cutover será uma etapa própria, autorizada, com dry-run e confirmação.
+
+### Consequências
+
+- Transição de percepção atômica; risco isolado; possibilidade de rollback antes do cutover.
+
+---
+
+## DEC-018 — Política online, confirmação do servidor e sincronização
+
+**Status:** Aprovada (desenho) — implementação e App Check não configurados
+**Data:** 30/08/2026
+
+### Decisão
+
+- **Toda gravação financeira exige confirmação do servidor** antes de exibir sucesso.
+- **Callables financeiras são online-only.** **Entradas manuais também são online-only.**
+- **CRUD de clientes** pode continuar direto no Firestore, mas **só mostra sucesso após o acknowledgement do servidor**.
+- **Estados de sincronização visíveis:** `salvando`, `salvo`, `offline`, `erro`.
+- **Dados pendentes nunca entram no faturamento definitivo** (o `onSnapshot` ignora `metadata.hasPendingWrites` e leituras `fromCache` em totais definitivos).
+- **Fuso oficial do MVP: `America/Sao_Paulo`.**
+- **A data de reversão** (`reversePayment`/`reverseManualIncome`) é **calculada pelo servidor no dia real do estorno** (America/Sao_Paulo); **o cliente não escolhe nem adultera** essa data. `createdAt` sempre `serverTimestamp`. Correção retroativa será decisão separada.
+- **App Check obrigatório antes de usuários reais.** As Functions de segunda geração usarão **`enforceAppCheck: true`** quando a etapa for autorizada.
+- **Leituras podem usar cache** com indicação de estado, mas **cache não é confirmação financeira**.
+
+### Estado de implementação
+
+- Decisão **aprovada**. **App Check ainda não está configurado**; os estados de sincronização e as callables **ainda não existem**; nada foi publicado. O comportamento atual do painel permanece inalterado até o cutover (DEC-017).
+
+### Consequências
+
+- Faturamento nunca conta escrita pendente; convergência celular↔computador via Firestore + listeners.
