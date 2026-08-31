@@ -511,6 +511,20 @@ export function bootstrapPanel() {
     document.getElementById('btnCancelRefuelEdit').hidden = true;
     updateCalculatedRefuelLiters();
   }
+  // Etapa 2B: no formulário FIXO de abastecimento, a data de hoje só era escrita
+  // por resetRefuelForm (cancelar/salvar/excluir). Na primeira carga e ao entrar
+  // na aba ela ficava vazia. Este helper preenche HOJE apenas quando os três
+  // segmentos estão totalmente vazios e não há edição em andamento — sem tocar em
+  // nenhum outro campo e sem sobrescrever data parcialmente digitada.
+  function ensureRefuelDateDefault(){
+    if(editingRefuelIndex !== null) return;              // em edição: preserva item.dateISO
+    const wrap = document.getElementById('refuelDate');
+    if(!wrap) return;
+    const s = dateSegs(wrap);
+    if(!s.day || !s.month || !s.year) return;
+    if(s.day.value || s.month.value || s.year.value) return; // já há conteúdo: não mexe
+    setBrDateValue(wrap, localTodayISO());                // fuso local, nunca UTC
+  }
   function editRefuel(index){
     const item = refuels[index];
     if(!item) return;
@@ -718,6 +732,7 @@ export function bootstrapPanel() {
     document.getElementById('viewSub').textContent = titles[view].sub;
     closeDrawer();
     if(view === 'dashboard'){ renderDashboard(); }
+    if(view === 'abastecimentos'){ ensureRefuelDateDefault(); } // 2B: garante data só se totalmente vazia (não é reset)
     if(view === 'faturamento'){ renderFaturamento(); }
     if(view === 'clientes'){ renderClientes(); }
     if(view === 'moto'){ renderMotoConsumo(); }
@@ -2967,6 +2982,7 @@ export function bootstrapPanel() {
   initMonthSelector();
   initBillingMonthSelector();
   initBrDateFields();
+  ensureRefuelDateDefault(); // 2B: preenche a data de hoje na carga (form fixo de abastecimento)
   if(consumoManualDefinido){
     document.getElementById('motoConsumptionInput').value = CONSUMO_ATUAL;
     document.getElementById('motoConsumptionStatus').textContent = `${CONSUMO_ATUAL.toFixed(1).replace('.', ',')} km/L salvos à mão e usados nas rotas.`;
