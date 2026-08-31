@@ -613,7 +613,14 @@ export function bootstrapPanel() {
       if(window.__motoboyAbastecimentos) window.__motoboyAbastecimentos.update(record.fsId, record);
     } else {
       const addPromise = window.__motoboyAbastecimentos && window.__motoboyAbastecimentos.add(record);
-      if(addPromise && addPromise.then) addPromise.then(function(id){ if(id) record.fsId = id; });
+      if(addPromise && addPromise.then){
+        addPromise.then(function(id){
+          if(typeof id !== 'string' || id === '') return;   // id remoto inválido: não persiste fsId
+          if(refuels.indexOf(record) === -1) return;         // registro excluído/substituído: não altera
+          record.fsId = id;
+          saveLocalState();                                  // persiste o cache só depois do fsId
+        }).catch(function(){ /* falha remota: mantém o cache local sem fsId */ });
+      }
     }
     PRECO_ATUAL = price;
     recalculateMotoKmFromRecords();
@@ -1015,7 +1022,14 @@ export function bootstrapPanel() {
       if(window.__motoboyManutencoes) window.__motoboyManutencoes.update(record.fsId, record);
     } else {
       const addPromise = window.__motoboyManutencoes && window.__motoboyManutencoes.add(record);
-      if(addPromise && addPromise.then) addPromise.then(function(id){ if(id) record.fsId = id; });
+      if(addPromise && addPromise.then){
+        addPromise.then(function(id){
+          if(typeof id !== 'string' || id === '') return;   // id remoto inválido: não persiste fsId
+          if(maintenances.indexOf(record) === -1) return;    // registro excluído/substituído: não altera
+          record.fsId = id;
+          saveLocalState();                                  // persiste o cache só depois do fsId
+        }).catch(function(){ /* falha remota: mantém o cache local sem fsId */ });
+      }
     }
     recalculateMotoKmFromRecords();
     saveLocalState();
@@ -1456,7 +1470,14 @@ export function bootstrapPanel() {
       if(window.__motoboyEntradas) window.__motoboyEntradas.update(record.fsId, record);
     } else {
       const addPromise = window.__motoboyEntradas && window.__motoboyEntradas.add(record);
-      if(addPromise && addPromise.then) addPromise.then(function(id){ if(id) record.fsId = id; });
+      if(addPromise && addPromise.then){
+        addPromise.then(function(id){
+          if(typeof id !== 'string' || id === '') return;   // id remoto inválido: não persiste fsId
+          if(entradas.indexOf(record) === -1) return;        // registro excluído/substituído: não altera
+          record.fsId = id;
+          saveLocalState();                                  // persiste o cache só depois do fsId
+        }).catch(function(){ /* falha remota: mantém o cache local sem fsId */ });
+      }
     }
     if(!previous){
       const billingYearSelect = document.getElementById('billingYear');
