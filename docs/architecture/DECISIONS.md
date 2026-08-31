@@ -511,3 +511,174 @@ As operações financeiras compostas (rateio, confirmação/cancelamento de rota
 ### Consequências
 
 - Faturamento nunca conta escrita pendente; convergência celular↔computador via Firestore + listeners.
+
+---
+
+## DEC-019 — Compartilhamento do núcleo financeiro entre web e servidor por bundle
+
+**Status:** Aprovada como desenho — implementação ainda não iniciada
+**Data:** 31/08/2026
+
+### Contexto
+
+O núcleo financeiro puro (moeda, validações, entidades, invariantes, FIFO) vive em `src/` e é usado pelo web. As futuras Cloud Functions precisarão usar **exatamente** o mesmo núcleo. É proibido: cópia manual das regras em `functions/`, duas implementações de FIFO, import relativo que resolva localmente mas fique fora do pacote de deploy, domínio dependente de Firebase, servidor no bundle do navegador, e código financeiro divergente entre web e Functions.
+
+### Decisão principal
+
+- O **núcleo financeiro puro continua com uma única fonte em `src/`** (`src/shared/currency`, `src/shared/validation`, `src/features/*/domain` e, futuramente, `src/features/*/application`).
+- **Cloud Functions ficam em `functions/`** com `package.json`, `package-lock.json` e build próprios.
+- As Functions **importam o domínio/application compartilhados do `src` raiz durante o build**; o **esbuild incorpora** esse código ao artefato **`functions/lib/index.js`**.
+- O **deploy nunca depende de import relativo para arquivo que permaneça fora do diretório enviado**: o núcleo está no artefato porque foi **inlinado no bundle**, não porque o Firebase CLI seguiria imports fora de `functions/`.
+- **`firebase-admin` e `firebase-functions` permanecem dependências externas** instaladas pelo `functions/package.json`.
+- **Não usar npm workspaces agora.**
+- **Não duplicar** domínio, invariantes, moeda, validações ou FIFO dentro de `functions/`.
+- **Não realizar agora** a reestruturação completa `apps/web + apps/functions + packages/core`.
+
+### 1. Caminhos
+
+- De **`functions/src/index.ts` até o `src` raiz**, o caminho relativo correto começa por **`../../src/`** (subir de `functions/src/` para a raiz e então entrar em `src/`). **`../src/` NÃO é o caminho correto do handler.**
+- Handlers em subpastas (ex.: `functions/src/infrastructure/…`) usarão mais um nível (`../../../src/`). Os imports exatos dependem do módulo consumido, mas **devem resolver em typecheck, bundle, testes e Emulator**.
+
+### 2. Separação da camada application (cliente ≠ servidor)
+
+**Compartilhado (shared):** `domain`, `Cents`, validações, `allocateFIFO`, e contratos/DTOs **realmente neutros**.
+
+**Servidor (executado SOMENTE pelas Functions):** casos de uso financeiros **autoritativos** — `recordClientPayment`, `confirmRoute`, `cancelRoute`, `reversePayment`, `cancelReceivable`, `createManualIncome`, `reverseManualIncome` — e as **ports de persistência transacional**.
+
+**Web:**
+- **não executa FIFO como autoridade financeira**;
+- **não atualiza `paidCents`/`status` diretamente**;
+- usa **gateways callable** para comandos financeiros;
+- usa **repositories somente de leitura** para `payments`, `receivables` e `incomeEntries`;
+- **pode** usar repository direto para **CRUD de clientes** (conforme DEC-015/DEC-018);
+- recebe atualizações por **listeners** depois da confirmação do servidor.
+
+Web e servidor **NÃO** executam os mesmos casos de uso privilegiados.
+
+### Direção das dependências
+
+O **fluxo em execução** (chamadas em runtime) e a **dependência do código** (quem importa quem) são coisas distintas e ficam registrados separadamente. Em particular, `domain` **nunca** importa infrastructure, admin repository nem Firebase — o domínio é invocado pela application, não o contrário.
+
+**FLUXO EM EXECUÇÃO NO SERVIDOR:**
+
+```
+functions handler
+  → server application use case
+  → repository port
+  → admin repository implementation
+  → Firestore
+```
+
+**DEPENDÊNCIA DO CÓDIGO (servidor):**
+
+- `functions handler` importa `server application`;
+- `server application` importa `domain` e as interfaces de ports;
+- as **interfaces dos ports pertencem à camada application**;
+- `infrastructure/admin` **implementa** os ports e pode importar application contracts e domain;
+- o **composition root** cria os adapters e os **injeta** nos casos de uso;
+- `domain` importa **somente módulos puros compartilhados**;
+- `domain` **nunca** importa application, infrastructure, `firebase-admin` ou handlers.
+
+**FLUXO EM EXECUÇÃO NA WEB:**
+
+```
+presentation
+  → client application use case
+  → callable/read repository port
+  → Firebase Web adapter
+```
+
+**DEPENDÊNCIA DO CÓDIGO (web):**
+
+- `presentation` importa `client application`;
+- `client application` importa `domain`/contracts e as interfaces de ports;
+- `Firebase Web infrastructure` **implementa** os ports;
+- o **composition root** injeta os adapters;
+- `application` **não** importa Firebase Web diretamente.
+
+### 3. Organização futura sugerida (não obrigatória agora)
+
+Dentro de cada feature poderá existir:
+
+```
+application/
+├── contracts/
+├── client/
+│   ├── ports/
+│   └── use-cases/
+└── server/
+    ├── ports/
+    └── use-cases/
+```
+
+Não é obrigatório criar esta árvore agora, mas **esta decisão impede que um caso de uso privilegiado seja executado no cliente**.
+
+### 4. TypeScript das Functions
+
+- `functions/tsconfig.json` será **independente** (contexto Node) e **não** incluirá indiscriminadamente todo `../src`.
+- Tipará somente: `functions/src/**/*.ts`; os módulos compartilhados **efetivamente importados**; `application/server` efetivamente importado; e o `domain`/`shared` necessários.
+- Usará **`noEmit`** para typecheck (o esbuild é responsável pela emissão).
+- **Não incluir:** `presentation`, login, notificações DOM, painel legado, adapters web, nem arquivos de teste no bundle.
+
+### 5. esbuild (configuração futura explícita)
+
+- `bundle: true`; `platform: 'node'`; `target: 'node22'`;
+- entrypoint: `functions/src/index.ts`; outfile: `functions/lib/index.js`;
+- `sourcemap` apropriado; **tree shaking** habilitado;
+- **formato CJS ou ESM definido de forma coerente com `functions/package.json`** — a escolha final CJS×ESM será **confirmada na implementação do scaffold, não presumida**;
+- `main` do `functions/package.json` apontando para `lib/index.js`.
+- **Externals** devem cobrir pacotes e subpaths: `firebase-admin`, `firebase-admin/*`, `firebase-functions`, `firebase-functions/*`. Alternativamente, `packages: 'external'` **poderá** ser adotado se for verificado que não externaliza algo que **deveria** entrar no bundle (ex.: o núcleo de `src/`).
+
+### 6. Empacotamento e deploy
+
+- `firebase.json` futuramente terá: `source: functions`; **codebase próprio**; **runtime Node 22**; `predeploy` executando o build.
+- **Somente `functions/`** é enviado como código-fonte da Function; o núcleo estará presente **por estar incorporado no bundle**, não por o CLI seguir imports fora de `functions/`.
+- `functions/lib` e `functions/node_modules` **não serão versionados**.
+- **Nenhum deploy** será realizado na etapa de scaffold sem autorização separada.
+
+### 7. Mapeadores (três níveis)
+
+- **domínio compartilhado** (único, com as regras/invariantes);
+- **representação persistida plana e neutra** quando for realmente útil;
+- **conversores específicos:** Firebase **Web** Timestamp ↔ representação neutra; Firebase **Admin** Timestamp ↔ representação neutra.
+
+**Nenhum mapper puro importará simultaneamente Firebase Web e Firebase Admin.** Não existe um único mapper Firebase compartilhado integralmente entre web e Admin. Regras financeiras e invariantes **continuam únicas no domínio**.
+
+### 8. Runtime
+
+- **Node local atual: 24**, usado para **tooling** (firebase-tools/esbuild).
+- **Runtime futuro das Functions: Node 22.**
+- `functions/package.json` e `firebase.json` deverão ser **coerentes com Node 22**.
+- Possíveis **avisos de `engines`** durante instalação local no Node 24 deverão ser **analisados, não escondidos**.
+- **Confirmar o suporte oficial de runtimes novamente** antes da implementação e antes do deploy.
+
+### 9. Testes futuros (separados)
+
+- **Vitest:** domínio e application puros.
+- **Repositórios fake:** application (ports implementadas em memória).
+- **Emulator de Functions:** handlers e transações.
+- **Emulator de Firestore:** Rules e isolamento por `uid`.
+- **Auditoria do metafile do esbuild:** confirmar que o domínio/application necessários **entraram** no bundle e que `presentation`/Firebase Web **não** entraram.
+
+### 10. Alternativas rejeitadas / adiadas
+
+- **Import externo cru sem bundler:** **rejeitado** (o CLI não sobe arquivos fora de `functions/`; falharia em runtime).
+- **Duplicação do núcleo em `functions/`:** **rejeitada** (divergência financeira).
+- **npm workspaces agora:** **adiado** por custo e risco.
+- **Reestruturação completa agora:** **adiada** por risco de regressão sobre o app que já funciona.
+
+### 11. Estado de implementação
+
+- `functions/` **ainda não existe**;
+- **esbuild ainda não foi instalado**;
+- `firebase.json` **ainda não possui** blocos `functions`/`emulators`;
+- **Node 22 ainda não foi configurado**;
+- **nenhum callable existe**;
+- **nenhum Emulator foi configurado**;
+- **nenhum deploy foi realizado**;
+- **DEC-019 apenas aprova a estratégia.**
+
+### Consequências
+
+- Fonte única do núcleo financeiro garantida entre web e servidor, com presença garantida no artefato de deploy via bundle.
+- As próximas etapas (scaffold de `functions/`, application client/server, infra, callables, Emulator/Rules) serão autorizadas separadamente.
