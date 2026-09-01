@@ -53,3 +53,15 @@ export type {
   PricingTableDiffResult,
 } from './pricing-table-diff';
 export { diffPricingTable } from './pricing-table-diff';
+
+export type { PricingAnalysisKeyResult } from './pricing-analysis-key';
+export { buildPricingAnalysisKey } from './pricing-analysis-key';
+
+export type {
+  PricingIssueReference,
+  PricingImportDecision,
+  PricingImportDecisionsErrorCode,
+  PricingImportDecisionsResult,
+  ValidatePricingImportDecisionsInput,
+} from './pricing-import-decision';
+export { buildIssueReferences, validatePricingImportDecisions } from './pricing-import-decision';
