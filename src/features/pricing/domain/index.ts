@@ -25,3 +25,31 @@ export {
 
 export type { PricingMatchBy, PricingAreaMatch } from './match-pricing-area';
 export { matchPricingArea } from './match-pricing-area';
+
+export type {
+  PricingPasteFatalCode,
+  PricingPasteIssueCode,
+  PricingPriceSource,
+  ParsedPricingItem,
+  ParsedPriceGroup,
+  PricingPasteIssue,
+  ParsedUnparsedLine,
+  PricingPasteParseResult,
+} from './paste-parser';
+export {
+  parsePricingTablePaste,
+  MAX_PRICING_IMPORT_TEXT_LENGTH,
+  MAX_PRICING_IMPORT_LINES,
+} from './paste-parser';
+
+export type {
+  PricingDiffErrorCode,
+  PricingDiffNew,
+  PricingDiffChanged,
+  PricingDiffUnchanged,
+  PricingDiffRemoved,
+  PricingDiffConflict,
+  PricingTableDiffCounts,
+  PricingTableDiffResult,
+} from './pricing-table-diff';
+export { diffPricingTable } from './pricing-table-diff';
