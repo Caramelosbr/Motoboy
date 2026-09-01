@@ -682,3 +682,145 @@ Não é obrigatório criar esta árvore agora, mas **esta decisão impede que um
 
 - Fonte única do núcleo financeiro garantida entre web e servidor, com presença garantida no artefato de deploy via bundle.
 - As próximas etapas (scaffold de `functions/`, application client/server, infra, callables, Emulator/Rules) serão autorizadas separadamente.
+
+---
+
+## DEC-020 — Tabela de deslocamento sincronizada, versionada, imutável e com busca multiprovedor
+
+**Status:** Aprovada como desenho — implementação não iniciada
+**Data:** 01/09/2026
+
+### Contexto
+
+O motoboy precisa de uma **Tabela de deslocamento** (bairro/área/condomínio/empresa/ponto de referência → valor da entrega) que ele mesmo mantém, inclusive **colando uma lista inteira recebida por WhatsApp**. O protótipo atual (WIP não commitado em `index.html` e `src/legacy/panel.js`) guarda isso no `localStorage`, dentro do legado, com dinheiro em float e sem sincronização — **contraria DEC-010 e DEC-013** e **não é aprovado para commit**. Esta decisão define o desenho definitivo. Reafirma o escopo do produto: **não há solicitações externas de clientes, não há carteira, não há transferência nem movimentação de dinheiro; clientes são referências internas; Pix futuro apenas reconhecerá recebimentos e NÃO faz parte desta DEC; a tabela apenas sugere valores para os registros do motoboy; a corrida confirmada guarda um snapshot imutável do valor usado.**
+
+### Decisão
+
+Criar a feature limpa `pricing` (Clean Architecture) com **Firestore como fonte oficial isolada por uid**, **versões publicadas imutáveis** com **ponteiro ativo** e **histórico de ativações**, **toda escrita feita exclusivamente por Cloud Functions autoritativas** (a web só lê e chama gateways callable), **importação por substituição completa** com prévia e conflitos resolvidos por humano, **parser determinístico**, **valores em centavos** (`shared/currency`), **snapshot de preço nas corridas confirmadas** e **busca de endereços multiprovedor** por uma abstração neutra. Sem globals em `window`; sem regra de negócio no legado (DEC-010); sem float (DEC-013).
+
+### 1. Escrita somente pelo servidor
+
+A aplicação web **lê** a tabela ativa, recebe atualizações por **`onSnapshot`** e chama **gateways callable** — **nunca escreve diretamente** em `pricingTables`, `pricingConfig` ou `pricingTableActivations`. **Cadastro, edição, exclusão, importação, publicação e reativação passam pelas Functions.** As Rules futuras permitirão **leitura apenas ao proprietário autenticado e verificado** e **bloquearão toda escrita direta do cliente** (`allow write: if false;`); **Functions/Admin SDK serão a única autoridade de escrita**.
+
+### 2. Modelo de dados (isolado por uid)
+
+Domínio `PricingArea`, exibido como "Bairro, área ou ponto de referência":
+```
+PricingArea {
+  id: string;                 // areaId — identidade oficial, ESTÁVEL entre versões
+  displayName: string;
+  nameNormalized: string;     // busca/dedupe — NUNCA identidade
+  aliases: string[];          // normalizados; NUNCA criados automaticamente
+  type?: 'bairro'|'area'|'condominio'|'empresa'|'ponto_referencia';
+  amountCents: int > 0;       // shared/currency, nunca float
+}
+```
+Firestore:
+- `users/{uid}/pricingTables/{versionId}` → `{ createdAt(server), source:'paste'|'manual', itemCount, status:'published', publishedBy }` — **imutável após publicada** (sem `update`/`delete`, sem `updatedAt`).
+- `users/{uid}/pricingTables/{versionId}/areas/{areaId}` → `PricingArea` (imutável dentro da versão).
+- `users/{uid}/pricingConfig/active` → `{ activeVersionId, revision, updatedAt(server) }`.
+- `users/{uid}/pricingTableActivations/{activationId}` → `{ versionId, activatedBy, activatedAt(server), operation:'publish'|'reactivate', previousVersionId }`.
+
+**Limites explícitos e testados** (valores exatos definidos no domínio na implementação): `MAX_PRICING_AREAS = 300`; tamanho máximo de `displayName`; quantidade e tamanho de `aliases`; tamanho máximo do texto importado; tamanho de `note`; tipos/formatos aceitos. Justificativa do 300: a tabela real tem poucas dezenas de itens; mantém a operação abaixo dos limites transacionais; limita payload e abuso; mantém validação e latência previsíveis.
+
+### 3. Publicação atômica (`publishPricingTable`)
+
+Callable autoritativa que executa em **uma única transação**:
+- valida **auth, e-mail verificado e App Check** (quando habilitado);
+- lê `pricingConfig/active`; confere **`expectedActiveVersionId`** e **`expectedRevision`**;
+- **valida integralmente** o payload (tipos, `amountCents` inteiro > 0, limites, duplicidades, aliases, conflitos);
+- cria o documento da **versão**; cria **todos** os documentos de **áreas**; cria o registro de **ativação**;
+- **atualiza o ponteiro ativo e incrementa `revision`**; confirma tudo **atomicamente**.
+
+**Nenhuma versão pode ficar ativa parcialmente.** Internamente usa transação/batch no Admin SDK. Justificativa (transação, não batch client-side): há invariantes que o cliente não garante (validação integral + troca controlada do ponteiro + concorrência) → operação privilegiada de servidor (coerente com DEC-015/DEC-019).
+
+### 4. Idempotência
+
+`publishPricingTable` recebe **`idempotencyKey`, `requestHash`, `expectedActiveVersionId`, `expectedRevision`, tabela completa**. Regras:
+- `idempotencyKey` validada (formato); `versionId` **determinístico** a partir dela **ou** registro idempotente equivalente;
+- **mesma chave + mesmo `requestHash`** → retorna o **resultado durável anterior**;
+- **mesma chave + `requestHash` diferente** → **rejeita conflito**;
+- **duplo clique / retry de rede não pode criar duas versões**.
+`reactivatePricingTable` também é **idempotente**.
+
+### 5. Concorrência
+
+Se `revision` ou `activeVersionId` mudou desde a leitura do cliente → **rejeitar `CONCURRENT_MODIFICATION`**, **sem publicar parcialmente**. O cliente recarrega a versão ativa, **recalcula o diff** e **reapresenta** as mudanças ao usuário.
+
+### 6. Importação (primeiro escopo) — substituição completa
+
+Somente **SUBSTITUIR a tabela ativa por uma nova versão completa** (sem "mesclar"). A prévia mostra: **novos, alterados, removidos, inalterados, duplicados, ambíguos, conflitos e linhas não interpretadas (`unparsed`)**. **Nada é publicado enquanto houver conflito ou linha não resolvida.** Mesclagem/incremental **adiada** para decisão futura.
+
+### 7. Parser determinístico (puro)
+
+`parseDeslocamento(raw)` — sem DOM/Firebase; **nenhuma linha descartada em silêncio**.
+- **Cabeçalho de preço** (define o grupo seguinte): linha que, sem emojis/marcadores/espaços, é só um token monetário — contém `R$` (`R$12,00`, `R$ 15,00`, `R$20`) **ou** decimal com vírgula (`25,00`, `12,50`). Aceita emojis coloridos antes (🟩), marcadores `•`,`*`,`-`,`–`, separador `⸻`, espaços irregulares.
+- **Inteiro isolado sem `R$` e sem decimais** (`20`, `060`) → **`AMBIGUOUS` para revisão**, nunca preço.
+- **Preço inline** só com **marcador monetário inequívoco** (`R$`, ou separador `—`/`:`/`|` seguido de token monetário): `Kowalski — R$ 20,00`, `Kowalski: R$20`, `Kowalski | R$ 20,00`. **Inteiro no fim sem marcador NÃO é preço:** `Kowalski 20`, `Décio 060`, `BR-153` permanecem nome.
+- **`AMBIGUOUS_GROUPING`** apenas em **padrões claros de agrupamento**: `I e II`, `1 e 2`, `I/II`, `1/2`, `Bloco A e B`, `Flamboyant I e II`. **Nomes comuns com "e" não são bloqueados automaticamente.**
+- **`CONFLICT`/`POSSIBLE_ALIAS`**: ex.: "Milhão (antiga Kowalski)" R$15 × "Kowalski" R$20 → **nunca unir sozinho**; revisão humana.
+- `DUPLICATE_IN_PASTE`, `INVALID_PRICE`, `NO_PRICE`; linhas não classificadas → `unparsed[]`.
+
+### 8. Identidade estável e reaproveitamento de `areaId`
+
+`areaId` é estável quando representa a **mesma área**; `nameNormalized`, alias e Photon **não** são identidade; renomear **não** cria novo id automaticamente; **conflito → o usuário decide**; área realmente nova → novo id. **Importador:** carrega os `areas` da versão ativa; para cada item colado (normalizado) — **match único** → reusa `areaId` (valor diferente = `CHANGED`); **sem match** → NEW (id novo na publicação); **match incerto** (bate alias de uma área e nome de outra, ou várias) → **`CONFLICT`**: a revisão pergunta "manter o mesmo item (reusa `areaId`) ou criar novo?".
+
+### 9. Versões imutáveis + cadastro individual versionado
+
+- Versão publicada **nunca** recebe `update`/`delete`; itens publicados **nunca** recebem `update`/`delete`.
+- **Edição individual cria nova versão completa**; **exclusão individual apenas omite** o item da nova versão (não apaga do histórico).
+- **Desfazer reativa** uma versão anterior **sem alterar seu conteúdo**, pela mesma operação autoritativa, registrando nova ativação (`operation:'reactivate'`), com controle de concorrência. `areaId` permanece estável para a mesma área.
+
+### 10. Sincronização / leitura em tempo real
+
+Listener no **ponteiro** `pricingConfig/active` + listener nos **`areas` da versão ativa**. Ao mudar `activeVersionId`: **cancelar o listener da versão anterior → estado `carregando` → assinar os itens da nova versão → só então revelar** — **nunca misturar itens de duas versões**; **cancelar todos os listeners no logout**.
+
+### 11. Estados de sincronização (escritas por callable)
+
+- **`salvando`** começa **antes** da chamada; **`salvo`** somente após **acknowledgement durável da Function**; **`erro`** quando a callable rejeita; **`offline`** quando a operação não chega ao servidor.
+- **Não** usar `metadata.hasPendingWrites` como confirmação de escrita da callable (o cliente não faz a escrita Firestore local). `fromCache` serve **apenas** para informar o estado das **leituras/listeners**.
+
+### 12. Vínculo área × corrida e "sem preço antigo"
+
+Estado por entrega: `pricing = { source:'none'|'table'|'manual_override', areaId?, displayName?, amountCents?, tableVersionId? }`.
+- **Match** → `source='table'`, valor da área, indicação visual da área reconhecida e da origem "tabela".
+- **Trocar/editar o texto do endereço** → **limpar** `pricing` (nunca reaproveitar o preço anterior).
+- **Sem match** → limpar o automático anterior, valor **vazio**, permitir manual e **seleção manual** de área.
+- **Ajuste manual** → `source='manual_override'`, preserva o valor.
+- **Snapshot na corrida confirmada:** `{ pricingAreaId, displayName, amountCents, source:'table'|'manual_override', tableVersionId }` — imutável; alterar/excluir/publicar **não** muda o histórico.
+
+### 13. Busca de endereços multiprovedor (somente desenho nesta DEC)
+
+Abstração neutra (apresentação e regras de pricing **não conhecem** o formato dos provedores):
+```
+interface AddressSearchProvider { search(query, context): Promise<AddressSuggestion[]>; }
+interface AddressSuggestion { provider:'google'|'photon'; providerPlaceId:string; displayText:string;
+  street?; houseNumber?; district?; locality?; city?; state?; countryCode:string; latitude?; longitude?; }
+```
+Implementações previstas: `GooglePlacesAddressProvider`, `PhotonAddressProvider`, `ResilientAddressSearchService`. Níveis: **Google Places Autocomplete (New) principal → Photon fallback → digitação manual (garantia final)**. `providerPlaceId` **nunca** é `PricingArea.id`; ID Google ≠ ID Photon; Photon/Google **nunca** são identidade da área; vínculo com `PricingArea` pelos campos **normalizados** e, na incerteza, **escolha humana**. Respostas atrasadas **ignoradas** (por `requestId`/`AbortController`); **fallback não apaga o texto**; **Google e Photon não são consultados simultaneamente a cada tecla** (Google primeiro; Photon só pela política de fallback: rede/timeout/429/5xx/indisponibilidade/quota/sem resultado útil/Google não configurado); **circuit breaker** simples; logar só provedor/duração/status/tipo de falha (**nunca** o endereço).
+
+Implementação futura do **Google** exigirá: **billing habilitado**; **chave web restrita por domínio e por API**; **session tokens**; **field masks mínimos**; `includedRegionCodes:['br']`; `regionCode:'br'`; `languageCode:'pt-BR'`; `locationBias` (não `locationRestriction` por padrão); **debounce e cancelamento**; **alertas de orçamento**; revisão das **políticas de armazenamento e atribuição** (não guardar payload completo; Place ID separado quando necessário, sem substituir o snapshot). **Photon** usará **`countrycode=BR`**, `lang=pt`, `lat`/`lon` como preferência regional, `bbox` só para restrição rígida, timeout e cancelamento próprios. A chave do navegador **não é segredo** — deve estar restrita. **App Check com `enforceAppCheck: true` será obrigatório antes do deploy para usuários reais.** A implementação do Google e a correção do Photon ficam em **etapa/commit próprios**. Não instalar Google agora, não criar chave, não alterar `.env`/`.env.example`, não implementar providers.
+
+### 14. Segurança
+
+Rules futuras (etapa própria, apresentar antes): **leitura só do dono autenticado e verificado**; **escrita direta do cliente bloqueada** (`allow write: if false;`) em `pricingTables/**`, `pricingConfig/**`, `pricingTableActivations/**`. Validações de integridade (tipos, `amountCents` int>0, limites, imutabilidade) ocorrem nas Functions. App Check antes de produção. Sem globals em `window`; sem regra no legado (DEC-010); sem float (DEC-013).
+
+### 15. Escopo do produto (reafirmação)
+
+Não existem solicitações externas de clientes; não existe carteira; não existe transferência/movimentação de dinheiro; clientes são referências internas; Pix futuro apenas **reconhece** recebimentos e **não faz parte da DEC-020**; a tabela apenas **sugere** valores para os registros do motoboy; a corrida confirmada guarda **snapshot imutável** do valor usado.
+
+### 16. Plano de etapas (cada uma exige autorização própria)
+
+1. Corrigenda + aprovação e **registro desta DEC-020** (docs). 2. Domínio puro (`PricingArea`, normalização, matching) + testes. 3. Parser puro + diff + testes. 4. Application ports/use-cases + repositório fake + testes. 5. **Scaffold das Functions** (DEC-019). 6. **Callables autoritativas** `publishPricingTable`/`reactivatePricingTable` (idempotência, concorrência, validação, ativações). 7. Repositório web **só-leitura** + **gateway callable**. 8. UI colar → revisar → resolver → publicar → desfazer (estados de sync). 9. **Cutover:** remoção do protótipo `localStorage` do legado. 10. Integração com entregas + snapshot. 11. **Correção separada da busca** (abstração multiprovedor; Google + Photon). 12. **Rules, Emulator, App Check e deploy** — somente mediante autorizações específicas.
+
+### Estado de implementação
+
+- **Decisão aprovada como desenho; implementação não iniciada.**
+- **O WIP atual (`index.html`, `src/legacy/panel.js`) NÃO está aprovado para commit** (será refeito/removido no cutover).
+- **Functions não implementadas; Google não habilitado; nenhuma chave criada; Rules não alteradas; nenhum deploy; nenhuma migração de dados.**
+
+### Consequências
+
+- Tabela igual em celular e computador, versionada, imutável e auditável, com publicação atômica e idempotente pelo servidor.
+- A qualidade do reconhecimento de área/endereço dependerá da habilitação futura do Google Places (billing/chave/App Check), com fallback Photon e garantia manual.
+- As etapas seguintes serão autorizadas uma a uma.
