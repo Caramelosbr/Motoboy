@@ -65,3 +65,14 @@ export type {
   ValidatePricingImportDecisionsInput,
 } from './pricing-import-decision';
 export { buildIssueReferences, validatePricingImportDecisions } from './pricing-import-decision';
+
+export type {
+  ResolvedPricingItem,
+  ResolvedPricingItemProvenance,
+  ExcludedPricingLine,
+  ResolvedPricingProposal,
+  ResolvePricingProposalStructuralErrorCode,
+  PricingProposalResolutionResult,
+  ResolvePricingProposalInput,
+} from './resolve-pricing-proposal';
+export { resolvePricingProposal } from './resolve-pricing-proposal';
