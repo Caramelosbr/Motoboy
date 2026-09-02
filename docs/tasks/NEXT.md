@@ -5,49 +5,47 @@
 
 ## Situação
 
-- **DEC-020.3B-2A — CONCLUÍDA** (`resolvePricingProposal`, commit `48fe21b`).
-- **DEC-020.3B-2B — CONCLUÍDA** (`diffResolvedPricingTable`, commit `5591fe4`).
-- **DEC-020.3B-2C — CONCLUÍDA** (porta `PricingPublishGateway` + `publishResolvedPricingTable` + fake; 397 testes verdes).
-- **PRÓXIMA CANDIDATA — Scaffold das Functions (DEC-019), ainda NÃO autorizada.** Só o esqueleto de build; **sem callables, sem rules, sem App Check, sem deploy**. Só desenho abaixo; aguarda autorização explícita antes de qualquer arquivo.
+- **DEC-020.3B-2A/2B/2C — CONCLUÍDAS** (resolução, diff resolvido e publicação na application; commits `48fe21b`, `5591fe4`, `c1bf21b`).
+- **DEC-019.1 — CONCLUÍDA.** Scaffold isolado de `functions/` (Node 22, TypeScript, esbuild): bundle em `functions/lib/index.js`, núcleo de `src/` inlinado, `firebase-admin`/`firebase-functions` externos, `firebase.json` mínimo, `.gitignore`, scripts e auditoria de metafile. Sem callables/rules/App Check/UI/deploy. Baseline do web intacta (397 testes).
+- **DEC-019.2 — CANDIDATA (ainda NÃO autorizada).** `application/server` (casos de uso autoritativos como contratos) + **ports de persistência transacional** (interfaces). **Sem Firebase, sem callable, sem deploy.** Só desenho abaixo; aguarda autorização explícita.
 
 ---
 
 ## Identificação (candidata — NÃO autorizada)
 
-- **Etapa:** Scaffold das Functions conforme DEC-019 (esqueleto de build)
-- **Depende de:** DEC-019 (aprovada como desenho) e o núcleo compartilhado em `src/` (domain/application).
+- **Etapa:** DEC-019.2 — `application/server` + ports de persistência transacional
+- **Depende de:** DEC-019 (desenho), DEC-019.1 (scaffold) e o núcleo compartilhado em `src/` (domain/shared).
 - **Autorizada em:** _(pendente — não iniciar)_ — implementar somente após autorização explícita.
 
 ## Objetivo (candidata)
 
-Criar apenas o **esqueleto de build** das Cloud Functions em `functions/`, que **importa e inlina** o núcleo compartilhado de `src/` (nunca duplica domínio/moeda/validações), compila com esbuild para `functions/lib/index.js` e resolve em typecheck/bundle. **Nenhuma lógica autoritativa, callable, regra do Firestore, App Check ou deploy** nesta etapa.
+Definir na camada **application/server** os **contratos** dos casos de uso autoritativos (executados só pelas Functions) e as **ports de persistência transacional** (interfaces), com **fakes** e **testes** — **sem** implementação Firebase/Admin, **sem** callable e **sem** deploy. É a fronteira que as Functions implementarão depois; o servidor é a autoridade de escrita, o cliente não é fronteira de segurança.
 
-## Escopo autorizado (a confirmar na autorização) — candidatos
+## Escopo candidato (a confirmar na autorização)
 
-- **Criar:** `functions/package.json`, `functions/package-lock.json` (deps externas: `firebase-admin`, `firebase-functions`).
-- **Criar:** `functions/tsconfig.json` (contexto Node 22, independente; tipando só `functions/src/**` + módulos de `src/` efetivamente importados).
-- **Criar:** `functions/src/index.ts` (entrypoint mínimo que importa o núcleo via `../../src/…` e o expõe/registra o mínimo, sem handlers callable).
-- **Criar:** config de build esbuild (`bundle:true`, `platform:'node'`, `target:'node22'`, outfile `functions/lib/index.js`, externals `firebase-admin(/*)`/`firebase-functions(/*)`); CJS×ESM **confirmado na implementação, não presumido**.
-- **Talvez alterar:** `firebase.json` (apenas `source: functions` + codebase + `predeploy` de build) — **somente se autorizado explicitamente**, pois é infraestrutura.
-- **NÃO tocar agível sem autorização:** `firestore.rules`, callables, App Check, deploy, `src/` (a não ser imports resolvendo), `index.html`, `docs/architecture`, `package*` da raiz.
+- **Criar (server, application):** casos de uso autoritativos como contratos/tipos + orquestração pura (ex.: publicação/reativação da tabela e/ou núcleo financeiro autoritativo — recorte exato a definir na autorização), dependendo **apenas de interfaces**.
+- **Criar (ports):** ports de **persistência transacional** (interface de transação/batch, leitura consistente, escrita atômica do ponteiro/versões) — neutras, sem Firestore/Admin.
+- **Criar (testing):** fakes das ports transacionais (memória; sem relógio/aleatório), **não** exportados pelo barrel de produção.
+- **Criar (testes):** sucesso, concorrência (`expectedRevision`/`expectedActiveVersionId`), idempotência, atomicidade (tudo-ou-nada), rejeição/invalid.
+- **Alterar (só exports):** barrel(s) de application do recorte escolhido.
+- **NÃO tocar:** `functions/src` (handlers), Firebase/Admin real, `firestore.rules`, App Check, UI, deploy, `package*` da raiz, `docs/architecture`, `src/` fora do recorte.
 
 ## Contrato / critérios (candidata)
 
-- O núcleo de `src/` é **inlinado** no bundle (não por o CLI seguir imports fora de `functions/`); `../../src/…` a partir de `functions/src/index.ts`.
-- `firebase-admin`/`firebase-functions` permanecem **externals**; sem duplicar domínio/FIFO/moeda; sem servidor no bundle do navegador.
-- Build gera `functions/lib/index.js`; `functions/lib` e `functions/node_modules` **não versionados** (`.gitignore` se necessário).
-- **Sem** callables, rules, App Check, Emulator run ou deploy. Nada autoritativo ainda.
-- Baseline do web intacta: `npm run check` da raiz continua verde; nenhuma regressão em `src/`.
+- Application depende de **interfaces** (nunca de implementação); domínio permanece puro; sem ciclos; sem default export.
+- Ports transacionais expressam **atomicidade** e **controle de concorrência** (revision/ponteiro) sem conhecer Firestore.
+- Fakes só em `testing/`, não exportados; result discriminado; sem exceções de negócio.
+- Nenhuma escrita real, nenhum SDK, nenhum id gerado fora da autoridade; `npm run check` (raiz) e o `check` das `functions` continuam verdes.
 
-## Fora de escopo (candidata scaffold)
+## Fora de escopo (não fazer)
 
-- Callables autoritativas, `firestore.rules`, App Check, Emulator run, deploy; geração de IDs; lógica de negócio no servidor; reestruturação `apps/` + `packages/core`.
+- Firebase/Admin real, callables/handlers, `firestore.rules`, App Check, Emulator run, deploy; UI; reestruturação `apps/` + `packages/core`.
 
-## Registro da etapa concluída (3B-2C)
+## Registro da etapa concluída (DEC-019.1)
 
-- **DEC-020.3B-2C — CONCLUÍDA.** Porta de comando `PricingPublishGateway` + caso de uso `publishResolvedPricingTable` (pré-validação defensiva; `published` só com ack durável; `conflict`/`error`/`offline`/`invalid_payload`; idempotência de duplo clique) + `FakePricingPublishGateway` (só em `testing/`, não exportado). 10 testes do caso de uso; núcleo do web intacto; sem Firebase/Functions/UI/deploy; cliente não é fronteira de segurança (servidor revalida).
-- **Commit:** `feat: adiciona caso de uso de publicacao de pricing`.
+- **DEC-019.1 — CONCLUÍDA.** `functions/`: `package.json`/`package-lock.json` próprios (Node 22), `tsconfig.json` independente, `src/index.ts` (importa o núcleo via `../../src/…`, prova o inlining; SDK externo), `build.mjs` (esbuild CJS, externals `firebase-admin(/*)`/`firebase-functions(/*)`, metafile + auditoria), `.gitignore` (`lib/`, `node_modules/`); `firebase.json` com bloco `functions` mínimo. Sem callables/rules/App Check/UI/deploy.
+- **Commit:** `feat: adiciona scaffold isolado das functions com Node 22 e esbuild`.
 
 ## Registro arquitetural
 
-- Nova decisão arquitetural: **Não** (detalhe de implementação sob a DEC-020/DEC-019). Se surgir mudança estrutural (ex.: escolha CJS×ESM, `firebase.json`), apresentar antes e registrar em `docs/architecture/DECISIONS.md`.
+- Nova decisão arquitetural: **Não** (implementa o desenho da DEC-019). Recortes/decisões pontuais da DEC-019.2 — se divergirem do desenho — apresentar antes e registrar em `docs/architecture/DECISIONS.md`.

@@ -1,0 +1,24 @@
+{
+  "name": "motoboy-functions",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cloud Functions scaffold (DEC-019.1) — esqueleto de build; sem callables ainda.",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "node build.mjs",
+    "check": "npm run typecheck && npm run build"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.24.0",
+    "typescript": "5.9.3"
+  }
+}
