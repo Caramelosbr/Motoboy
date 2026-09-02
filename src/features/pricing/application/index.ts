@@ -11,3 +11,16 @@ export type {
 
 export type { PricingImportAnalysisResult } from './use-cases/analyze-pricing-import';
 export { analyzePricingImport } from './use-cases/analyze-pricing-import';
+
+export type {
+  PricingPublishGateway,
+  PublishPricingItem,
+  PublishPricingRequest,
+  PublishGatewayResult,
+} from './ports/pricing-publish-gateway';
+
+export type {
+  PublishResolvedPricingResult,
+  PublishResolvedPricingInput,
+} from './use-cases/publish-resolved-pricing';
+export { publishResolvedPricingTable } from './use-cases/publish-resolved-pricing';
