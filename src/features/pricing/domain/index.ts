@@ -76,3 +76,16 @@ export type {
   ResolvePricingProposalInput,
 } from './resolve-pricing-proposal';
 export { resolvePricingProposal } from './resolve-pricing-proposal';
+
+export type {
+  ResolvedPricingDiffErrorCode,
+  ResolvedPricingDiffNew,
+  ResolvedPricingDiffChanged,
+  ResolvedPricingDiffUnchanged,
+  ResolvedPricingDiffRemoved,
+  ResolvedPricingDiffConflict,
+  ResolvedPricingDiffCounts,
+  ResolvedPricingDiffResult,
+  DiffResolvedPricingTableInput,
+} from './resolve-pricing-diff';
+export { diffResolvedPricingTable } from './resolve-pricing-diff';
