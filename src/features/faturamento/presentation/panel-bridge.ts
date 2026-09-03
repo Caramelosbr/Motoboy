@@ -40,7 +40,8 @@ export function installFaturamentoBridge(): void {
       try {
         const created = await entradasService.add(vmToNew(vm));
         return created.id;
-      } catch {
+      } catch (error) {
+        console.error('[Faturamento] Erro ao adicionar:', error);
         return null;
       }
     },
@@ -48,7 +49,8 @@ export function installFaturamentoBridge(): void {
       if (!fsId) return;
       try {
         await entradasService.update(fsId, vmToEdit(vm));
-      } catch {
+      } catch (error) {
+        console.error('[Faturamento] Erro ao atualizar:', error);
         /* offline/erro: mantém o cache local */
       }
     },
@@ -56,7 +58,8 @@ export function installFaturamentoBridge(): void {
       if (!fsId) return;
       try {
         await entradasService.remove(fsId);
-      } catch {
+      } catch (error) {
+        console.error('[Faturamento] Erro ao remover:', error);
         /* offline/erro: mantém o cache local */
       }
     },
@@ -67,7 +70,8 @@ export async function loadFaturamentoIntoPanel(): Promise<void> {
   try {
     const items = await entradasService.list();
     window.__applyRemoteEntradas?.(items);
-  } catch {
+  } catch (error) {
+    console.error('[Faturamento] Erro ao carregar:', error);
     /* offline/sem permissão: mantém o cache local */
   }
 }

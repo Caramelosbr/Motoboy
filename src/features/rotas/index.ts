@@ -11,4 +11,26 @@ const repository = new FirestoreRotaRepository(() => currentUid());
 export const rotasService = new RotasService(repository);
 
 export { RotaValidationError } from './application/rotas-service';
-export type { Rota } from './domain/rota';
+export type {
+  Rota,
+  RotaEntrega,
+  RotaService,
+  RotaRepository,
+  NewRota,
+  NewRotaService,
+  NewRotaEntrega,
+  RotaErrorCode,
+  RotaResult,
+  RotaValidation,
+} from './domain/rota';
+export {
+  createRota,
+  validateRota,
+  roundRouteValue,
+  computeServicoTotal,
+  computeRotasValorTotal,
+  countAllEntregas,
+  computeFuelCost,
+  computeRouteResultado,
+  computeReceivedPending,
+} from './domain/rota';

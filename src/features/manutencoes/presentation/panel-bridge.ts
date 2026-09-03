@@ -49,7 +49,8 @@ export function installManutencoesBridge(): void {
       try {
         const created = await manutencoesService.add(vmToNew(vm));
         return created.id;
-      } catch {
+      } catch (error) {
+        console.error('[Manutenções] Erro ao adicionar:', error);
         return null;
       }
     },
@@ -57,7 +58,8 @@ export function installManutencoesBridge(): void {
       if (!fsId) return;
       try {
         await manutencoesService.update(fsId, vmToEdit(vm));
-      } catch {
+      } catch (error) {
+        console.error('[Manutenções] Erro ao atualizar:', error);
         /* offline/erro: mantém o cache local */
       }
     },
@@ -65,7 +67,8 @@ export function installManutencoesBridge(): void {
       if (!fsId) return;
       try {
         await manutencoesService.remove(fsId);
-      } catch {
+      } catch (error) {
+        console.error('[Manutenções] Erro ao remover:', error);
         /* offline/erro: mantém o cache local */
       }
     },
@@ -76,7 +79,8 @@ export async function loadManutencoesIntoPanel(): Promise<void> {
   try {
     const items = await manutencoesService.list();
     window.__applyRemoteManutencoes?.(items);
-  } catch {
+  } catch (error) {
+    console.error('[Manutenções] Erro ao carregar:', error);
     /* offline/sem permissão: mantém o cache local */
   }
 }

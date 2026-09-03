@@ -3,12 +3,12 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBsJV-e_4SCWC5X9TCE_zbLJKnsZMNWMTs',
-  authDomain: 'motoboys-29310.firebaseapp.com',
-  projectId: 'motoboys-29310',
-  storageBucket: 'motoboys-29310.firebasestorage.app',
-  messagingSenderId: '1068377303811',
-  appId: '1:1068377303811:web:4884b3279f048911c41736'
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);

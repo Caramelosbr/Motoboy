@@ -54,7 +54,8 @@ export function installAbastecimentosBridge(): void {
       try {
         const created = await abastecimentosService.add(vmToNew(vm));
         return created.id;
-      } catch {
+      } catch (error) {
+        console.error('[Abastecimentos] Erro ao adicionar:', error);
         return null; // offline/erro: fica só no cache local
       }
     },
@@ -62,7 +63,8 @@ export function installAbastecimentosBridge(): void {
       if (!fsId) return;
       try {
         await abastecimentosService.update(fsId, vmToEdit(vm));
-      } catch {
+      } catch (error) {
+        console.error('[Abastecimentos] Erro ao atualizar:', error);
         /* offline/erro: mantém o cache local */
       }
     },
@@ -70,7 +72,8 @@ export function installAbastecimentosBridge(): void {
       if (!fsId) return;
       try {
         await abastecimentosService.remove(fsId);
-      } catch {
+      } catch (error) {
+        console.error('[Abastecimentos] Erro ao remover:', error);
         /* offline/erro: mantém o cache local */
       }
     },
@@ -82,7 +85,8 @@ export async function loadAbastecimentosIntoPanel(): Promise<void> {
   try {
     const items = await abastecimentosService.list();
     window.__applyRemoteAbastecimentos?.(items);
-  } catch {
+  } catch (error) {
+    console.error('[Abastecimentos] Erro ao carregar:', error);
     /* offline/sem permissão: mantém o que já está no cache local */
   }
 }
